@@ -1,0 +1,63 @@
+const Profile = require('../../db/Profile');
+const Ticket = require('../../db/Ticket');
+const User = require('../../db/User');
+
+async function getProfileByUserId(userId) {
+  let profile = await Profile.findOne({ where: { userId } });
+  
+  // Create profile if it doesn't exist
+  if (!profile) {
+    profile = await Profile.create({
+      userId,
+      name: 'Student',
+      degree: 'Not specified',
+      class: 'Not specified',
+      status: 'ACTIVE',
+      transport: 'Not specified',
+      hostelInfo: 'Not specified',
+      batch: 'Not specified'
+    });
+  }
+  
+  return profile;
+}
+
+async function createEditTicket(userId, requestedData) {
+  return Ticket.create({ userId, requestedData, status: 'PENDING' });
+}
+
+async function updateTicketStatus(ticketId, status, adminNote) {
+  return Ticket.update({ status, adminNote }, { where: { id: ticketId }, returning: true });
+}
+
+async function updateProfileByUserId(userId, data) {
+  return Profile.update(data, { where: { userId } });
+}
+
+async function getPendingProfileRequests() {
+  const tickets = await Ticket.findAll({
+    where: { status: 'PENDING' },
+    order: [['createdAt', 'DESC']],
+  });
+  
+  // Get user data for each ticket
+  const ticketsWithUsers = await Promise.all(
+    tickets.map(async (ticket) => {
+      const user = await User.findByPk(ticket.userId);
+      return {
+        ...ticket.toJSON(),
+        user: user ? { email: user.email, name: user.name } : null,
+      };
+    })
+  );
+  
+  return ticketsWithUsers;
+}
+
+module.exports = { 
+  getProfileByUserId, 
+  createEditTicket, 
+  updateTicketStatus, 
+  updateProfileByUserId,
+  getPendingProfileRequests
+}; 
