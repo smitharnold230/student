@@ -42,12 +42,10 @@ async function createNotification(userId, data) {
       read: false,
     });
 
-    // Send real-time notification through socket service
     try {
       socketService.emitToUser(userId, 'notification', notification);
     } catch (socketError) {
       console.error('Failed to send socket notification:', socketError);
-      // Continue execution even if socket fails
     }
 
     return notification;

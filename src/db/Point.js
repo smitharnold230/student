@@ -16,7 +16,6 @@ const Point = sequelize.define('Point', {
     type: DataTypes.INTEGER,
     defaultValue: 0,
   },
-  // Removed progression field - only using batches
   manualAdjustment: {
     type: DataTypes.INTEGER,
     defaultValue: 0,
@@ -27,4 +26,4 @@ const Point = sequelize.define('Point', {
   timestamps: true,
 });
 
-module.exports = Point; 
+module.exports = Point;

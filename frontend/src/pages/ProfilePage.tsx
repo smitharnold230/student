@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   VStack,
@@ -46,22 +46,17 @@ interface Profile {
   batch: string;
 }
 
-interface EditRequest {
-  name?: string;
-  degree?: string;
-  class?: string;
-  status?: string;
-  transport?: string;
-  hostelInfo?: string;
-}
-
+// Updated schema to match backend's profile.editRequest
 const editRequestSchema = z.object({
-  name: z.string().min(1, 'Full name is required'),
-  degree: z.string().min(1, 'Degree is required'),
-  class: z.string().min(1, 'Class is required'),
-  status: z.string().min(1, 'Status is required'),
+  name: z.string().min(1, 'Full name is required').optional(),
+  degree: z.string().min(1, 'Degree is required').optional(),
+  class: z.string().min(1, 'Class is required').optional(),
+  status: z.string().min(1, 'Status is required').optional(),
   transport: z.string().optional(),
   hostelInfo: z.string().optional(),
+}).refine(data => Object.keys(data).some(key => data[key] !== undefined && data[key] !== ''), {
+  message: 'At least one field must be provided for edit request',
+  path: ['_root'], // This targets the form as a whole
 });
 
 type EditRequestForm = z.infer<typeof editRequestSchema>;
@@ -71,7 +66,6 @@ const ProfilePage: React.FC = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [editData, setEditData] = useState<EditRequest>({});
   
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
@@ -82,28 +76,6 @@ const ProfilePage: React.FC = () => {
   });
 
   const profile: Profile = profileResponse?.data;
-
-  const editRequestMutation = useMutation({
-    mutationFn: (data: EditRequest) => profileAPI.requestEdit(data),
-    onSuccess: () => {
-      toast({
-        title: 'Edit request submitted',
-        description: 'Your profile edit request has been submitted for admin approval.',
-        status: 'success',
-        duration: 5000,
-      });
-      onClose();
-      setEditData({});
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Request failed',
-        description: error.response?.data?.error || 'Failed to submit edit request',
-        status: 'error',
-        duration: 5000,
-      });
-    },
-  });
 
   const {
     register,
@@ -124,8 +96,65 @@ const ProfilePage: React.FC = () => {
   });
   const statusValue = watch('status');
 
+  // Set form default values when profile data loads
+  useEffect(() => {
+    if (profile) {
+      reset({
+        name: profile.name || '',
+        degree: profile.degree || '',
+        class: profile.class || '',
+        status: profile.status || '',
+        transport: profile.transport || '',
+        hostelInfo: profile.hostelInfo || '',
+      });
+    }
+  }, [profile, reset]);
+
+  const editRequestMutation = useMutation({
+    mutationFn: (data: EditRequestForm) => profileAPI.requestEdit(data),
+    onSuccess: () => {
+      toast({
+        title: 'Edit request submitted',
+        description: 'Your profile edit request has been submitted for admin approval.',
+        status: 'success',
+        duration: 5000,
+      });
+      onClose();
+      // Invalidate profile query to show pending status if implemented, or just refresh
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Request failed',
+        description: error.response?.data?.error || 'Failed to submit edit request',
+        status: 'error',
+        duration: 5000,
+      });
+    },
+  });
+
   const handleEditRequest = (data: EditRequestForm) => {
-    editRequestMutation.mutate(data);
+    // Filter out unchanged fields or empty strings if they are not meant to be sent
+    const changedData: Partial<EditRequestForm> = {};
+    if (data.name !== profile?.name) changedData.name = data.name;
+    if (data.degree !== profile?.degree) changedData.degree = data.degree;
+    if (data.class !== profile?.class) changedData.class = data.class;
+    if (data.status !== profile?.status) changedData.status = data.status;
+    if (data.transport !== profile?.transport) changedData.transport = data.transport;
+    if (data.hostelInfo !== profile?.hostelInfo) changedData.hostelInfo = data.hostelInfo;
+
+    if (Object.keys(changedData).length === 0) {
+      toast({
+        title: 'No Changes Detected',
+        description: 'Please make changes to your profile before submitting an edit request.',
+        status: 'info',
+        duration: 3000,
+      });
+      onClose();
+      return;
+    }
+
+    editRequestMutation.mutate(changedData);
   };
 
   const getStatusColor = (status: string) => {
@@ -162,7 +191,7 @@ const ProfilePage: React.FC = () => {
         
         <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
           <CardBody>
-            <Text color="white">Loading profile...</Text>
+            <Skeleton height="200px" />
           </CardBody>
         </Card>
       </VStack>
@@ -295,8 +324,8 @@ const ProfilePage: React.FC = () => {
           <ModalHeader color="white">Request Profile Edit</ModalHeader>
           <ModalCloseButton color="white" />
           <ModalBody>
-            <VStack spacing={4} as="form" onSubmit={handleSubmit(handleEditRequest)}>
-              <FormControl isInvalid={!!errors.name} isRequired>
+            <VStack spacing={4} as="form" id="profile-edit-form" onSubmit={handleSubmit(handleEditRequest)}>
+              <FormControl isInvalid={!!errors.name}>
                 <FormLabel color="gray.300">Full Name</FormLabel>
                 <Input
                   placeholder="Enter your full name"
@@ -308,7 +337,7 @@ const ProfilePage: React.FC = () => {
                 />
                 <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
               </FormControl>
-              <FormControl isInvalid={!!errors.degree} isRequired>
+              <FormControl isInvalid={!!errors.degree}>
                 <FormLabel color="gray.300">Degree</FormLabel>
                 <Select
                   placeholder="Select degree"
@@ -325,7 +354,7 @@ const ProfilePage: React.FC = () => {
                 </Select>
                 <FormErrorMessage>{errors.degree?.message}</FormErrorMessage>
               </FormControl>
-              <FormControl isInvalid={!!errors.class} isRequired>
+              <FormControl isInvalid={!!errors.class}>
                 <FormLabel color="gray.300">Class</FormLabel>
                 <Select
                   placeholder="Select class"
@@ -343,7 +372,7 @@ const ProfilePage: React.FC = () => {
                 </Select>
                 <FormErrorMessage>{errors.class?.message}</FormErrorMessage>
               </FormControl>
-              <FormControl isInvalid={!!errors.status} isRequired>
+              <FormControl isInvalid={!!errors.status}>
                 <FormLabel color="gray.300">Status</FormLabel>
                 <Select
                   placeholder="Select status"
@@ -358,7 +387,7 @@ const ProfilePage: React.FC = () => {
                 <FormErrorMessage>{errors.status?.message}</FormErrorMessage>
               </FormControl>
               {statusValue === 'Dayscholar' && (
-                <FormControl isInvalid={!!errors.transport} isRequired>
+                <FormControl isInvalid={!!errors.transport}>
                   <FormLabel color="gray.300">Transport</FormLabel>
                   <Select
                     placeholder="Select transport"
@@ -375,7 +404,7 @@ const ProfilePage: React.FC = () => {
                 </FormControl>
               )}
               {statusValue === 'Hosteller' && (
-                <FormControl isInvalid={!!errors.hostelInfo} isRequired>
+                <FormControl isInvalid={!!errors.hostelInfo}>
                   <FormLabel color="gray.300">Hostel Information</FormLabel>
                   <Textarea
                     placeholder="Enter hostel details"
@@ -388,6 +417,11 @@ const ProfilePage: React.FC = () => {
                   <FormErrorMessage>{errors.hostelInfo?.message}</FormErrorMessage>
                 </FormControl>
               )}
+              {errors._root && (
+                <Text color="red.400" fontSize="sm">
+                  {errors._root.message}
+                </Text>
+              )}
             </VStack>
           </ModalBody>
           <ModalFooter>
@@ -397,7 +431,7 @@ const ProfilePage: React.FC = () => {
             <Button
               colorScheme="brand"
               type="submit"
-              form="form"
+              form="profile-edit-form"
               isLoading={editRequestMutation.isPending}
               onClick={handleSubmit(handleEditRequest)}
             >
@@ -410,4 +444,4 @@ const ProfilePage: React.FC = () => {
   );
 };
 
-export default ProfilePage; 
+export default ProfilePage;

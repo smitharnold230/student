@@ -77,22 +77,22 @@ function App() {
               </ProtectedRoute>
             }
           />
-                  <Route
-          path="admin/point-rules"
-          element={
-            <ProtectedRoute allowedRoles={['ADMIN']}>
-              <PointRulesPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="admin/users"
-          element={
-            <ProtectedRoute allowedRoles={['ADMIN']}>
-              <UserManagementPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="admin/point-rules"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <PointRulesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="admin/users"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <UserManagementPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="admin/logs"
             element={

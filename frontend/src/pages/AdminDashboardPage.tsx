@@ -34,7 +34,7 @@ import {
   FiCheckCircle,
   FiClock
 } from 'react-icons/fi';
-import { adminAPI, leaderboardAPI, eventAPI, profileAPI, pointsAPI } from '../services/api';
+import { adminAPI, eventAPI, profileAPI, pointsAPI } from '../services/api';
 
 interface SystemStats {
   totalStudents: number;
@@ -45,12 +45,37 @@ interface SystemStats {
   averagePoints: number;
 }
 
-interface RecentActivity {
+interface ProfileRequest {
   id: string;
-  type: string;
-  description: string;
-  timestamp: string;
-  status: string;
+  userId: string;
+  userEmail: string;
+  userName: string;
+  requestedData: any;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  createdAt: string;
+  updatedAt: string;
+  adminNote?: string;
+}
+
+interface Event {
+  id: string;
+  name: string;
+  type: 'WORKSHOP' | 'HACKATHON';
+  date: string;
+  organizer: string;
+  url: string;
+  link: string;
+  certificationDeadline?: string;
+}
+
+interface UserWithPoints {
+  id: string;
+  name: string;
+  email: string;
+  class: string;
+  batch: string;
+  points: number;
+  profileId: string;
 }
 
 const AdminDashboardPage: React.FC = () => {
@@ -58,42 +83,31 @@ const AdminDashboardPage: React.FC = () => {
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
 
-  const { data: leaderboardResponse } = useQuery({
-    queryKey: ['leaderboard'],
-    queryFn: () => leaderboardAPI.getLeaderboard(),
-  });
-
-  const { data: eventsResponse } = useQuery({
+  const { data: eventsResponse, isLoading: eventsLoading } = useQuery({
     queryKey: ['events'],
     queryFn: () => eventAPI.getEvents(),
   });
 
-  const { data: systemStatsResponse } = useQuery({
+  const { data: systemStatsResponse, isLoading: systemStatsLoading } = useQuery({
     queryKey: ['systemStats'],
     queryFn: () => adminAPI.getSystemStats(),
   });
 
-  const { data: recentActivityResponse } = useQuery({
-    queryKey: ['recentActivity'],
-    queryFn: () => adminAPI.getRecentActivity(),
-  });
-
-  const { data: profileRequestsResponse } = useQuery({
+  const { data: profileRequestsResponse, isLoading: profileRequestsLoading } = useQuery({
     queryKey: ['profileRequests'],
     queryFn: () => profileAPI.getPendingRequests(),
   });
 
-  const { data: pointStatsResponse } = useQuery({
+  const { data: pointStatsResponse, isLoading: pointStatsLoading } = useQuery({
     queryKey: ['pointStats'],
     queryFn: () => pointsAPI.getPointStatistics(),
   });
 
-  const { data: allUsersResponse } = useQuery({
+  const { data: allUsersResponse, isLoading: allUsersLoading } = useQuery({
     queryKey: ['allUsers'],
     queryFn: () => pointsAPI.getAllUsers(),
   });
 
-  // Use real data from API responses
   const systemStats: SystemStats = systemStatsResponse?.data || {
     totalStudents: 0,
     totalEvents: 0,
@@ -103,62 +117,15 @@ const AdminDashboardPage: React.FC = () => {
     averagePoints: 0,
   };
 
-  const recentActivities: RecentActivity[] = recentActivityResponse?.data || [];
-  const events = eventsResponse?.data || [];
-  const leaderboard = leaderboardResponse?.data || [];
-  const profileRequests: any[] = profileRequestsResponse?.data || [];
-  const pointStats = pointStatsResponse?.data || {};
-  const allUsers = allUsersResponse?.data?.data || [];
-
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'CERTIFICATION':
-        return FiAward;
-      case 'EVENT':
-        return FiCalendar;
-      case 'PROFILE':
-        return FiUsers;
-      case 'POINTS':
-        return FiTrendingUp;
-      default:
-        return FiAlertCircle;
-    }
+  const events: Event[] = eventsResponse?.data || [];
+  const profileRequests: ProfileRequest[] = profileRequestsResponse?.data || [];
+  const pointStats: { totalUsers: number; totalPoints: number; averagePoints: number; topPerformers: UserWithPoints[] } = pointStatsResponse?.data?.data || {
+    totalUsers: 0,
+    totalPoints: 0,
+    averagePoints: 0,
+    topPerformers: [],
   };
-
-  const getActivityColor = (type: string) => {
-    switch (type) {
-      case 'CERTIFICATION':
-        return 'purple';
-      case 'EVENT':
-        return 'blue';
-      case 'PROFILE':
-        return 'green';
-      case 'POINTS':
-        return 'orange';
-      default:
-        return 'gray';
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'COMPLETED':
-        return 'green';
-      case 'PENDING':
-        return 'yellow';
-      default:
-        return 'gray';
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  const allUsers: UserWithPoints[] = allUsersResponse?.data?.data || [];
 
   const quickActions = [
     {
@@ -197,6 +164,33 @@ const AdminDashboardPage: React.FC = () => {
       onClick: () => navigate('/admin/settings'),
     },
   ];
+
+  const isLoading = eventsLoading || systemStatsLoading || profileRequestsLoading || pointStatsLoading || allUsersLoading;
+
+  if (isLoading) {
+    return (
+      <VStack spacing={6} align="stretch">
+        <Box>
+          <Heading size="lg" color="white" mb={2}>
+            Admin Dashboard
+          </Heading>
+          <Text color="gray.400">
+            Monitor system activity and manage student development
+          </Text>
+        </Box>
+        <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }} gap={6}>
+          {[...Array(6)].map((_, i) => (
+            <GridItem key={i}>
+              <Skeleton height="120px" />
+            </GridItem>
+          ))}
+        </Grid>
+        <Skeleton height="200px" />
+        <Skeleton height="250px" />
+        <Skeleton height="200px" />
+      </VStack>
+    );
+  }
 
   return (
     <VStack spacing={6} align="stretch">
@@ -360,7 +354,7 @@ const AdminDashboardPage: React.FC = () => {
         </CardBody>
       </Card>
 
-      {/* Recent Activity */}
+      {/* Recent Activity (Placeholder for now, as backend endpoint is removed) */}
       <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
         <CardBody>
           <VStack spacing={4} align="stretch">
@@ -368,46 +362,15 @@ const AdminDashboardPage: React.FC = () => {
               Recent Activity
             </Heading>
             
-            {recentActivities.length > 0 ? (
-              <VStack spacing={3} align="stretch">
-                {recentActivities.map((activity) => (
-                  <HStack key={activity.id} spacing={4} p={3} bg="gray.700" borderRadius="md">
-                    <Icon
-                      as={getActivityIcon(activity.type)}
-                      color={`${getActivityColor(activity.type)}.500`}
-                      boxSize={5}
-                    />
-                    
-                    <VStack align="start" spacing={1} flex={1}>
-                      <Text color="white" fontSize="sm" fontWeight="medium">
-                        {activity.description}
-                      </Text>
-                      <Text color="gray.400" fontSize="xs">
-                        {formatDate(activity.timestamp)}
-                      </Text>
-                    </VStack>
-                    
-                    <Badge
-                      colorScheme={getStatusColor(activity.status)}
-                      variant="subtle"
-                      fontSize="xs"
-                    >
-                      {activity.status}
-                    </Badge>
-                  </HStack>
-                ))}
-              </VStack>
-            ) : (
-              <VStack spacing={4}>
-                <Icon as={FiClock} color="gray.500" boxSize={12} />
-                <Text color="gray.400" textAlign="center">
-                  No recent activity to display.
-                </Text>
-                <Text color="gray.500" fontSize="sm" textAlign="center">
-                  Activity will appear here as users interact with the system.
-                </Text>
-              </VStack>
-            )}
+            <VStack spacing={4}>
+              <Icon as={FiClock} color="gray.500" boxSize={12} />
+              <Text color="gray.400" textAlign="center">
+                No recent activity to display.
+              </Text>
+              <Text color="gray.500" fontSize="sm" textAlign="center">
+                Activity will appear here as users interact with the system.
+              </Text>
+            </VStack>
           </VStack>
         </CardBody>
       </Card>
@@ -484,24 +447,28 @@ const AdminDashboardPage: React.FC = () => {
                 <Text color="white" fontSize="sm" fontWeight="medium">
                   Top Performers
                 </Text>
-                {allUsers.slice(0, 5).map((user: any, index: number) => (
-                  <HStack key={user.id} justify="space-between" p={2} bg="gray.700" borderRadius="md">
-                    <HStack spacing={3}>
-                      <Badge colorScheme="yellow" fontSize="xs">#{index + 1}</Badge>
-                      <VStack align="start" spacing={0}>
-                        <Text color="white" fontSize="sm" fontWeight="medium">
-                          {user.name}
-                        </Text>
-                        <Text color="gray.400" fontSize="xs">
-                          {user.email}
-                        </Text>
-                      </VStack>
+                {pointStats.topPerformers.length > 0 ? (
+                  pointStats.topPerformers.slice(0, 5).map((user: UserWithPoints, index: number) => (
+                    <HStack key={user.id} justify="space-between" p={2} bg="gray.700" borderRadius="md">
+                      <HStack spacing={3}>
+                        <Badge colorScheme="yellow" fontSize="xs">#{index + 1}</Badge>
+                        <VStack align="start" spacing={0}>
+                          <Text color="white" fontSize="sm" fontWeight="medium">
+                            {user.name}
+                          </Text>
+                          <Text color="gray.400" fontSize="xs">
+                            {user.email}
+                          </Text>
+                        </VStack>
+                      </HStack>
+                      <Badge colorScheme="green" fontSize="sm">
+                        {user.points} pts
+                      </Badge>
                     </HStack>
-                    <Badge colorScheme="green" fontSize="sm">
-                      {user.points} pts
-                    </Badge>
-                  </HStack>
-                ))}
+                  ))
+                ) : (
+                  <Text color="gray.400" fontSize="sm">No top performers yet.</Text>
+                )}
               </VStack>
               
               <VStack spacing={3} align="stretch">
@@ -512,10 +479,10 @@ const AdminDashboardPage: React.FC = () => {
                   <HStack justify="space-between" p={2} bg="gray.700" borderRadius="md">
                     <Text color="gray.400" fontSize="sm">Profile Requests</Text>
                     <Badge colorScheme="orange" fontSize="sm">
-                      {profileRequests.length}
+                      {profileRequests.filter(r => r.status === 'PENDING').length}
                     </Badge>
                   </HStack>
-                                      <HStack justify="space-between" p={2} bg="gray.700" borderRadius="md">
+                  <HStack justify="space-between" p={2} bg="gray.700" borderRadius="md">
                       <Text color="gray.400" fontSize="sm">Active Events</Text>
                       <Badge colorScheme="blue" fontSize="sm">
                         {events.filter((e: any) => new Date(e.date) > new Date()).length}
@@ -585,7 +552,7 @@ const AdminDashboardPage: React.FC = () => {
                 Alerts & Notifications
               </Heading>
               
-                              <VStack spacing={3} align="stretch">
+              <VStack spacing={3} align="stretch">
                   {systemStats.pendingCertifications > 0 && (
                     <HStack spacing={3} p={3} bg="yellow.900" borderRadius="md">
                       <Icon as={FiAlertCircle} color="yellow.500" boxSize={5} />
@@ -646,4 +613,4 @@ const AdminDashboardPage: React.FC = () => {
   );
 };
 
-export default AdminDashboardPage; 
+export default AdminDashboardPage;

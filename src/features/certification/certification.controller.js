@@ -12,12 +12,10 @@ async function uploadCertification(req, res, next) {
     const fileUrl = `/uploads/certifications/${req.file.filename}`;
     const submission = await certificationService.uploadCertification(req.user.userId, eventId, fileUrl);
     
-    // Remove certification deadline reminder notification (don't fail if this fails)
     try {
       await notificationService.deleteNotificationByEventId(req.user.userId, eventId, 'CERTIFICATION_REMINDER');
     } catch (notificationError) {
       console.error('Failed to delete notification:', notificationError);
-      // Continue execution even if notification deletion fails
     }
     
     res.status(201).json({ message: 'Certification uploaded', submission });
@@ -55,4 +53,4 @@ async function verifyCertification(req, res, next) {
   }
 }
 
-module.exports = { uploadCertification, getPendingCertifications, getUserCertifications, verifyCertification }; 
+module.exports = { uploadCertification, getPendingCertifications, getUserCertifications, verifyCertification };

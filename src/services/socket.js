@@ -10,16 +10,11 @@ const initSocket = (server) => {
     });
 
     io.on('connection', (socket) => {
-        console.log('User connected:', socket.id);
-
         socket.on('join', (userId) => {
-            socket.join(`user-${userId}`);
-            console.log(`User ${userId} joined their personal room`);
+            socket.join(`user-${userId}`); // Standardized room name
         });
 
-        socket.on('disconnect', () => {
-            console.log('User disconnected:', socket.id);
-        });
+        socket.on('disconnect', () => {});
     });
 
     return io;
@@ -37,7 +32,7 @@ const emitToUser = (userId, event, data) => {
         console.error('Socket.io not initialized');
         return;
     }
-    io.to(`user-${userId}`).emit(event, data);
+    io.to(`user-${userId}`).emit(event, data); // Standardized room name
 };
 
 module.exports = {

@@ -1,8 +1,6 @@
 const { z } = require('zod');
 
-// Enhanced validation schemas
 const validationSchemas = {
-  // User validation
   user: {
     login: z.object({
       email: z.string().email('Invalid email format').min(1, 'Email is required'),
@@ -15,69 +13,55 @@ const validationSchemas = {
     })
   },
 
-  // Profile validation
   profile: {
-    update: z.object({
-      name: z.string().min(1, 'Name is required').max(100, 'Name too long').regex(/^[a-zA-Z\s]+$/, 'Name can only contain letters and spaces'),
-      class: z.string().min(1, 'Class is required').max(50, 'Class name too long'),
-      batch: z.string().min(1, 'Batch is required').max(20, 'Batch name too long'),
-      phone: z.string().regex(/^\+?[\d\s\-\(\)]+$/, 'Invalid phone number format').optional(),
-      address: z.string().max(200, 'Address too long').optional(),
-      bio: z.string().max(500, 'Bio too long').optional()
-    }),
+    // This schema is for the 'requestProfileEdit' endpoint
     editRequest: z.object({
-      requestedData: z.object({
-        name: z.string().min(1, 'Name is required').max(100, 'Name too long').optional(),
-        class: z.string().min(1, 'Class is required').max(50, 'Class name too long').optional(),
-        batch: z.string().min(1, 'Batch is required').max(20, 'Batch name too long').optional(),
-        phone: z.string().regex(/^\+?[\d\s\-\(\)]+$/, 'Invalid phone number format').optional(),
-        address: z.string().max(200, 'Address too long').optional(),
-        bio: z.string().max(500, 'Bio too long').optional()
-      }).refine(data => Object.keys(data).length > 0, 'At least one field must be provided')
-    })
+      name: z.string().min(1, 'Full name is required').max(100, 'Name too long').optional(),
+      degree: z.string().min(1, 'Degree is required').max(50, 'Degree too long').optional(),
+      class: z.string().min(1, 'Class is required').max(50, 'Class name too long').optional(),
+      status: z.string().min(1, 'Status is required').max(20, 'Status too long').optional(),
+      transport: z.string().max(50, 'Transport info too long').optional(),
+      hostelInfo: z.string().max(200, 'Hostel info too long').optional(),
+    }).refine(data => Object.keys(data).length > 0, 'At least one field must be provided for edit request')
   },
 
-  // Event validation
   event: {
     create: z.object({
       name: z.string().min(1, 'Event name is required').max(100, 'Event name too long'),
       type: z.enum(['WORKSHOP', 'HACKATHON'], { message: 'Event type must be WORKSHOP or HACKATHON' }),
-      date: z.string().datetime('Invalid date format').or(z.date()),
+      date: z.string().datetime('Invalid date format'),
       organizer: z.string().min(1, 'Organizer is required').max(100, 'Organizer name too long'),
-      url: z.string().url('Invalid URL format').optional(),
-      link: z.string().url('Invalid URL format').optional(),
-      certificationDeadline: z.string().datetime('Invalid date format').optional().or(z.date().optional())
+      url: z.string().url('Invalid URL format').optional().or(z.literal('')),
+      link: z.string().url('Invalid URL format').optional().or(z.literal('')),
+      certificationDeadline: z.string().datetime('Invalid date format').optional().or(z.literal(''))
     }),
     participate: z.object({
       eventId: z.string().uuid('Invalid event ID format')
     })
   },
 
-  // Certification validation
   certification: {
     upload: z.object({
       eventId: z.string().uuid('Invalid event ID format'),
-      certification: z.any().refine(file => file && file.size > 0, 'File is required')
-        .refine(file => file && file.size <= 10 * 1024 * 1024, 'File size must be less than 10MB')
-        .refine(file => file && ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'].includes(file.mimetype), 
-          'File must be PDF or image (JPEG, PNG)')
+      // File validation is primarily handled by Multer and validateFileUpload middleware
+      // Zod schema here is minimal as Multer processes the file before Zod
+      file: z.any().optional() 
     }),
     verify: z.object({
       status: z.enum(['APPROVED', 'REJECTED'], { message: 'Status must be APPROVED or REJECTED' })
     })
   },
 
-  // Coding stats validation
   codingStats: {
     leetcode: z.object({
       url: z.string().url('Invalid LeetCode URL').regex(/leetcode\.com/, 'Must be a LeetCode URL')
     }),
     hackerrank: z.object({
-      url: z.string().url('Invalid HackerRank URL').regex(/hackerrank\.com/, 'Must be a HackerRank URL')
+      url: z.string().url('Invalid HackerRank URL').regex(/hackerrank\.com/, 'Must be a HackerRank URL'),
+      manualCount: z.number().int().min(0, 'Problems solved must be non-negative').optional()
     })
   },
 
-  // Points validation
   points: {
     updateUsers: z.object({
       userIds: z.array(z.string().uuid('Invalid user ID format')).min(1, 'At least one user ID is required'),
@@ -94,7 +78,6 @@ const validationSchemas = {
     })
   },
 
-  // Eligibility validation
   eligibility: {
     assignBatch: z.object({
       userId: z.string().uuid('Invalid user ID format'),
@@ -103,7 +86,6 @@ const validationSchemas = {
     })
   },
 
-  // Admin validation
   admin: {
     approveRequest: z.object({
       status: z.enum(['APPROVED', 'REJECTED'], { message: 'Status must be APPROVED or REJECTED' }),
@@ -116,18 +98,18 @@ const validationSchemas = {
     })
   },
 
-  // Notification validation
   notification: {
     create: z.object({
       title: z.string().min(1, 'Title is required').max(100, 'Title too long'),
       message: z.string().min(1, 'Message is required').max(500, 'Message too long'),
-      type: z.enum(['INFO', 'SUCCESS', 'WARNING', 'ERROR'], { message: 'Invalid notification type' }),
-      userId: z.string().uuid('Invalid user ID format').optional()
+      type: z.enum(['INFO', 'SUCCESS', 'WARNING', 'ERROR', 'CERTIFICATION_REMINDER', 'POINTS_UPDATE', 'POINTS_RESET'], { message: 'Invalid notification type' }),
+      userId: z.string().uuid('Invalid user ID format').optional(),
+      eventId: z.string().uuid('Invalid event ID format').optional(),
+      deadline: z.string().datetime('Invalid deadline format').optional(),
     })
   }
 };
 
-// Input sanitization function
 const sanitizeInput = (data) => {
   if (typeof data === 'string') {
     return data.trim().replace(/[<>]/g, '');
@@ -142,16 +124,13 @@ const sanitizeInput = (data) => {
   return data;
 };
 
-// Enhanced validation middleware
 const validate = (schemaPath) => {
   return (req, res, next) => {
     try {
-      // Sanitize input
       const sanitizedBody = sanitizeInput(req.body);
       const sanitizedQuery = sanitizeInput(req.query);
       const sanitizedParams = sanitizeInput(req.params);
 
-      // Get schema
       const schemaKeys = schemaPath.split('.');
       let schema = validationSchemas;
       for (const key of schemaKeys) {
@@ -161,7 +140,6 @@ const validate = (schemaPath) => {
         }
       }
 
-      // Validate request data
       const dataToValidate = {
         ...sanitizedBody,
         ...sanitizedQuery,
@@ -170,7 +148,6 @@ const validate = (schemaPath) => {
 
       const validatedData = schema.parse(dataToValidate);
 
-      // Replace request data with validated data
       req.body = { ...req.body, ...validatedData };
       req.query = { ...req.query, ...validatedData };
       req.params = { ...req.params, ...validatedData };
@@ -197,7 +174,6 @@ const validate = (schemaPath) => {
   };
 };
 
-// Custom validation for file uploads
 const validateFileUpload = (fieldName, maxSize = 10 * 1024 * 1024, allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']) => {
   return (req, res, next) => {
     try {
@@ -208,7 +184,6 @@ const validateFileUpload = (fieldName, maxSize = 10 * 1024 * 1024, allowedTypes 
         });
       }
 
-      // Check file size
       if (req.file.size > maxSize) {
         return res.status(400).json({
           error: 'File too large',
@@ -216,7 +191,6 @@ const validateFileUpload = (fieldName, maxSize = 10 * 1024 * 1024, allowedTypes 
         });
       }
 
-      // Check file type
       if (!allowedTypes.includes(req.file.mimetype)) {
         return res.status(400).json({
           error: 'Invalid file type',
@@ -238,4 +212,4 @@ module.exports = {
   validate,
   validateFileUpload,
   validationSchemas
-}; 
+};

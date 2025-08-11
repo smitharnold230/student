@@ -48,17 +48,24 @@ import { AxiosProgressEvent } from 'axios';
 interface Certification {
   id: string;
   eventId: string;
-  eventName: string;
   fileUrl: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
-  submittedAt: string;
-  verifiedAt?: string;
-  verifiedBy?: string;
-}
-
-interface UploadCertificationData {
-  eventId: string;
-  file: File | null;
+  createdAt: string; // Renamed from submittedAt for consistency
+  updatedAt: string; // Added for consistency
+  verifiedById?: string; // Added for consistency
+  // For admin view, these come from includes
+  Profile?: {
+    name: string;
+    class: string;
+    batch: string;
+    userId: string;
+    User?: {
+      email: string;
+    };
+  };
+  Event?: {
+    name: string;
+  };
 }
 
 interface Event {
@@ -76,8 +83,9 @@ const uploadCertificationSchema = z.object({
   eventId: z.string().min(1, 'Event is required'),
   file: z
     .any()
-    .refine((file) => file instanceof File && file.type === 'application/pdf', 'PDF file is required')
-    .refine((file) => !file || (file && file.size <= 10 * 1024 * 1024), 'File must be less than 10MB'),
+    .refine((file) => file instanceof File, 'File is required')
+    .refine((file) => file && file.type === 'application/pdf', 'Only PDF files are allowed')
+    .refine((file) => file && file.size <= 10 * 1024 * 1024, 'File must be less than 10MB'),
 });
 
 type UploadCertificationForm = z.infer<typeof uploadCertificationSchema>;
@@ -87,10 +95,6 @@ const CertificationsPage: React.FC = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [uploadData, setUploadData] = useState<UploadCertificationData>({
-    eventId: '',
-    file: null,
-  });
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   
   const cardBg = useColorModeValue('gray.800', 'gray.900');
@@ -110,14 +114,10 @@ const CertificationsPage: React.FC = () => {
   const events: Event[] = eventsResponse?.data || [];
 
   const uploadCertificationMutation = useMutation({
-    mutationFn: (data: UploadCertificationData) => {
+    mutationFn: (data: UploadCertificationForm) => {
       if (!data.file) {
         throw new Error('Please select a file');
       }
-      // Use FormData and axios for progress
-      const formData = new FormData();
-      formData.append('eventId', data.eventId);
-      formData.append('file', data.file);
       return certificationAPI.upload(data.eventId, data.file, (progressEvent: AxiosProgressEvent) => {
         if (progressEvent.total) {
           setUploadProgress(Math.round((progressEvent.loaded * 100) / progressEvent.total));
@@ -134,7 +134,6 @@ const CertificationsPage: React.FC = () => {
       });
       queryClient.invalidateQueries({ queryKey: ['certifications'] });
       onClose();
-      setUploadData({ eventId: '', file: null });
       reset();
     },
     onError: (error: any) => {
@@ -324,6 +323,7 @@ const CertificationsPage: React.FC = () => {
                 <Thead>
                   <Tr>
                     <Th color="gray.400">Event</Th>
+                    {user?.role === 'ADMIN' && <Th color="gray.400">Student</Th>}
                     <Th color="gray.400">File</Th>
                     <Th color="gray.400">Status</Th>
                     <Th color="gray.400">Submitted</Th>
@@ -333,7 +333,19 @@ const CertificationsPage: React.FC = () => {
                 <Tbody>
                   {certifications.map((cert) => (
                     <Tr key={cert.id}>
-                      <Td color="white">{cert.eventName}</Td>
+                      <Td color="white">{cert.Event?.name || 'N/A'}</Td>
+                      {user?.role === 'ADMIN' && (
+                        <Td>
+                          <VStack align="start" spacing={0}>
+                            <Text color="white" fontWeight="medium">
+                              {cert.Profile?.name || 'N/A'}
+                            </Text>
+                            <Text color="gray.400" fontSize="xs">
+                              {cert.Profile?.User?.email || 'N/A'}
+                            </Text>
+                          </VStack>
+                        </Td>
+                      )}
                       <Td>
                         <Button
                           size="xs"
@@ -354,7 +366,7 @@ const CertificationsPage: React.FC = () => {
                         </Badge>
                       </Td>
                       <Td color="gray.300" fontSize="sm">
-                        {formatDate(cert.submittedAt)}
+                        {formatDate(cert.createdAt)}
                       </Td>
                       {user?.role === 'ADMIN' && cert.status === 'PENDING' && (
                         <Td>
@@ -409,7 +421,7 @@ const CertificationsPage: React.FC = () => {
           <ModalHeader color="white">Upload Certification</ModalHeader>
           <ModalCloseButton color="white" />
           <ModalBody>
-            <VStack spacing={4} as="form" id="form" onSubmit={handleSubmit(handleUpload)}>
+            <VStack spacing={4} as="form" id="upload-cert-form" onSubmit={handleSubmit(handleUpload)}>
               <FormControl isInvalid={!!errors.eventId} isRequired>
                 <FormLabel color="gray.300">Event</FormLabel>
                 <Select
@@ -480,7 +492,7 @@ const CertificationsPage: React.FC = () => {
             <Button
               colorScheme="brand"
               type="submit"
-              form="form"
+              form="upload-cert-form"
               isLoading={uploadCertificationMutation.isPending}
               isDisabled={uploadCertificationMutation.isPending || uploadProgress > 0}
             >
@@ -493,4 +505,4 @@ const CertificationsPage: React.FC = () => {
   );
 };
 
-export default CertificationsPage; 
+export default CertificationsPage;

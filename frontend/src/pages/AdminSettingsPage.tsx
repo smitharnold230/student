@@ -16,12 +16,14 @@ import {
   Grid,
   GridItem,
   Icon,
+  Skeleton,
 } from '@chakra-ui/react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FiSettings, FiSave, FiAward, FiTrendingUp, FiUsers } from 'react-icons/fi';
 import { adminAPI } from '../services/api';
 
 interface PointRule {
+  id: string;
   key: string;
   value: number;
   description: string;
@@ -33,13 +35,18 @@ const AdminSettingsPage: React.FC = () => {
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
 
-  const [pointRules, setPointRules] = useState<PointRule[]>([
-    { key: 'WORKSHOP_PARTICIPATION', value: 50, description: 'Points for workshop participation' },
-    { key: 'HACKATHON_PARTICIPATION', value: 100, description: 'Points for hackathon participation' },
-    { key: 'CERTIFICATION_APPROVED', value: 75, description: 'Points for approved certification' },
-    { key: 'LEETCODE_SUBMISSION', value: 25, description: 'Points for LeetCode submission' },
-    { key: 'HACKERRANK_SUBMISSION', value: 25, description: 'Points for HackerRank submission' },
-  ]);
+  const { data: rulesResponse, isLoading: rulesLoading } = useQuery({
+    queryKey: ['pointRules'],
+    queryFn: () => adminAPI.getPointRules(),
+  });
+
+  const [pointRules, setPointRules] = useState<PointRule[]>([]);
+
+  React.useEffect(() => {
+    if (rulesResponse?.data) {
+      setPointRules(rulesResponse.data);
+    }
+  }, [rulesResponse]);
 
   const updatePointRuleMutation = useMutation({
     mutationFn: (rule: PointRule) => adminAPI.updatePointRule(rule.key, rule.value, rule.description),
@@ -50,6 +57,7 @@ const AdminSettingsPage: React.FC = () => {
         status: 'success',
         duration: 3000,
       });
+      queryClient.invalidateQueries({ queryKey: ['pointRules'] });
       queryClient.invalidateQueries({ queryKey: ['systemStats'] });
     },
     onError: (error: any) => {
@@ -72,6 +80,30 @@ const AdminSettingsPage: React.FC = () => {
     setPointRules(updatedRules);
   };
 
+  if (rulesLoading) {
+    return (
+      <VStack spacing={6} align="stretch">
+        <Box>
+          <Heading size="lg" color="white" mb={2}>
+            System Settings
+          </Heading>
+          <Text color="gray.400">
+            Configure point rules and system parameters
+          </Text>
+        </Box>
+        <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
+          <CardBody>
+            <VStack spacing={4}>
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} height="100px" w="full" />
+              ))}
+            </VStack>
+          </CardBody>
+        </Card>
+      </VStack>
+    );
+  }
+
   return (
     <VStack spacing={6} align="stretch">
       <Box>
@@ -79,7 +111,7 @@ const AdminSettingsPage: React.FC = () => {
           System Settings
         </Heading>
         <Text color="gray.400">
-          Configure point rules and system parameters
+          Configure point values for different activities and achievements
         </Text>
       </Box>
 
@@ -136,70 +168,7 @@ const AdminSettingsPage: React.FC = () => {
         </CardBody>
       </Card>
 
-      {/* System Information */}
-      <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={6}>
-        <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
-          <CardBody>
-            <VStack spacing={4} align="stretch">
-              <HStack>
-                <Icon as={FiSettings} color="blue.500" boxSize={6} />
-                <Heading size="md" color="white">
-                  System Information
-                </Heading>
-              </HStack>
-              
-              <VStack spacing={3} align="stretch">
-                <Box>
-                  <Text color="gray.400" fontSize="sm">API Version</Text>
-                  <Text color="white" fontSize="md">v1.0.0</Text>
-                </Box>
-                
-                <Box>
-                  <Text color="gray.400" fontSize="sm">Database Status</Text>
-                  <Text color="green.400" fontSize="md">Connected</Text>
-                </Box>
-                
-                <Box>
-                  <Text color="gray.400" fontSize="sm">Last Backup</Text>
-                  <Text color="white" fontSize="md">2 hours ago</Text>
-                </Box>
-              </VStack>
-            </VStack>
-          </CardBody>
-        </Card>
-
-        <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
-          <CardBody>
-            <VStack spacing={4} align="stretch">
-              <HStack>
-                <Icon as={FiTrendingUp} color="green.500" boxSize={6} />
-                <Heading size="md" color="white">
-                  Performance Metrics
-                </Heading>
-              </HStack>
-              
-              <VStack spacing={3} align="stretch">
-                <Box>
-                  <Text color="gray.400" fontSize="sm">Average Response Time</Text>
-                  <Text color="white" fontSize="md">125ms</Text>
-                </Box>
-                
-                <Box>
-                  <Text color="gray.400" fontSize="sm">Uptime</Text>
-                  <Text color="green.400" fontSize="md">99.9%</Text>
-                </Box>
-                
-                <Box>
-                  <Text color="gray.400" fontSize="sm">Active Sessions</Text>
-                  <Text color="white" fontSize="md">23</Text>
-                </Box>
-              </VStack>
-            </VStack>
-          </CardBody>
-        </Card>
-      </Grid>
-
-      {/* Quick Actions */}
+      {/* Quick Actions - Placeholder for future admin actions */}
       <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
         <CardBody>
           <VStack spacing={4} align="stretch">
@@ -218,6 +187,7 @@ const AdminSettingsPage: React.FC = () => {
                 h="auto"
                 p={4}
                 flexDirection="column"
+                isDisabled // Placeholder, not yet implemented
               >
                 <Text fontSize="sm" fontWeight="bold">
                   Backup Database
@@ -234,6 +204,7 @@ const AdminSettingsPage: React.FC = () => {
                 h="auto"
                 p={4}
                 flexDirection="column"
+                isDisabled // Placeholder, not yet implemented
               >
                 <Text fontSize="sm" fontWeight="bold">
                   Clear Cache
@@ -250,6 +221,7 @@ const AdminSettingsPage: React.FC = () => {
                 h="auto"
                 p={4}
                 flexDirection="column"
+                isDisabled // Placeholder, not yet implemented
               >
                 <Text fontSize="sm" fontWeight="bold">
                   System Health Check
@@ -266,6 +238,7 @@ const AdminSettingsPage: React.FC = () => {
                 h="auto"
                 p={4}
                 flexDirection="column"
+                isDisabled // Placeholder, not yet implemented
               >
                 <Text fontSize="sm" fontWeight="bold">
                   Update System
@@ -282,4 +255,4 @@ const AdminSettingsPage: React.FC = () => {
   );
 };
 
-export default AdminSettingsPage; 
+export default AdminSettingsPage;

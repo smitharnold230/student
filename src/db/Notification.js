@@ -16,7 +16,7 @@ const Notification = sequelize.define('Notification', {
   message: DataTypes.STRING,
   eventId: DataTypes.UUID,
   deadline: DataTypes.DATE,
-  read: {
+  read: { // Standardized to 'read'
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
@@ -25,4 +25,4 @@ const Notification = sequelize.define('Notification', {
   timestamps: true,
 });
 
-module.exports = Notification; 
+module.exports = Notification;

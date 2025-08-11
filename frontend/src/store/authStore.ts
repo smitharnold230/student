@@ -22,10 +22,7 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       isAuthenticated: false,
       login: (user: User, token: string) => {
-        const SocketService = require('../services/socket').default;
-        const socketService = SocketService.getInstance();
-        socketService.connect(user.id);
-        
+        // Socket connection is now handled by useNotifications hook
         set({
           user,
           token,
@@ -33,10 +30,7 @@ export const useAuthStore = create<AuthState>()(
         });
       },
       logout: () => {
-        const SocketService = require('../services/socket').default;
-        const socketService = SocketService.getInstance();
-        socketService.disconnect();
-        
+        // Socket disconnection is now handled by useNotifications hook
         set({
           user: null,
           token: null,
@@ -48,4 +42,4 @@ export const useAuthStore = create<AuthState>()(
       name: 'auth-storage',
     }
   )
-); 
+);

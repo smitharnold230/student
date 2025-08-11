@@ -5,7 +5,6 @@ const User = require('../../db/User');
 async function getProfileByUserId(userId) {
   let profile = await Profile.findOne({ where: { userId } });
   
-  // Create profile if it doesn't exist
   if (!profile) {
     profile = await Profile.create({
       userId,
@@ -15,7 +14,7 @@ async function getProfileByUserId(userId) {
       status: 'ACTIVE',
       transport: 'Not specified',
       hostelInfo: 'Not specified',
-      batch: 'Not specified'
+      batch: null, // Allow batch to be null initially
     });
   }
   
@@ -38,20 +37,23 @@ async function getPendingProfileRequests() {
   const tickets = await Ticket.findAll({
     where: { status: 'PENDING' },
     order: [['createdAt', 'DESC']],
+    include: [{
+      model: User,
+      attributes: ['email']
+    }]
   });
   
-  // Get user data for each ticket
-  const ticketsWithUsers = await Promise.all(
-    tickets.map(async (ticket) => {
-      const user = await User.findByPk(ticket.userId);
-      return {
-        ...ticket.toJSON(),
-        user: user ? { email: user.email, name: user.name } : null,
-      };
-    })
-  );
-  
-  return ticketsWithUsers;
+  return tickets.map(ticket => ({
+    id: ticket.id,
+    userId: ticket.userId,
+    userEmail: ticket.User?.email || 'Unknown',
+    userName: ticket.requestedData.name || 'Unknown', // Use requested name if available
+    requestedData: ticket.requestedData,
+    status: ticket.status,
+    createdAt: ticket.createdAt,
+    updatedAt: ticket.updatedAt,
+    adminNote: ticket.adminNote,
+  }));
 }
 
 async function getAllStudents() {
@@ -86,4 +88,4 @@ module.exports = {
   updateProfileByUserId,
   getPendingProfileRequests,
   getAllStudents
-}; 
+};

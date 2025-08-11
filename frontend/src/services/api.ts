@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
-import { io as socketIOClient, Socket } from 'socket.io-client';
 import { AxiosProgressEvent } from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
@@ -37,12 +36,6 @@ api.interceptors.response.use(
   }
 );
 
-const SOCKET_URL = API_BASE_URL.replace(/\/api$/, '');
-export const socket: Socket = socketIOClient(SOCKET_URL, {
-  autoConnect: false,
-  transports: ['websocket'],
-});
-
 // API endpoints
 export const authAPI = {
   login: (email: string, password: string) =>
@@ -67,7 +60,6 @@ export const eventAPI = {
   getEvents: () => api.get('/event'),
   participate: (eventId: string) => api.post('/event/participate', { eventId }),
   createEvent: (data: any) => {
-    console.log('Sending event data to API:', data);
     return api.post('/event', data);
   },
   acceptEvent: (eventId: string) => api.post('/event/accept', { eventId }),
@@ -77,7 +69,7 @@ export const eventAPI = {
 export const codingStatsAPI = {
   getStats: () => api.get('/coding-stats'),
   submitLeetCode: (url: string) => api.post('/coding-stats/leetcode', { url }),
-  submitHackerRank: (url: string) => api.post('/coding-stats/hackerrank', { url }),
+  submitHackerRank: (url: string, manualCount: number) => api.post('/coding-stats/hackerrank', { url, manualCount }),
 };
 
 export const certificationAPI = {
@@ -114,9 +106,7 @@ export const notificationAPI = {
 export const adminAPI = {
   getLogs: (params?: any) => api.get('/admin/logs', { params }),
   exportStudents: () => api.get('/admin/export-students'),
-  exportLogs: () => api.get('/admin/export-logs'),
   getSystemStats: () => api.get('/admin/stats'),
-  getRecentActivity: () => api.get('/admin/recent-activity'),
   getPointRules: () => api.get('/admin/point-rules'),
   updatePointRule: (key: string, value: number, description: string) =>
     api.post('/admin/point-rules', { key, value, description }),
@@ -141,4 +131,4 @@ export const pointsAPI = {
     api.post('/points/update-users', { userIds, pointsToAdd, reason }),
   resetUserPoints: (userIds: string[], reason: string) =>
     api.post('/points/reset-users', { userIds, reason }),
-}; 
+};

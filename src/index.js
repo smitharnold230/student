@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-const { generalLimiter } = require('./middleware/rateLimiter');
 const http = require('http');
 const { Server } = require('socket.io');
 
@@ -14,15 +13,18 @@ app.use(express.json());
 app.use(morgan('dev'));
 app.use('/uploads', express.static('uploads'));
 
-// Apply rate limiting to all routes
-app.use(generalLimiter);
-
+const { generalLimiter, authLimiter, uploadLimiter, adminLimiter, pointsLimiter } = require('./middleware/rateLimiter');
 const apiLogger = require('./middleware/apiLogger');
+
+// Apply general rate limiting to all routes
+app.use(generalLimiter);
 app.use(apiLogger);
 
 const sequelize = require('./db/sequelize');
 // Import models to set up associations
 require('./db/models');
+
+// Import routes
 const userRoutes = require('./features/user/user.routes');
 const profileRoutes = require('./features/profile/profile.routes');
 const eventRoutes = require('./features/event/event.routes');
@@ -34,13 +36,6 @@ const leaderboardRoutes = require('./features/leaderboard/leaderboard.routes');
 const adminRoutes = require('./features/admin/admin.routes');
 const eligibilityRoutes = require('./features/eligibility/eligibility.routes');
 const pointsRoutes = require('./features/points/points.routes');
-const { authenticateToken, requireRole } = require('./middleware/auth');
-
-// Remove old authRoutes import and usage
-// const authRoutes = require('./routes/auth');
-// app.use('/api/auth', authRoutes);
-
-const { authLimiter, uploadLimiter, adminLimiter, pointsLimiter } = require('./middleware/rateLimiter');
 
 // Apply specific rate limiters to different route groups
 app.use('/api/user', authLimiter, userRoutes);
@@ -60,54 +55,6 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'SDMS backend is running.' });
 });
 
-// Test database connection
-app.get('/api/test-db', async (req, res) => {
-  try {
-    const Event = require('./db/Event');
-    const Submission = require('./db/Submission');
-    const Profile = require('./db/Profile');
-    
-    const eventCount = await Event.count();
-    const submissionCount = await Submission.count();
-    const profileCount = await Profile.count();
-    
-    // Test table structure
-    const sequelize = Event.sequelize;
-    const [eventResults] = await sequelize.query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'events'");
-    const [submissionResults] = await sequelize.query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'submissions'");
-    const [profileResults] = await sequelize.query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'profiles'");
-    
-    res.json({ 
-      status: 'ok', 
-      message: 'Database connection working', 
-      eventCount,
-      submissionCount,
-      profileCount,
-      eventStructure: eventResults,
-      submissionStructure: submissionResults,
-      profileStructure: profileResults
-    });
-  } catch (error) {
-    console.error('Database test error:', error);
-    res.status(500).json({ status: 'error', message: 'Database connection failed', error: error.message });
-  }
-});
-
-// Test body parser
-app.post('/api/test-body', (req, res) => {
-  console.log('Test body endpoint hit');
-  console.log('Request body:', req.body);
-  console.log('Content-Type:', req.headers['content-type']);
-  res.json({ 
-    status: 'ok', 
-    message: 'Body parser working', 
-    receivedBody: req.body,
-    contentType: req.headers['content-type']
-  });
-});
-
-// TODO: Import and use routes here
-
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -121,11 +68,11 @@ const io = new Server(server, {
 const socketService = require('./services/socket');
 socketService.initSocket(io);
 
-// Make io available throughout the app
+// Make io available throughout the app (though direct usage of socketService is preferred)
 app.set('io', io);
 
 // Sync Sequelize models and then start server
-sequelize.sync({ force: false, alter: true }).then(async () => {
+sequelize.sync({ alter: true }).then(async () => {
   console.log('Database synced successfully with alterations');
   
   // Run database migrations
@@ -139,15 +86,6 @@ sequelize.sync({ force: false, alter: true }).then(async () => {
   
   server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-  });
-  io.on('connection', (socket) => {
-    // Join user room by userId if provided
-    socket.on('join', (userId) => {
-      if (userId) {
-        socket.join(`user_${userId}`);
-      }
-    });
-    socket.on('disconnect', () => {});
   });
 }).catch((err) => {
   console.error('Failed to sync database:', err);

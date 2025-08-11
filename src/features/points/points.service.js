@@ -6,7 +6,6 @@ const EventParticipation = require('../../db/EventParticipation');
 const CodingStat = require('../../db/CodingStat');
 const Submission = require('../../db/Submission');
 
-// Default point rules if none exist in database
 const DEFAULT_POINT_RULES = {
   WORKSHOP_PARTICIPATION: { value: 50, description: 'Points for workshop participation' },
   HACKATHON_PARTICIPATION: { value: 100, description: 'Points for hackathon participation' },
@@ -20,9 +19,6 @@ const DEFAULT_POINT_RULES = {
   CERTIFICATION_STREAK_BONUS: { value: 20, description: 'Bonus for consecutive approved certifications' },
 };
 
-// Progression thresholds
-// Removed progression thresholds - only using batches now
-
 /**
  * Get point rules from database or use defaults
  */
@@ -30,7 +26,6 @@ async function getPointRules() {
   try {
     const rules = await PointRule.findAll();
     if (rules.length === 0) {
-      // Initialize default rules if none exist
       const defaultRules = Object.entries(DEFAULT_POINT_RULES).map(([key, rule]) => ({
         key,
         value: rule.value,
@@ -136,11 +131,8 @@ async function calculateUserPoints(userId) {
     for (const stat of codingStats) {
       let platformPoints = 0;
 
-      if (stat.platform === 'LeetCode') {
-        // Base points for LeetCode submission
+      if (stat.platform === 'LEETCODE') {
         platformPoints += rulesMap.LEETCODE_SUBMISSION || 25;
-
-        // Bonus points for problems solved (5 points per 50 problems)
         const problemBonus = Math.floor(stat.problemsSolved / 50) * (rulesMap.LEETCODE_PROBLEMS_BONUS || 5);
         platformPoints += problemBonus;
 
@@ -150,11 +142,8 @@ async function calculateUserPoints(userId) {
           bonusPoints: problemBonus,
           totalPoints: platformPoints
         };
-      } else if (stat.platform === 'HackerRank') {
-        // Base points for HackerRank submission
+      } else if (stat.platform === 'HACKERRANK') {
         platformPoints += rulesMap.HACKERRANK_SUBMISSION || 25;
-
-        // Bonus points for problems solved (3 points per 50 problems)
         const problemBonus = Math.floor(stat.problemsSolved / 50) * (rulesMap.HACKERRANK_PROBLEMS_BONUS || 3);
         platformPoints += problemBonus;
 
@@ -179,21 +168,18 @@ async function calculateUserPoints(userId) {
     let bonusPoints = 0;
     const bonusBreakdown = {};
 
-    // First workshop bonus
     if (workshopParticipations.length === 1) {
       const firstWorkshopBonus = rulesMap.FIRST_WORKSHOP_BONUS || 25;
       bonusPoints += firstWorkshopBonus;
       bonusBreakdown.firstWorkshop = firstWorkshopBonus;
     }
 
-    // First hackathon bonus
     if (hackathonParticipations.length === 1) {
       const firstHackathonBonus = rulesMap.FIRST_HACKATHON_BONUS || 50;
       bonusPoints += firstHackathonBonus;
       bonusBreakdown.firstHackathon = firstHackathonBonus;
     }
 
-    // Certification streak bonus (consecutive approved certifications)
     if (approvedCertifications.length >= 2) {
       const streakBonus = rulesMap.CERTIFICATION_STREAK_BONUS || 20;
       bonusPoints += streakBonus;
@@ -206,10 +192,9 @@ async function calculateUserPoints(userId) {
       breakdown: bonusBreakdown
     };
 
-          // 6. Get manual adjustments (admin bonus/penalty points)
-      const currentPointRecord = await Point.findOne({ where: { profileId: profile.id } });
-      const manualAdjustment = currentPointRecord?.manualAdjustment || 0;
-      totalPoints += manualAdjustment;
+    const currentPointRecord = await Point.findOne({ where: { profileId: profile.id } });
+    const manualAdjustment = currentPointRecord?.manualAdjustment || 0;
+    totalPoints += manualAdjustment;
 
     return {
       totalPoints,
@@ -230,15 +215,13 @@ async function updateUserPoints(userId) {
   try {
     const pointCalculation = await calculateUserPoints(userId);
 
-    // Get current manual adjustment
     const currentPointRecord = await Point.findOne({ where: { profileId: pointCalculation.profileId } });
     const currentManualAdjustment = currentPointRecord?.manualAdjustment || 0;
 
-    // Upsert points record, preserving manual adjustments
     const [pointRecord, created] = await Point.upsert({
       profileId: pointCalculation.profileId,
       value: pointCalculation.totalPoints,
-      manualAdjustment: currentManualAdjustment, // Preserve manual adjustments
+      manualAdjustment: currentManualAdjustment,
     }, {
       where: { profileId: pointCalculation.profileId }
     });
@@ -279,11 +262,6 @@ async function updateAllUserPoints() {
 }
 
 /**
- * Get progression level based on total points
- */
-// Removed progression level function - only using batches now
-
-/**
  * Get point statistics for admin dashboard
  */
 async function getPointStatistics() {
@@ -299,7 +277,6 @@ async function getPointStatistics() {
     const totalPoints = allPoints.reduce((sum, point) => sum + point.value, 0);
     const averagePoints = totalUsers > 0 ? Math.round(totalPoints / totalUsers) : 0;
 
-    // Top performers
     const topPerformers = allPoints
       .sort((a, b) => b.value - a.value)
       .slice(0, 10)
@@ -367,7 +344,6 @@ async function addPointsForActivity(userId, activityType, activityData = {}) {
         throw new Error(`Unknown activity type: ${activityType}`);
     }
 
-    // Update user points
     await updateUserPoints(userId);
 
     return {
@@ -425,39 +401,33 @@ async function updateUserPointsManually(userIds, pointsToAdd, reason, adminId) {
     const Notification = require('../../db/Notification');
 
     for (const userId of userIds) {
-      // Get current points
       const profile = await Profile.findOne({ where: { userId } });
       if (!profile) {
         results.push({ userId, success: false, error: 'Profile not found' });
         continue;
       }
 
-      // Get current point record
       const currentPointRecord = await Point.findOne({ where: { profileId: profile.id } });
       const currentManualAdjustment = currentPointRecord?.manualAdjustment || 0;
       
-      // Calculate new manual adjustment
       const newManualAdjustment = currentManualAdjustment + pointsToAdd;
       
-      // Calculate total points including the new manual adjustment
       const calculatedPoints = await calculateUserPoints(userId);
-      const basePoints = calculatedPoints.totalPoints - currentManualAdjustment; // Remove old manual adjustment
+      const basePoints = calculatedPoints.totalPoints - currentManualAdjustment;
       const newTotalPoints = basePoints + newManualAdjustment;
 
-      // Update points with the new manual adjustment
       await Point.upsert({
         profileId: profile.id,
         value: newTotalPoints,
         manualAdjustment: newManualAdjustment,
       });
 
-      // Create notification for the user
       await Notification.create({
         userId,
         title: 'Points Updated',
         message: `Your points have been ${pointsToAdd >= 0 ? 'increased' : 'decreased'} by ${Math.abs(pointsToAdd)}. Reason: ${reason}`,
-        type: 'POINTS_UPDATE',
-        isRead: false
+        type: 'INFO', // Changed to INFO as per Notification model
+        read: false
       });
 
       results.push({
@@ -491,24 +461,21 @@ async function resetUserPoints(userIds, reason, adminId) {
         continue;
       }
 
-      // Calculate current points to get the old value
       const calculatedPoints = await calculateUserPoints(userId);
       const oldPoints = calculatedPoints.totalPoints;
 
-      // Reset to 0 (including manual adjustments)
       await Point.upsert({
         profileId: profile.id,
         value: 0,
-        manualAdjustment: 0, // Reset manual adjustments as well
+        manualAdjustment: 0,
       });
 
-      // Create notification
       await Notification.create({
         userId,
         title: 'Points Reset',
         message: `Your points have been reset to 0. Reason: ${reason}`,
-        type: 'POINTS_RESET',
-        isRead: false
+        type: 'INFO', // Changed to INFO as per Notification model
+        read: false
       });
 
       results.push({
@@ -517,7 +484,6 @@ async function resetUserPoints(userIds, reason, adminId) {
         oldPoints,
         newPoints: 0,
         pointsChange: -oldPoints,
-        // Removed progression - only using batches
       });
     }
 
@@ -538,4 +504,4 @@ module.exports = {
   getAllUsersWithPoints,
   updateUserPointsManually,
   resetUserPoints,
-}; 
+};

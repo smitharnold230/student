@@ -11,20 +11,17 @@ export function useNotifications() {
   const queryClient = useQueryClient();
   const toast = useToast();
   const socket = useRef<Socket | null>(null);
-  const { user } = useAuthStore();
+  const { user, token } = useAuthStore(); // Get token from auth store
 
   const handleNewNotification = useCallback((notification: Notification) => {
     try {
-      // Validate notification data
       if (!notification?.title || !notification?.message) {
         console.error('Invalid notification data received:', notification);
         return;
       }
 
-      // Update notifications cache
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
 
-      // Show toast notification
       toast({
         title: notification.title,
         description: notification.message,
@@ -47,61 +44,66 @@ export function useNotifications() {
   }, [queryClient, toast]);
 
   useEffect(() => {
-    if (!user) return; // Only connect if user is authenticated
+    if (!user || !token) {
+      // Disconnect if user logs out or token is gone
+      if (socket.current) {
+        socket.current.disconnect();
+        socket.current = null;
+      }
+      return;
+    }
 
-    try {
-      // Connect to socket
-      socket.current = io(SOCKET_URL, {
-        auth: { token: localStorage.getItem('token') },
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-        timeout: 10000
-      });
+    // Only connect if socket is not already connected or is null
+    if (!socket.current || !socket.current.connected) {
+      try {
+        socket.current = io(SOCKET_URL, {
+          auth: { token: token }, // Use token from Zustand store
+          reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000,
+          timeout: 10000
+        });
 
-      // Socket event handlers
-      socket.current.on('connect', () => {
-        console.log('Socket connected');
-        if (user.id) {
-          socket.current?.emit('join', user.id);
-        }
-      });
+        socket.current.on('connect', () => {
+          if (user.id) {
+            socket.current?.emit('join', user.id); // Standardized room name
+          }
+        });
 
-      socket.current.on('connect_error', (error) => {
-        console.error('Socket connection error:', error);
+        socket.current.on('connect_error', (error) => {
+          console.error('Socket connection error:', error);
+          toast({
+            title: 'Connection Error',
+            description: 'Failed to connect to notification service. Retrying...',
+            status: 'error',
+            duration: 3000,
+            isClosable: true,
+          });
+        });
+
+        socket.current.on('reconnect', (attemptNumber) => {
+          if (user.id) {
+            socket.current?.emit('join', user.id);
+          }
+        });
+
+        socket.current.on('disconnect', (reason) => {
+          console.log('Socket disconnected:', reason);
+        });
+
+        socket.current.on('notification', handleNewNotification);
+      } catch (error) {
+        console.error('Error setting up socket connection:', error);
         toast({
           title: 'Connection Error',
-          description: 'Failed to connect to notification service. Retrying...',
+          description: 'Failed to initialize notification service',
           status: 'error',
           duration: 3000,
           isClosable: true,
         });
-      });
-
-      socket.current.on('reconnect', (attemptNumber) => {
-        console.log(`Socket reconnected after ${attemptNumber} attempts`);
-        if (user.id) {
-          socket.current?.emit('join', user.id);
-        }
-      });
-
-      socket.current.on('disconnect', (reason) => {
-        console.log('Socket disconnected:', reason);
-      });
-
-      socket.current.on('notification', handleNewNotification);
-    } catch (error) {
-      console.error('Error setting up socket connection:', error);
-      toast({
-        title: 'Connection Error',
-        description: 'Failed to initialize notification service',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
+      }
     }
 
-    // Cleanup on unmount
     return () => {
       try {
         if (socket.current) {
@@ -117,7 +119,7 @@ export function useNotifications() {
         console.error('Error during socket cleanup:', error);
       }
     };
-  }, [user, handleNewNotification, toast]);
+  }, [user, token, handleNewNotification, toast]);
 }
 
 function getNotificationStatus(type: Notification['type']): 'info' | 'warning' | 'error' | 'success' {
@@ -129,8 +131,10 @@ function getNotificationStatus(type: Notification['type']): 'info' | 'warning' |
         return 'error';
       case 'SUCCESS':
         return 'success';
-      case 'SYSTEM':
       case 'INFO':
+      case 'CERTIFICATION_REMINDER':
+      case 'POINTS_UPDATE':
+      case 'POINTS_RESET':
       default:
         return 'info';
     }

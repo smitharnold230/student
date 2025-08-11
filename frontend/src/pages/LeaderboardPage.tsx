@@ -19,18 +19,17 @@ import {
   Skeleton,
 } from '@chakra-ui/react';
 import { useQuery } from '@tanstack/react-query';
-import { FiAward, FiTrendingUp, FiBarChart } from 'react-icons/fi';
+import { FiAward, FiTrendingUp } from 'react-icons/fi';
 import { leaderboardAPI } from '../services/api';
 
 interface LeaderboardStudent {
-  id: string;
+  id: string; // Assuming ID is available from profile
   rank: number;
   name: string;
   email: string;
   class: string;
   batch: string;
   points: number;
-  progression: string;
 }
 
 const LeaderboardPage: React.FC = () => {
@@ -42,7 +41,6 @@ const LeaderboardPage: React.FC = () => {
     queryFn: () => leaderboardAPI.getLeaderboard(),
   });
 
-  // Extract data from axios response
   const leaderboard: LeaderboardStudent[] = leaderboardResponse?.data || [];
 
   const getRankIcon = (rank: number) => {
@@ -52,15 +50,17 @@ const LeaderboardPage: React.FC = () => {
     return rank;
   };
 
-  // Removed progression color function - only using batches now
-
   const getBatchColor = (batch: string) => {
     if (!batch) return 'gray';
-    if (batch.includes('PRODUCT')) return 'purple';
-    if (batch.includes('SERVICE_A')) return 'blue';
-    if (batch.includes('SERVICE_B')) return 'cyan';
-    if (batch.includes('SERVICE_C')) return 'teal';
-    return 'gray';
+    switch (batch) {
+      case 'PRODUCT': return 'purple';
+      case 'SERVICE_A': return 'blue';
+      case 'SERVICE_B': return 'green';
+      case 'SERVICE_C1': return 'yellow';
+      case 'SERVICE_C2': return 'orange';
+      case 'SERVICE_C3': return 'gray';
+      default: return 'gray';
+    }
   };
 
   if (isLoading) {
@@ -222,4 +222,4 @@ const LeaderboardPage: React.FC = () => {
   );
 };
 
-export default LeaderboardPage; 
+export default LeaderboardPage;

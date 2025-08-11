@@ -1,5 +1,6 @@
 const Profile = require('../../db/Profile');
 const Point = require('../../db/Point');
+const User = require('../../db/User'); // Import User model
 const ApiLog = require('../../db/ApiLog');
 const PointRule = require('../../db/PointRule');
 const pointsService = require('../points/points.service');
@@ -30,7 +31,6 @@ async function getSystemStats() {
     const totalEvents = await require('../../db/Event').count();
     const pendingCertifications = await require('../../db/Submission').count({ where: { status: 'PENDING' } });
     
-    // Get point statistics
     const pointStats = await pointsService.getPointStatistics();
     
     return {
@@ -56,12 +56,16 @@ async function getSystemStats() {
 
 async function exportStudentsCsv() {
   const students = await Profile.findAll({
-    include: [Point],
+    include: [
+      { model: Point, attributes: ['value'] },
+      { model: User, attributes: ['email'] } // Include User to get email
+    ],
   });
+  
   const records = students.map(s => ({
     id: s.id,
     name: s.name,
-    email: s.email,
+    email: s.User ? s.User.email : 'N/A', // Get email from User model
     degree: s.degree,
     class: s.class,
     status: s.status,
@@ -69,8 +73,8 @@ async function exportStudentsCsv() {
     hostelInfo: s.hostelInfo,
     batch: s.batch,
     points: s.Point ? s.Point.value : 0,
-            // Removed progression - only using batches
   }));
+  
   const filePath = path.join(__dirname, '../../students_export.csv');
   const csvWriter = createCsvWriter({
     path: filePath,
@@ -91,4 +95,4 @@ async function exportStudentsCsv() {
   return filePath;
 }
 
-module.exports = { getApiLogs, exportStudentsCsv, getPointRules, updatePointRule, getSystemStats }; 
+module.exports = { getApiLogs, exportStudentsCsv, getPointRules, updatePointRule, getSystemStats };

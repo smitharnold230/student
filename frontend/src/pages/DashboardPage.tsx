@@ -19,10 +19,11 @@ import {
   useColorModeValue,
   Button,
   Icon,
+  Skeleton,
 } from '@chakra-ui/react';
 import { useQuery } from '@tanstack/react-query';
-import { FiUsers, FiAward, FiCode, FiCalendar, FiBarChart, FiTrendingUp } from 'react-icons/fi';
-import { leaderboardAPI, profileAPI, eventAPI, codingStatsAPI, notificationAPI } from '../services/api';
+import { FiUsers, FiAward, FiCode, FiCalendar, FiBarChart, FiTrendingUp, FiAlertCircle, FiCheckCircle, FiClock } from 'react-icons/fi';
+import { leaderboardAPI, profileAPI, eventAPI, codingStatsAPI, notificationAPI, adminAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
 
 interface MyRank {
@@ -56,12 +57,10 @@ interface Event {
 interface CodingStat {
   id: string;
   platform: 'LEETCODE' | 'HACKERRANK';
-  username: string;
+  url: string;
   problemsSolved: number;
-  totalProblems: number;
-  rank: number;
-  rating: number;
-  lastUpdated: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface Notification {
@@ -75,35 +74,50 @@ interface Notification {
   createdAt: string;
 }
 
+interface SystemStats {
+  totalStudents: number;
+  totalEvents: number;
+  pendingCertifications: number;
+  activeUsers: number;
+  totalPoints: number;
+  averagePoints: number;
+}
+
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
 
-  const { data: myRankResponse } = useQuery({
+  const { data: myRankResponse, isLoading: myRankLoading } = useQuery({
     queryKey: ['myRank'],
     queryFn: () => leaderboardAPI.getMyRank(),
   });
 
-  const { data: profileResponse } = useQuery({
+  const { data: profileResponse, isLoading: profileLoading } = useQuery({
     queryKey: ['profile'],
     queryFn: () => profileAPI.getProfile(),
   });
 
-  const { data: eventsResponse } = useQuery({
+  const { data: eventsResponse, isLoading: eventsLoading } = useQuery({
     queryKey: ['events'],
     queryFn: () => eventAPI.getEvents(),
   });
 
-  const { data: codingStatsResponse } = useQuery({
+  const { data: codingStatsResponse, isLoading: codingStatsLoading } = useQuery({
     queryKey: ['codingStats'],
     queryFn: () => codingStatsAPI.getStats(),
   });
 
-  const { data: notificationsResponse } = useQuery({
+  const { data: notificationsResponse, isLoading: notificationsLoading } = useQuery({
     queryKey: ['notifications'],
     queryFn: () => notificationAPI.getNotifications(),
+  });
+
+  const { data: systemStatsResponse, isLoading: systemStatsLoading } = useQuery({
+    queryKey: ['systemStats'],
+    queryFn: () => adminAPI.getSystemStats(),
+    enabled: user?.role === 'ADMIN', // Only fetch for admin
   });
 
   const myRank: MyRank = myRankResponse?.data;
@@ -111,6 +125,16 @@ const DashboardPage: React.FC = () => {
   const events: Event[] = eventsResponse?.data || [];
   const codingStats: CodingStat[] = codingStatsResponse?.data || [];
   const notifications: Notification[] = notificationsResponse?.data || [];
+  const systemStats: SystemStats = systemStatsResponse?.data || {
+    totalStudents: 0,
+    totalEvents: 0,
+    pendingCertifications: 0,
+    activeUsers: 0,
+    totalPoints: 0,
+    averagePoints: 0,
+  };
+
+  const totalProblemsSolved = codingStats.reduce((sum, stat) => sum + (stat.problemsSolved || 0), 0);
 
   const stats = [
     {
@@ -136,7 +160,7 @@ const DashboardPage: React.FC = () => {
     },
     {
       label: 'Problems Solved',
-      value: codingStats.reduce((sum, stat) => sum + (stat.problemsSolved || 0), 0),
+      value: totalProblemsSolved,
       icon: FiCode,
       color: 'orange.500',
       helpText: 'LeetCode & HackerRank',
@@ -174,9 +198,33 @@ const DashboardPage: React.FC = () => {
     },
   ];
 
-    // Removed progression level function - only using batches now
+  const isLoading = myRankLoading || profileLoading || eventsLoading || codingStatsLoading || notificationsLoading || (user?.role === 'ADMIN' && systemStatsLoading);
 
-  // Removed progression - only using batches now
+  if (isLoading) {
+    return (
+      <VStack spacing={6} align="stretch">
+        <Box>
+          <Heading size="lg" color="white" mb={2}>
+            Welcome back, {profile?.name || user?.email}!
+          </Heading>
+          <Text color="gray.400">
+            Track your development progress and achievements
+          </Text>
+        </Box>
+        <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }} gap={6}>
+          {[...Array(4)].map((_, i) => (
+            <GridItem key={i}>
+              <Skeleton height="120px" />
+            </GridItem>
+          ))}
+        </Grid>
+        <Skeleton height="150px" />
+        <Skeleton height="200px" />
+        <Skeleton height="250px" />
+        <Skeleton height="200px" />
+      </VStack>
+    );
+  }
 
   return (
     <VStack spacing={6} align="stretch">
@@ -318,7 +366,7 @@ const DashboardPage: React.FC = () => {
               </VStack>
             ) : (
               <VStack spacing={4}>
-                <Icon as={FiCalendar} color="gray.500" boxSize={12} />
+                <Icon as={FiBell} color="gray.500" boxSize={12} />
                 <Text color="gray.400" textAlign="center">
                   No notifications at the moment.
                 </Text>
@@ -333,7 +381,7 @@ const DashboardPage: React.FC = () => {
         <CardBody>
           <VStack spacing={4} align="stretch">
             <Heading size="md" color="white">
-              Recent Activity
+              Recent Events
             </Heading>
             
             {events.length > 0 ? (
@@ -373,4 +421,4 @@ const DashboardPage: React.FC = () => {
   );
 };
 
-export default DashboardPage; 
+export default DashboardPage;

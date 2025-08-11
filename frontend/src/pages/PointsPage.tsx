@@ -94,16 +94,8 @@ interface PointBreakdown {
       };
     };
   };
-}
-
-interface UserPoints {
-  id: string;
-  name: string;
-  email: string;
-  class: string;
-  batch: string;
-  points: number;
   profileId: string;
+  manualAdjustment: number;
 }
 
 interface UserWithPoints {
@@ -114,19 +106,22 @@ interface UserWithPoints {
   batch: string;
   points: number;
   profileId: string;
+  manualAdjustment: number;
 }
 
 interface PointStatistics {
   totalUsers: number;
   totalPoints: number;
   averagePoints: number;
-  topPerformers: UserPoints[];
+  topPerformers: UserWithPoints[];
 }
 
-// Helper functions
-// Removed progression color function - only using batches now
-
-// Removed progression progress function - only using batches now
+interface PointRule {
+  id: string;
+  key: string;
+  value: number;
+  description: string;
+}
 
 // Admin Points View Component
 const AdminPointsView: React.FC<{ 
@@ -138,14 +133,12 @@ const AdminPointsView: React.FC<{
   const toast = useToast();
   const queryClient = useQueryClient();
 
-  // User management state
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const { isOpen: isUpdateModalOpen, onOpen: onUpdateModalOpen, onClose: onUpdateModalClose } = useDisclosure();
+  const { isOpen: isResetModalOpen, onOpen: onResetModalOpen, onClose: onResetModalClose } = useDisclosure();
   const [updateForm, setUpdateForm] = useState({ pointsToAdd: 0, reason: '' });
   const [resetForm, setResetForm] = useState({ reason: '' });
 
-  // Get all users
   const { data: usersResponse, isLoading: usersLoading } = useQuery({
     queryKey: ['allUsers'],
     queryFn: () => pointsAPI.getAllUsers(),
@@ -153,7 +146,6 @@ const AdminPointsView: React.FC<{
 
   const users: UserWithPoints[] = usersResponse?.data?.data || [];
 
-  // Mutations
   const updateUsersMutation = useMutation({
     mutationFn: (data: { userIds: string[]; pointsToAdd: number; reason: string }) =>
       pointsAPI.updateUserPoints(data.userIds, data.pointsToAdd, data.reason),
@@ -164,7 +156,7 @@ const AdminPointsView: React.FC<{
         status: 'success',
         duration: 3000,
       });
-      setIsUpdateModalOpen(false);
+      onUpdateModalClose();
       setUpdateForm({ pointsToAdd: 0, reason: '' });
       setSelectedUsers([]);
       queryClient.invalidateQueries({ queryKey: ['allUsers'] });
@@ -190,7 +182,7 @@ const AdminPointsView: React.FC<{
         status: 'success',
         duration: 3000,
       });
-      setIsResetModalOpen(false);
+      onResetModalClose();
       setResetForm({ reason: '' });
       setSelectedUsers([]);
       queryClient.invalidateQueries({ queryKey: ['allUsers'] });
@@ -285,7 +277,7 @@ const AdminPointsView: React.FC<{
             Points Management
           </Heading>
           <Text color="gray.400">
-            Manage all users' points and progression
+            Manage all users' points
           </Text>
         </Box>
         
@@ -293,7 +285,7 @@ const AdminPointsView: React.FC<{
           leftIcon={<FiRefreshCw />}
           colorScheme="brand"
           onClick={onUpdateAllPoints}
-          isLoading={false}
+          isLoading={false} // Add actual loading state if available
         >
           Update All Points
         </Button>
@@ -370,21 +362,6 @@ const AdminPointsView: React.FC<{
         </Card>
       </Grid>
 
-                  {/* Points Overview */}
-            <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
-              <CardBody>
-                <VStack spacing={4} align="stretch">
-                  <Heading size="md" color="white">
-                    Points Overview
-                  </Heading>
-                  
-                  <Text color="gray.400" fontSize="sm">
-                    Total users with points: {statistics?.totalUsers || 0}
-                  </Text>
-                </VStack>
-              </CardBody>
-            </Card>
-
       {/* User Management */}
       <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
         <CardBody>
@@ -398,7 +375,7 @@ const AdminPointsView: React.FC<{
                   size="sm"
                   colorScheme="blue"
                   onClick={handleSelectAll}
-                  isDisabled={usersLoading}
+                  isDisabled={usersLoading || users.length === 0}
                 >
                   Select All
                 </Button>
@@ -419,7 +396,7 @@ const AdminPointsView: React.FC<{
                   leftIcon={<FiEdit />}
                   colorScheme="green"
                   size="sm"
-                  onClick={() => setIsUpdateModalOpen(true)}
+                  onClick={onUpdateModalOpen}
                 >
                   Update Points ({selectedUsers.length})
                 </Button>
@@ -427,7 +404,7 @@ const AdminPointsView: React.FC<{
                   leftIcon={<FiRefreshCw />}
                   colorScheme="red"
                   size="sm"
-                  onClick={() => setIsResetModalOpen(true)}
+                  onClick={onResetModalOpen}
                 >
                   Reset Points ({selectedUsers.length})
                 </Button>
@@ -457,7 +434,7 @@ const AdminPointsView: React.FC<{
                       <Th color="gray.300" borderColor={borderColor}>Class</Th>
                       <Th color="gray.300" borderColor={borderColor}>Batch</Th>
                       <Th color="gray.300" borderColor={borderColor}>Points</Th>
-                      <Th color="gray.300" borderColor={borderColor}>Status</Th>
+                      <Th color="gray.300" borderColor={borderColor}>Manual Adj.</Th>
                     </Tr>
                   </Thead>
                   <Tbody>
@@ -495,9 +472,9 @@ const AdminPointsView: React.FC<{
                           </Text>
                         </Td>
                         <Td borderColor={borderColor}>
-                          <Badge colorScheme="green" variant="subtle">
-                            Active
-                          </Badge>
+                          <Text color={user.manualAdjustment >= 0 ? 'green.300' : 'red.300'} fontWeight="bold">
+                            {user.manualAdjustment}
+                          </Text>
                         </Td>
                       </Tr>
                     ))}
@@ -510,7 +487,7 @@ const AdminPointsView: React.FC<{
       </Card>
 
       {/* Update Points Modal */}
-      <Modal isOpen={isUpdateModalOpen} onClose={() => setIsUpdateModalOpen(false)}>
+      <Modal isOpen={isUpdateModalOpen} onClose={onUpdateModalClose}>
         <ModalOverlay />
         <ModalContent bg={cardBg} border="1px solid" borderColor={borderColor}>
           <ModalHeader color="white">Update Points</ModalHeader>
@@ -545,7 +522,7 @@ const AdminPointsView: React.FC<{
             </VStack>
           </ModalBody>
           <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={() => setIsUpdateModalOpen(false)}>
+            <Button variant="ghost" mr={3} onClick={onUpdateModalClose}>
               Cancel
             </Button>
             <Button
@@ -560,7 +537,7 @@ const AdminPointsView: React.FC<{
       </Modal>
 
       {/* Reset Points Modal */}
-      <Modal isOpen={isResetModalOpen} onClose={() => setIsResetModalOpen(false)}>
+      <Modal isOpen={isResetModalOpen} onClose={onResetModalClose}>
         <ModalOverlay />
         <ModalContent bg={cardBg} border="1px solid" borderColor={borderColor}>
           <ModalHeader color="white">Reset Points</ModalHeader>
@@ -585,7 +562,7 @@ const AdminPointsView: React.FC<{
             </VStack>
           </ModalBody>
           <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={() => setIsResetModalOpen(false)}>
+            <Button variant="ghost" mr={3} onClick={onResetModalClose}>
               Cancel
             </Button>
             <Button
@@ -603,7 +580,7 @@ const AdminPointsView: React.FC<{
 };
 
 // Student Points View Component
-const StudentPointsView: React.FC<{ breakdown: PointBreakdown | undefined; rules: any[] }> = ({ breakdown, rules }) => {
+const StudentPointsView: React.FC<{ breakdown: PointBreakdown | undefined; rules: PointRule[] }> = ({ breakdown, rules }) => {
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
 
@@ -751,7 +728,7 @@ const StudentPointsView: React.FC<{ breakdown: PointBreakdown | undefined; rules
                       {breakdown.breakdown.workshops.events.map((event, index) => (
                         <HStack key={index} justify="space-between" p={2} bg="gray.700" borderRadius="md">
                           <Text color="white" fontSize="sm">{event}</Text>
-                          <Badge colorScheme="blue" variant="subtle">+50 pts</Badge>
+                          <Badge colorScheme="blue" variant="subtle">+{rules.find(r => r.key === 'WORKSHOP_PARTICIPATION')?.value || 50} pts</Badge>
                         </HStack>
                       ))}
                     </VStack>
@@ -783,7 +760,7 @@ const StudentPointsView: React.FC<{ breakdown: PointBreakdown | undefined; rules
                       {breakdown.breakdown.hackathons.events.map((event, index) => (
                         <HStack key={index} justify="space-between" p={2} bg="gray.700" borderRadius="md">
                           <Text color="white" fontSize="sm">{event}</Text>
-                          <Badge colorScheme="purple" variant="subtle">+100 pts</Badge>
+                          <Badge colorScheme="purple" variant="subtle">+{rules.find(r => r.key === 'HACKATHON_PARTICIPATION')?.value || 100} pts</Badge>
                         </HStack>
                       ))}
                     </VStack>
@@ -815,7 +792,7 @@ const StudentPointsView: React.FC<{ breakdown: PointBreakdown | undefined; rules
                       {breakdown.breakdown.certifications.certifications.map((cert, index) => (
                         <HStack key={index} justify="space-between" p={2} bg="gray.700" borderRadius="md">
                           <Text color="white" fontSize="sm">{cert}</Text>
-                          <Badge colorScheme="green" variant="subtle">+75 pts</Badge>
+                          <Badge colorScheme="green" variant="subtle">+{rules.find(r => r.key === 'CERTIFICATION_APPROVED')?.value || 75} pts</Badge>
                         </HStack>
                       ))}
                     </VStack>
@@ -959,6 +936,31 @@ const StudentPointsView: React.FC<{ breakdown: PointBreakdown | undefined; rules
                   </AccordionPanel>
                 </AccordionItem>
               )}
+              {breakdown?.manualAdjustment !== 0 && (
+                <AccordionItem borderColor={borderColor}>
+                  <AccordionButton>
+                    <HStack flex="1" justify="space-between">
+                      <HStack>
+                        <Icon as={FiEdit} color="blue.500" />
+                        <Text color="white" fontWeight="medium">
+                          Manual Adjustments
+                        </Text>
+                      </HStack>
+                      <HStack>
+                        <Text color={breakdown.manualAdjustment >= 0 ? 'green.400' : 'red.400'} fontWeight="bold">
+                          {breakdown.manualAdjustment >= 0 ? '+' : ''}{breakdown.manualAdjustment} pts
+                        </Text>
+                        <AccordionIcon color="gray.400" />
+                      </HStack>
+                    </HStack>
+                  </AccordionButton>
+                  <AccordionPanel>
+                    <Text color="gray.400" fontSize="sm">
+                      Points manually adjusted by an administrator.
+                    </Text>
+                  </AccordionPanel>
+                </AccordionItem>
+              )}
             </Accordion>
           </VStack>
         </CardBody>
@@ -973,7 +975,7 @@ const StudentPointsView: React.FC<{ breakdown: PointBreakdown | undefined; rules
             </Heading>
             
             <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={4}>
-              {rules.map((rule: any) => (
+              {rules.map((rule: PointRule) => (
                 <Box key={rule.key} p={3} bg="gray.700" borderRadius="md">
                   <HStack justify="space-between" mb={2}>
                     <Text color="white" fontSize="sm" fontWeight="medium">
@@ -1007,7 +1009,7 @@ const PointsPage: React.FC = () => {
     enabled: user?.role === 'STUDENT',
   });
 
-  const { data: rulesResponse } = useQuery({
+  const { data: rulesResponse, isLoading: rulesLoading } = useQuery({
     queryKey: ['pointRules'],
     queryFn: () => pointsAPI.getPointRules(),
   });
@@ -1020,10 +1022,9 @@ const PointsPage: React.FC = () => {
   });
 
   const breakdown: PointBreakdown = breakdownResponse?.data?.data;
-  const rules = rulesResponse?.data?.data || [];
+  const rules: PointRule[] = rulesResponse?.data?.data || [];
   const statistics: PointStatistics = statisticsResponse?.data?.data;
 
-  // Admin functionality - moved outside conditional to fix React Hook rules
   const updateAllPointsMutation = useMutation({
     mutationFn: () => pointsAPI.updateAllUserPoints(),
     onSuccess: () => {
@@ -1034,6 +1035,7 @@ const PointsPage: React.FC = () => {
         duration: 3000,
       });
       queryClient.invalidateQueries({ queryKey: ['pointStatistics'] });
+      queryClient.invalidateQueries({ queryKey: ['allUsers'] }); // Invalidate all users for admin view
     },
     onError: (error: any) => {
       toast({
@@ -1049,7 +1051,7 @@ const PointsPage: React.FC = () => {
     updateAllPointsMutation.mutate();
   };
 
-  const isLoading = user?.role === 'STUDENT' ? breakdownLoading : statsLoading;
+  const isLoading = user?.role === 'STUDENT' ? (breakdownLoading || rulesLoading) : (statsLoading || rulesLoading);
 
   if (isLoading) {
     return (
@@ -1074,7 +1076,6 @@ const PointsPage: React.FC = () => {
     );
   }
 
-  // Render different content based on user role
   if (user?.role === 'ADMIN') {
     return <AdminPointsView statistics={statistics} onUpdateAllPoints={handleUpdateAllPoints} />;
   }
@@ -1082,4 +1083,4 @@ const PointsPage: React.FC = () => {
   return <StudentPointsView breakdown={breakdown} rules={rules} />;
 };
 
-export default PointsPage; 
+export default PointsPage;

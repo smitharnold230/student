@@ -1,27 +1,19 @@
 const CodingStat = require('../../db/CodingStat');
 const Profile = require('../../db/Profile');
-const { execFile } = require('child_process');
-const path = require('path');
 const axios = require('axios');
 const pointsService = require('../points/points.service');
 
 function extractLeetCodeUsername(url) {
-  // Accepts URLs like https://leetcode.com/u/username/ or https://leetcode.com/username/
   const match = url.match(/leetcode\.com\/(u\/)?([\w-]+)\/?/);
   return match ? match[2] : null;
 }
 
 async function fetchLeetCodeProblemsDirectly(url) {
   try {
-    console.log('[fetchLeetCodeProblemsDirectly] Fetching from URL:', url);
-    
     const username = extractLeetCodeUsername(url);
     if (!username) {
-      console.error('[fetchLeetCodeProblemsDirectly] Invalid LeetCode profile URL. Could not extract username.');
-      return 0;
+      throw new Error('Invalid LeetCode profile URL. Could not extract username.');
     }
-    
-    console.log('[fetchLeetCodeProblemsDirectly] Extracted username:', username);
     
     const response = await axios.post('https://leetcode.com/graphql', {
       query: `
@@ -50,113 +42,73 @@ async function fetchLeetCodeProblemsDirectly(url) {
       timeout: 10000
     });
 
-    if (!response.data) {
-      console.error('[fetchLeetCodeProblemsDirectly] No response data received');
-      return 0;
-    }
-
-    if (response.data.errors) {
-      console.error('[fetchLeetCodeProblemsDirectly] GraphQL errors:', response.data.errors);
-      return 0;
+    if (!response.data || response.data.errors) {
+      throw new Error(response.data.errors ? response.data.errors[0].message : 'No response data received from LeetCode API');
     }
     
     const stats = response.data.data?.matchedUser?.submitStats?.acSubmissionNum;
     if (!stats) {
-      console.log('[fetchLeetCodeProblemsDirectly] User not found or stats unavailable for username:', username);
-      return 0;
+      throw new Error('User not found or stats unavailable for this LeetCode username.');
     }
     
     const totalSolved = stats.find(x => x.difficulty === 'All')?.count || 0;
-    console.log('[fetchLeetCodeProblemsDirectly] Found solved problems:', totalSolved, 'for username:', username);
     return totalSolved;
     
   } catch (error) {
-    console.error('[fetchLeetCodeProblemsDirectly] Error:', error.message);
-    if (error.response) {
-      console.error('[fetchLeetCodeProblemsDirectly] HTTP error status:', error.response.status);
-      console.error('[fetchLeetCodeProblemsDirectly] HTTP error data:', error.response.data);
-    }
-    return 0;
+    console.error('Error fetching LeetCode problems directly:', error.message);
+    throw new Error(`Failed to fetch LeetCode stats: ${error.message}`);
   }
 }
 
-// Keep the old function for backward compatibility but mark as deprecated
-function fetchLeetCodeProblemsViaScript(url) {
-  console.log('[DEPRECATED] Using old script method, switching to direct API call');
-  return fetchLeetCodeProblemsDirectly(url);
-}
-
-async function submitLeetCode(userId, url, manualCount) {
-  console.log('[submitLeetCode] userId:', userId, 'url:', url, 'manualCount:', manualCount);
+async function submitLeetCode(userId, url) {
   const profile = await Profile.findOne({ where: { userId } });
   if (!profile) {
-    console.error('[submitLeetCode] Profile not found for userId:', userId);
     throw new Error('Profile not found');
   }
-  let problemsSolved = await fetchLeetCodeProblemsDirectly(url);
-  console.log('[submitLeetCode] problemsSolved from script:', problemsSolved);
-  if (!problemsSolved && manualCount) {
-    problemsSolved = manualCount;
-    console.log('[submitLeetCode] Using manualCount:', manualCount);
-  }
-  if (!problemsSolved) {
-    console.error('[submitLeetCode] Could not auto-fetch. Returning error.');
-    throw new Error('Could not auto-fetch. Please enter your solved count manually.');
-  }
-  const upsertResult = await CodingStat.upsert({
+  
+  const problemsSolved = await fetchLeetCodeProblemsDirectly(url);
+  
+  const [stat, created] = await CodingStat.upsert({
     profileId: profile.id,
-    platform: 'LeetCode',
+    platform: 'LEETCODE',
     url,
     problemsSolved,
-  }, { where: { profileId: profile.id, platform: 'LeetCode' } });
-  console.log('[submitLeetCode] Upsert result:', upsertResult);
+  }, { where: { profileId: profile.id, platform: 'LEETCODE' } });
   
-  // Add points for LeetCode submission
   try {
-    await pointsService.addPointsForActivity(userId, 'LEETCODE_SUBMISSION', { platform: 'LeetCode', problemsSolved });
-    console.log('[submitLeetCode] Points added for LeetCode submission');
+    await pointsService.addPointsForActivity(userId, 'LEETCODE_SUBMISSION', { platform: 'LEETCODE', problemsSolved });
   } catch (error) {
-    console.error('[submitLeetCode] Error adding points:', error);
-    // Don't fail the submission if points fail
+    console.error('Error adding points for LeetCode submission:', error);
   }
   
-  return upsertResult;
+  return stat;
 }
 
 async function submitHackerRank(userId, url, manualCount) {
-  console.log('[submitHackerRank] userId:', userId, 'url:', url, 'manualCount:', manualCount);
   const profile = await Profile.findOne({ where: { userId } });
   if (!profile) {
-    console.error('[submitHackerRank] Profile not found for userId:', userId);
     throw new Error('Profile not found');
   }
   
-  // For now, we'll use manual count since HackerRank scraping is more complex
-  let problemsSolved = manualCount || 0;
-  
-  if (!problemsSolved) {
-    console.error('[submitHackerRank] No problems solved count provided');
+  // For HackerRank, we'll rely on manualCount for now as direct scraping is complex
+  if (!manualCount) {
     throw new Error('Please provide the number of problems solved on HackerRank');
   }
   
-  const upsertResult = await CodingStat.upsert({
+  const [stat, created] = await CodingStat.upsert({
     profileId: profile.id,
-    platform: 'HackerRank',
+    platform: 'HACKERRANK',
     url,
-    problemsSolved,
-  }, { where: { profileId: profile.id, platform: 'HackerRank' } });
-  console.log('[submitHackerRank] Upsert result:', upsertResult);
+    problemsSolved: manualCount,
+  }, { where: { profileId: profile.id, platform: 'HACKERRANK' } });
   
-  // Add points for HackerRank submission
   try {
-    await pointsService.addPointsForActivity(userId, 'HACKERRANK_SUBMISSION', { platform: 'HackerRank', problemsSolved });
-    console.log('[submitHackerRank] Points added for HackerRank submission');
+    await pointsService.addPointsForActivity(userId, 'HACKERRANK_SUBMISSION', { platform: 'HackerRank', problemsSolved: manualCount });
   } catch (error) {
-    console.error('[submitHackerRank] Error adding points:', error);
-    // Don't fail the submission if points fail
+    console.error('Error adding points for HackerRank submission:', error);
   }
   
-  return upsertResult;
+  return stat;
 }
 
 async function getStats(userId) {
@@ -165,4 +117,4 @@ async function getStats(userId) {
   return CodingStat.findAll({ where: { profileId: profile.id } });
 }
 
-module.exports = { submitLeetCode, submitHackerRank, getStats }; 
+module.exports = { submitLeetCode, submitHackerRank, getStats };

@@ -18,10 +18,13 @@ const Profile = sequelize.define('Profile', {
   status: DataTypes.STRING,
   transport: DataTypes.STRING,
   hostelInfo: DataTypes.STRING,
-  batch: DataTypes.STRING,
+  batch: {
+    type: DataTypes.STRING,
+    allowNull: true, // Allow batch to be null initially
+  },
 }, {
   tableName: 'profiles',
   timestamps: true,
 });
 
-module.exports = Profile; 
+module.exports = Profile;
