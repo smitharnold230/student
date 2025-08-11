@@ -6,7 +6,7 @@ const upload = require('../../middleware/upload');
 
 const router = express.Router();
 
-router.get('/', authenticateToken, requireRole('STUDENT'), getProfile);
+router.get('/', authenticateToken, requireRole(['STUDENT', 'ADMIN']), getProfile);
 router.post('/edit-request', authenticateToken, requireRole('STUDENT'), validate('profile.editRequest'), requestProfileEdit);
 router.post('/upload-photo', authenticateToken, requireRole('STUDENT'), upload.single('profilePhoto'), validateFileUpload('profilePhoto', 5 * 1024 * 1024, ['image/jpeg', 'image/png', 'image/jpg']), uploadProfilePhoto);
 
