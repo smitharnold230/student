@@ -22,6 +22,10 @@ const Profile = sequelize.define('Profile', {
     type: DataTypes.STRING,
     allowNull: true, // Allow batch to be null initially
   },
+  profilePhotoUrl: {
+    type: DataTypes.STRING,
+    allowNull: true, // Allow profile photo to be null initially
+  },
 }, {
   tableName: 'profiles',
   timestamps: true,

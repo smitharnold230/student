@@ -27,6 +27,9 @@ import {
   Textarea,
   Grid,
   FormErrorMessage,
+  Avatar,
+  AvatarBadge,
+  Progress,
 } from '@chakra-ui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { profileAPI } from '../services/api';
@@ -34,17 +37,9 @@ import { useAuthStore } from '../store/authStore';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-
-interface Profile {
-  id: string;
-  name: string;
-  degree: string;
-  class: string;
-  status: string;
-  transport: string;
-  hostelInfo: string;
-  batch: string;
-}
+import { AxiosProgressEvent } from 'axios';
+import { FiUpload } from 'react-icons/fi';
+import { Profile } from '../types/profile'; // Import Profile type
 
 // Updated schema to match backend's profile.editRequest
 const editRequestSchema = z.object({
@@ -66,11 +61,14 @@ const ProfilePage: React.FC = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isPhotoModalOpen, onOpen: onPhotoModalOpen, onClose: onPhotoModalClose } = useDisclosure();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
   
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
 
-  const { data: profileResponse, isLoading } = useQuery({
+  const { data: profileResponse, isLoading } = useQuery<Profile>({
     queryKey: ['profile'],
     queryFn: () => profileAPI.getProfile(),
   });
@@ -133,6 +131,35 @@ const ProfilePage: React.FC = () => {
     },
   });
 
+  const uploadPhotoMutation = useMutation({
+    mutationFn: (file: File) => profileAPI.uploadPhoto(file, (progressEvent: AxiosProgressEvent) => {
+      if (progressEvent.total) {
+        setUploadProgress(Math.round((progressEvent.loaded * 100) / progressEvent.total));
+      }
+    }),
+    onSuccess: () => {
+      setUploadProgress(0);
+      toast({
+        title: 'Profile photo updated',
+        description: 'Your profile photo has been updated successfully.',
+        status: 'success',
+        duration: 3000,
+      });
+      queryClient.invalidateQueries({ queryKey: ['profile'] }); // Invalidate to refetch new photo URL
+      onPhotoModalClose();
+      setSelectedFile(null);
+    },
+    onError: (error: any) => {
+      setUploadProgress(0);
+      toast({
+        title: 'Upload failed',
+        description: error.response?.data?.error || 'Failed to upload profile photo',
+        status: 'error',
+        duration: 5000,
+      });
+    },
+  });
+
   const handleEditRequest = (data: EditRequestForm) => {
     // Filter out unchanged fields or empty strings if they are not meant to be sent
     const changedData: Partial<EditRequestForm> = {};
@@ -155,6 +182,19 @@ const ProfilePage: React.FC = () => {
     }
 
     editRequestMutation.mutate(changedData);
+  };
+
+  const handlePhotoUpload = () => {
+    if (selectedFile) {
+      uploadPhotoMutation.mutate(selectedFile);
+    } else {
+      toast({
+        title: 'No file selected',
+        description: 'Please select an image file to upload.',
+        status: 'warning',
+        duration: 3000,
+      });
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -217,19 +257,42 @@ const ProfilePage: React.FC = () => {
               <Heading size="md" color="white">
                 Personal Information
               </Heading>
-              <Button
-                colorScheme="brand"
-                size="sm"
-                onClick={onOpen}
-              >
-                Request Edit
-              </Button>
+              <HStack>
+                <Button
+                  colorScheme="blue"
+                  size="sm"
+                  onClick={onPhotoModalOpen}
+                  leftIcon={<FiUpload />}
+                >
+                  Upload Photo
+                </Button>
+                <Button
+                  colorScheme="brand"
+                  size="sm"
+                  onClick={onOpen}
+                >
+                  Request Edit
+                </Button>
+              </HStack>
             </HStack>
 
             <Divider borderColor={borderColor} />
 
             <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={6}>
               <VStack align="start" spacing={4}>
+                <Box>
+                  <Text color="gray.400" fontSize="sm" mb={1}>
+                    Profile Photo
+                  </Text>
+                  <Avatar
+                    size="xl"
+                    name={profile?.name || user?.email}
+                    src={profile?.profilePhotoUrl ? `http://localhost:4000${profile.profilePhotoUrl}` : undefined}
+                    bg="brand.500"
+                  >
+                    {profile?.profilePhotoUrl && <AvatarBadge boxSize="1.25em" bg="green.500" />}
+                  </Avatar>
+                </Box>
                 <Box>
                   <Text color="gray.400" fontSize="sm" mb={1}>
                     Full Name
@@ -436,6 +499,75 @@ const ProfilePage: React.FC = () => {
               onClick={handleSubmit(handleEditRequest)}
             >
               Submit Request
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Upload Photo Modal */}
+      <Modal isOpen={isPhotoModalOpen} onClose={onPhotoModalClose} size="md">
+        <ModalOverlay />
+        <ModalContent bg={cardBg} border="1px solid" borderColor={borderColor}>
+          <ModalHeader color="white">Upload Profile Photo</ModalHeader>
+          <ModalCloseButton color="white" />
+          <ModalBody>
+            <VStack spacing={4}>
+              <FormControl>
+                <FormLabel color="gray.300">Select Image File</FormLabel>
+                <Input
+                  type="file"
+                  accept="image/jpeg, image/png, image/jpg"
+                  bg="gray.700"
+                  borderColor="gray.600"
+                  color="white"
+                  _placeholder={{ color: 'gray.400' }}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
+                        toast({
+                          title: 'Invalid file type',
+                          description: 'Only JPEG, PNG, or JPG image files are allowed.',
+                          status: 'error',
+                          duration: 4000,
+                        });
+                        setSelectedFile(null);
+                        return;
+                      }
+                      if (file.size > 5 * 1024 * 1024) { // 5MB limit for photos
+                        toast({
+                          title: 'File too large',
+                          description: 'File must be less than 5MB.',
+                          status: 'error',
+                          duration: 4000,
+                        });
+                        setSelectedFile(null);
+                        return;
+                      }
+                      setSelectedFile(file);
+                    }
+                  }}
+                />
+                <Text color="gray.400" fontSize="xs" mt={1}>
+                  Only JPEG/PNG/JPG files are allowed (max 5MB)
+                </Text>
+              </FormControl>
+              {uploadProgress > 0 && (
+                <Progress value={uploadProgress} size="sm" colorScheme="green" mt={2} />
+              )}
+            </VStack>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={onPhotoModalClose}>
+              Cancel
+            </Button>
+            <Button
+              colorScheme="brand"
+              onClick={handlePhotoUpload}
+              isLoading={uploadPhotoMutation.isPending}
+              isDisabled={!selectedFile || uploadPhotoMutation.isPending || uploadProgress > 0}
+            >
+              Upload Photo
             </Button>
           </ModalFooter>
         </ModalContent>

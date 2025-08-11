@@ -21,6 +21,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { FiAward, FiTrendingUp } from 'react-icons/fi';
 import { leaderboardAPI } from '../services/api';
+import { getStudentLevel } from '../utils/points'; // Import the utility
 
 interface LeaderboardStudent {
   id: string; // Assuming ID is available from profile
@@ -151,6 +152,7 @@ const LeaderboardPage: React.FC = () => {
                   <Th color="gray.300" borderColor={borderColor}>Class</Th>
                   <Th color="gray.300" borderColor={borderColor}>Batch</Th>
                   <Th color="gray.300" borderColor={borderColor}>Points</Th>
+                  <Th color="gray.300" borderColor={borderColor}>Level</Th> {/* Added Level column */}
                   <Th color="gray.300" borderColor={borderColor}>Status</Th>
                 </Tr>
               </Thead>
@@ -202,6 +204,11 @@ const LeaderboardPage: React.FC = () => {
                       <Text color="white" fontWeight="bold">
                         {student.points}
                       </Text>
+                    </Td>
+                    <Td borderColor={borderColor}> {/* Display Level */}
+                      <Badge colorScheme="blue" variant="outline">
+                        {getStudentLevel(student.points).level}
+                      </Badge>
                     </Td>
                     <Td borderColor={borderColor}>
                       <Badge

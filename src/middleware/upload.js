@@ -4,7 +4,14 @@ const path = require('path');
 // Configure storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/certifications/');
+    // Differentiate storage based on fieldname
+    if (file.fieldname === 'certification') {
+      cb(null, 'uploads/certifications/');
+    } else if (file.fieldname === 'profilePhoto') {
+      cb(null, 'uploads/profile_photos/');
+    } else {
+      cb(new Error('Invalid fieldname for upload'), false);
+    }
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -12,12 +19,22 @@ const storage = multer.diskStorage({
   }
 });
 
-// File filter to only allow PDFs
+// File filter to allow PDFs for certifications and images for profile photos
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype === 'application/pdf') {
-    cb(null, true);
+  if (file.fieldname === 'certification') {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF files are allowed for certifications!'), false);
+    }
+  } else if (file.fieldname === 'profilePhoto') {
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only JPEG/PNG image files are allowed for profile photos!'), false);
+    }
   } else {
-    cb(new Error('Only PDF files are allowed!'), false);
+    cb(new Error('Invalid file type or fieldname!'), false);
   }
 };
 
@@ -26,8 +43,8 @@ const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB limit
+    fileSize: 10 * 1024 * 1024 // 10MB limit for all files
   }
 });
 
-module.exports = upload; 
+module.exports = upload;

@@ -22,7 +22,11 @@ const validationSchemas = {
       status: z.string().min(1, 'Status is required').max(20, 'Status too long').optional(),
       transport: z.string().max(50, 'Transport info too long').optional(),
       hostelInfo: z.string().max(200, 'Hostel info too long').optional(),
-    }).refine(data => Object.keys(data).length > 0, 'At least one field must be provided for edit request')
+    }).refine(data => Object.keys(data).length > 0, 'At least one field must be provided for edit request'),
+    uploadPhoto: z.object({
+      // File validation is primarily handled by Multer and validateFileUpload middleware
+      file: z.any().optional()
+    })
   },
 
   event: {

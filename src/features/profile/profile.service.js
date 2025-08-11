@@ -77,8 +77,20 @@ async function getAllStudents() {
     degree: student.degree,
     status: student.status,
     transport: student.transport,
-    hostelInfo: student.hostelInfo
+    hostelInfo: student.hostelInfo,
+    profilePhotoUrl: student.profilePhotoUrl, // Include profile photo URL
   }));
+}
+
+async function updateProfilePhotoUrl(userId, photoUrl) {
+  const [updatedRows] = await Profile.update(
+    { profilePhotoUrl: photoUrl },
+    { where: { userId }, returning: true }
+  );
+  if (updatedRows > 0) {
+    return Profile.findOne({ where: { userId } });
+  }
+  throw new Error('Profile not found or photo not updated');
 }
 
 module.exports = { 
@@ -87,5 +99,6 @@ module.exports = {
   updateTicketStatus, 
   updateProfileByUserId,
   getPendingProfileRequests,
-  getAllStudents
+  getAllStudents,
+  updateProfilePhotoUrl
 };

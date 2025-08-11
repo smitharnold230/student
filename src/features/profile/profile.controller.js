@@ -64,10 +64,24 @@ async function getAllStudents(req, res, next) {
   }
 }
 
+async function uploadProfilePhoto(req, res, next) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    const photoUrl = `/uploads/profile_photos/${req.file.filename}`;
+    const profile = await profileService.updateProfilePhotoUrl(req.user.userId, photoUrl);
+    res.json({ message: 'Profile photo updated successfully', profilePhotoUrl: profile.profilePhotoUrl });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = { 
   getProfile, 
   requestProfileEdit, 
   adminApproveProfileEdit,
   getPendingProfileRequests,
-  getAllStudents
-}; 
+  getAllStudents,
+  uploadProfilePhoto
+};

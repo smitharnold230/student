@@ -25,6 +25,7 @@ import { useQuery } from '@tanstack/react-query';
 import { FiUsers, FiAward, FiCode, FiCalendar, FiBarChart, FiTrendingUp, FiAlertCircle, FiCheckCircle, FiClock } from 'react-icons/fi';
 import { leaderboardAPI, profileAPI, eventAPI, codingStatsAPI, notificationAPI, adminAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
+import { getStudentLevel } from '../utils/points'; // Import the utility
 
 interface MyRank {
   rank: number;
@@ -41,6 +42,7 @@ interface Profile {
   transport: string;
   hostelInfo: string;
   batch: string;
+  profilePhotoUrl?: string; // Add profile photo URL
 }
 
 interface Event {
@@ -135,6 +137,7 @@ const DashboardPage: React.FC = () => {
   };
 
   const totalProblemsSolved = codingStats.reduce((sum, stat) => sum + (stat.problemsSolved || 0), 0);
+  const { level, nextLevelPoints, progressPercentage } = getStudentLevel(myRank?.points || 0);
 
   const stats = [
     {
@@ -269,7 +272,7 @@ const DashboardPage: React.FC = () => {
           <VStack spacing={4} align="stretch">
             <HStack justify="space-between">
               <Heading size="md" color="white">
-                Your Points
+                Your Points & Level
               </Heading>
               <Badge colorScheme="green" variant="subtle" fontSize="sm">
                 {myRank?.points || 0} pts
@@ -279,18 +282,23 @@ const DashboardPage: React.FC = () => {
             <Box>
               <HStack justify="space-between" mb={2}>
                 <Text color="gray.400" fontSize="sm">
-                  Current Points
+                  Current Level: <Text as="span" fontWeight="bold" color="white">{level}</Text>
                 </Text>
                 <Text color="white" fontSize="sm">
-                  {myRank?.points || 0} points
+                  {myRank?.points || 0} / {nextLevelPoints === Infinity ? 'Max' : nextLevelPoints} points
                 </Text>
               </HStack>
               <Progress
-                value={Math.min(100, ((myRank?.points || 0) / 1000) * 100)}
+                value={progressPercentage}
                 colorScheme="green"
                 size="lg"
                 borderRadius="full"
               />
+              {nextLevelPoints !== Infinity && (
+                <Text color="gray.500" fontSize="xs" mt={1}>
+                  {nextLevelPoints - (myRank?.points || 0)} points to reach next level
+                </Text>
+              )}
             </Box>
           </VStack>
         </CardBody>

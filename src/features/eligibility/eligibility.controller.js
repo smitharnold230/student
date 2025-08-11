@@ -19,4 +19,13 @@ async function assignBatch(req, res, next) {
   }
 }
 
-module.exports = { checkEligibility, assignBatch }; 
+async function assignAllEligibleBatches(req, res, next) {
+  try {
+    const results = await eligibilityService.assignBatchesForAllEligibleStudents();
+    res.json({ message: 'Batch assignment process completed', results });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { checkEligibility, assignBatch, assignAllEligibleBatches };

@@ -49,6 +49,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FiAward, FiTrendingUp, FiCode, FiCalendar, FiCheckCircle, FiStar, FiEdit, FiPlus, FiRefreshCw } from 'react-icons/fi';
 import { pointsAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
+import { getStudentLevel } from '../utils/points'; // Import the utility
 
 interface PointBreakdown {
   totalPoints: number;
@@ -323,9 +324,9 @@ const AdminPointsView: React.FC<{
                   System-wide points
                 </StatHelpText>
               </Stat>
-            </VStack>
-          </CardBody>
-        </Card>
+            </CardBody>
+          </Card>
+        </GridItem>
 
         <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
           <CardBody>
@@ -435,6 +436,7 @@ const AdminPointsView: React.FC<{
                       <Th color="gray.300" borderColor={borderColor}>Batch</Th>
                       <Th color="gray.300" borderColor={borderColor}>Points</Th>
                       <Th color="gray.300" borderColor={borderColor}>Manual Adj.</Th>
+                      <Th color="gray.300" borderColor={borderColor}>Level</Th> {/* Added Level column */}
                     </Tr>
                   </Thead>
                   <Tbody>
@@ -475,6 +477,11 @@ const AdminPointsView: React.FC<{
                           <Text color={user.manualAdjustment >= 0 ? 'green.300' : 'red.300'} fontWeight="bold">
                             {user.manualAdjustment}
                           </Text>
+                        </Td>
+                        <Td borderColor={borderColor}> {/* Display Level */}
+                          <Badge colorScheme="blue" variant="outline">
+                            {getStudentLevel(user.points).level}
+                          </Badge>
                         </Td>
                       </Tr>
                     ))}
@@ -583,6 +590,7 @@ const AdminPointsView: React.FC<{
 const StudentPointsView: React.FC<{ breakdown: PointBreakdown | undefined; rules: PointRule[] }> = ({ breakdown, rules }) => {
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
+  const { level, nextLevelPoints, progressPercentage } = getStudentLevel(breakdown?.totalPoints || 0);
 
   return (
     <VStack spacing={6} align="stretch">
@@ -625,18 +633,23 @@ const StudentPointsView: React.FC<{ breakdown: PointBreakdown | undefined; rules
               <Box>
                 <HStack justify="space-between" mb={2}>
                   <Text color="gray.400" fontSize="sm">
-                    Current Points
+                    Current Level: <Text as="span" fontWeight="bold" color="white">{level}</Text>
                   </Text>
                   <Text color="white" fontSize="sm">
-                    {breakdown?.totalPoints || 0} points
+                    {breakdown?.totalPoints || 0} / {nextLevelPoints === Infinity ? 'Max' : nextLevelPoints} points
                   </Text>
                 </HStack>
                 <Progress
-                  value={Math.min(100, ((breakdown?.totalPoints || 0) / 1000) * 100)}
+                  value={progressPercentage}
                   colorScheme="green"
                   size="lg"
                   borderRadius="full"
                 />
+                {nextLevelPoints !== Infinity && (
+                  <Text color="gray.500" fontSize="xs" mt={1}>
+                    {nextLevelPoints - (breakdown?.totalPoints || 0)} points to reach next level
+                  </Text>
+                )}
               </Box>
             </VStack>
           </CardBody>

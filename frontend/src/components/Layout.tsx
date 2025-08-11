@@ -17,6 +17,7 @@ import {
   DrawerHeader,
   DrawerBody,
   Avatar,
+  AvatarBadge,
 } from '@chakra-ui/react';
 import {
   FiHome,
@@ -35,6 +36,9 @@ import {
   FiCheckCircle
 } from 'react-icons/fi';
 import { useAuthStore } from '../store/authStore';
+import { useQuery } from '@tanstack/react-query';
+import { profileAPI } from '../services/api';
+import { Profile } from '../types/profile'; // Import Profile type
 
 interface NavItem {
   label: string;
@@ -69,6 +73,14 @@ const Layout: React.FC = () => {
   const sidebarBg = useColorModeValue('gray.800', 'gray.900');
   const sidebarBorder = useColorModeValue('gray.700', 'gray.600');
   const hoverBg = useColorModeValue('gray.700', 'gray.600');
+
+  const { data: profileResponse } = useQuery<Profile>({
+    queryKey: ['profile'],
+    queryFn: () => profileAPI.getProfile(),
+    enabled: !!user, // Only fetch if user is logged in
+  });
+
+  const profile = profileResponse;
 
   const handleLogout = () => {
     logout();
@@ -112,10 +124,12 @@ const Layout: React.FC = () => {
       {/* Header */}
       <Box w="full" p={6} borderBottom="1px solid" borderColor={sidebarBorder}>
         <HStack spacing={3}>
-          <Avatar size="sm" name={user?.email} bg="brand.500" />
+          <Avatar size="md" name={profile?.name || user?.email} src={profile?.profilePhotoUrl ? `http://localhost:4000${profile.profilePhotoUrl}` : undefined} bg="brand.500">
+            {profile?.profilePhotoUrl && <AvatarBadge boxSize="1em" bg="green.500" />}
+          </Avatar>
           <VStack spacing={0} align="start" flex={1}>
             <Text fontSize="sm" fontWeight="semibold" color="white">
-              {user?.email}
+              {profile?.name || user?.email}
             </Text>
             <Text fontSize="xs" color="gray.400" textTransform="capitalize">
               {user?.role}
@@ -212,4 +226,4 @@ const Layout: React.FC = () => {
   );
 };
 
-export default Layout; 
+export default Layout;

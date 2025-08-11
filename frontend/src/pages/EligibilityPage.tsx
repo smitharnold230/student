@@ -50,7 +50,8 @@ import {
   FiCalendar,
   FiSettings,
   FiUserCheck,
-  FiUserX
+  FiUserX,
+  FiRefreshCw
 } from 'react-icons/fi';
 import { eligibilityAPI, profileAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
@@ -86,7 +87,7 @@ const EligibilityPage: React.FC = () => {
   const borderColor = useColorModeValue('gray.700', 'gray.600');
 
   // Get all students for admin view
-  const { data: studentsResponse, isLoading: studentsLoading } = useQuery({
+  const { data: studentsResponse, isLoading: studentsLoading, refetch: refetchStudents } = useQuery({
     queryKey: ['students'],
     queryFn: () => profileAPI.getAllStudents(),
     enabled: user?.role === 'ADMIN',
@@ -132,6 +133,28 @@ const EligibilityPage: React.FC = () => {
     },
   });
 
+  // Assign all eligible batches mutation (admin only)
+  const assignAllEligibleBatchesMutation = useMutation({
+    mutationFn: () => eligibilityAPI.assignAllEligibleBatches(),
+    onSuccess: (response) => {
+      toast({
+        title: 'Batch Assignment Triggered',
+        description: 'Batch assignment process for all eligible students has been initiated.',
+        status: 'success',
+        duration: 5000,
+      });
+      refetchStudents(); // Refetch students to see updated batches
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Batch Assignment Failed',
+        description: error.response?.data?.error || 'Failed to trigger batch assignment',
+        status: 'error',
+        duration: 5000,
+      });
+    },
+  });
+
   const handleAssignBatch = () => {
     if (!selectedStudent) return;
     
@@ -140,6 +163,10 @@ const EligibilityPage: React.FC = () => {
       batch: selectedBatch,
       auto: isAutoAssign,
     });
+  };
+
+  const handleAssignAllEligible = () => {
+    assignAllEligibleBatchesMutation.mutate();
   };
 
   const getEligibilityColor = (eligible: boolean) => {
@@ -306,14 +333,24 @@ const EligibilityPage: React.FC = () => {
   // Admin View
   return (
     <VStack spacing={6} align="stretch">
-      <Box>
-        <Heading size="lg" color="white" mb={2}>
-          Eligibility Management
-        </Heading>
-        <Text color="gray.400">
-          Manage student eligibility and batch assignments
-        </Text>
-      </Box>
+      <HStack justify="space-between">
+        <Box>
+          <Heading size="lg" color="white" mb={2}>
+            Eligibility Management
+          </Heading>
+          <Text color="gray.400">
+            Manage student eligibility and batch assignments
+          </Text>
+        </Box>
+        <Button
+          leftIcon={<FiRefreshCw />}
+          colorScheme="brand"
+          onClick={handleAssignAllEligible}
+          isLoading={assignAllEligibleBatchesMutation.isPending}
+        >
+          Assign All Eligible Batches
+        </Button>
+      </HStack>
 
       {/* Stats Cards */}
       <HStack spacing={6} wrap="wrap">
@@ -382,14 +419,18 @@ const EligibilityPage: React.FC = () => {
                 leftIcon={<FiSettings />}
                 colorScheme="blue"
                 onClick={() => {
-                  // Check eligibility for all students
-                  students.forEach(student => {
-                    // This would need to be implemented in the backend
-                    console.log('Checking eligibility for:', student.name);
+                  // This would need to be implemented in the backend
+                  // For now, refetch students to update eligibility status
+                  refetchStudents();
+                  toast({
+                    title: 'Eligibility Refreshed',
+                    description: 'Student eligibility data has been refreshed.',
+                    status: 'info',
+                    duration: 3000,
                   });
                 }}
               >
-                Check All Eligibility
+                Refresh Eligibility Data
               </Button>
             </HStack>
 
@@ -430,7 +471,7 @@ const EligibilityPage: React.FC = () => {
                         </Td>
                         <Td>
                           <Badge colorScheme={getBatchColor(student.batch)}>
-                            {student.batch}
+                            {student.batch || 'N/A'}
                           </Badge>
                         </Td>
                         <Td>
@@ -557,4 +598,4 @@ const EligibilityPage: React.FC = () => {
   );
 };
 
-export default EligibilityPage; 
+export default EligibilityPage;

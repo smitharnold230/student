@@ -50,6 +50,16 @@ export const authAPI = {
 export const profileAPI = {
   getProfile: () => api.get('/profile'),
   requestEdit: (data: any) => api.post('/profile/edit-request', data),
+  uploadPhoto: (file: File, onUploadProgress?: (progressEvent: AxiosProgressEvent) => void) => {
+    const formData = new FormData();
+    formData.append('profilePhoto', file);
+    return api.post('/profile/upload-photo', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress,
+    });
+  },
   getPendingRequests: () => api.get('/profile/admin/pending'),
   approveRequest: (ticketId: string, status: 'APPROVED' | 'REJECTED', adminNote?: string) => 
     api.post(`/profile/admin/approve/${ticketId}`, { status, adminNote }),
@@ -116,6 +126,7 @@ export const eligibilityAPI = {
   checkEligibility: () => api.get('/eligibility/check'),
   assignBatch: (userId: string, batch: string, auto: boolean) =>
     api.post('/eligibility/assign', { userId, batch, auto }),
+  assignAllEligibleBatches: () => api.post('/eligibility/assign-all-eligible'),
 };
 
 export const pointsAPI = {
