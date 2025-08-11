@@ -179,7 +179,7 @@ const BulkUserUploadModal: React.FC<BulkUserUploadModalProps> = ({
                     </ListItem>
                   </List>
                   <Text mt={2}>
-                    <Link href="/sample_users.xlsx" isExternal color="brand.300">
+                    <Link href="/sample_users.csv" isExternal color="brand.300">
                       Download Sample Template
                     </Link>
                   </Text>
