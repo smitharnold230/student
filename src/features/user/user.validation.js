@@ -11,4 +11,11 @@ const loginSchema = z.object({
   password: z.string().min(6)
 });
 
-module.exports = { signupSchema, loginSchema }; 
+// New schema for bulk user uploads, restricting role to 'STUDENT'
+const bulkSignupSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+  role: z.literal('STUDENT').default('STUDENT') // Enforce 'STUDENT' role, default if not provided
+});
+
+module.exports = { signupSchema, loginSchema, bulkSignupSchema };

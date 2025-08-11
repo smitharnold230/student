@@ -5,7 +5,7 @@ const ApiLog = require('../../db/ApiLog');
 const PointRule = require('../../db/PointRule');
 const pointsService = require('../points/points.service');
 const userService = require('../user/user.service'); // Import userService for user creation
-const { signupSchema } = require('../user/user.validation'); // Import signup schema for validation
+const { bulkSignupSchema } = require('../user/user.validation'); // Import new bulkSignupSchema for validation
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const path = require('path');
 const fs = require('fs');
@@ -116,11 +116,11 @@ async function bulkUploadUsers(filePath) {
     const rowNumber = i + 2; // +2 for 1-based index and header row
 
     try {
-      // Validate row data using signupSchema
-      const validatedData = signupSchema.parse({
+      // Validate row data using bulkSignupSchema
+      const validatedData = bulkSignupSchema.parse({
         email: row.email,
         password: row.password,
-        role: row.role || 'STUDENT', // Default to STUDENT if not provided
+        role: row.role, // Pass role as is, schema will validate/default
       });
 
       // Check if user already exists
