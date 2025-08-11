@@ -127,9 +127,19 @@ const Layout: React.FC = () => {
       {/* Header */}
       <Box w="full" p={6} borderBottom="1px solid" borderColor={sidebarBorder}>
         <HStack spacing={3}>
-          <Avatar size="md" name={profile?.name || user?.email} src={profile?.profilePhotoUrl ? `http://localhost:4000${profile.profilePhotoUrl}` : undefined} bg="brand.500">
-            {profile?.profilePhotoUrl && <AvatarBadge boxSize="1em" bg="green.500" />}
-          </Avatar>
+          {profile ? ( // Only render Avatar if profile is defined
+            <Avatar
+              size="md"
+              name={profile.name || user?.email || ''} // Now profile.name is safe
+              src={profile.profilePhotoUrl ? `http://localhost:4000${profile.profilePhotoUrl}` : undefined}
+              bg="brand.500"
+            >
+              {profile.profilePhotoUrl && <AvatarBadge boxSize="1em" bg="green.500" />}
+            </Avatar>
+          ) : (
+            // Fallback for when profile is not yet loaded or is undefined
+            <Avatar size="md" name={user?.email || ''} bg="brand.500" />
+          )}
           <VStack spacing={0} align="start" flex={1}>
             <Text fontSize="sm" fontWeight="semibold" color="white">
               {profile?.name || user?.email}
