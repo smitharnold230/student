@@ -13,7 +13,11 @@ async function getLeaderboard() {
   const students = await Profile.findAll({
     include: [
       { model: Point },
-      { model: User, attributes: ['email'] } // Include User to get email
+      {
+        model: User,
+        attributes: ['email'],
+        where: { role: 'STUDENT' } // Filter to include only students
+      }
     ],
     order: [[{ model: Point }, 'value', 'DESC']],
   });
