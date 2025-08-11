@@ -142,7 +142,8 @@ const AdminPointsView: React.FC<{
     });
   };
 
-  const handleResetPoints = () => {
+  // Modified to accept reason directly from modal
+  const handleResetPoints = (reason: string) => {
     if (selectedUsers.length === 0) {
       toast({
         title: 'No Users Selected',
@@ -153,19 +154,10 @@ const AdminPointsView: React.FC<{
       return;
     }
 
-    if (!resetForm.reason.trim()) {
-      toast({
-        title: 'Reason Required',
-        description: 'Please provide a reason for the points reset',
-        status: 'warning',
-        duration: 3000,
-      });
-      return;
-    }
-
+    // Client-side validation for reason is now handled by react-hook-form in the modal
     resetUsersMutation.mutate({
       userIds: selectedUsers,
-      reason: resetForm.reason,
+      reason: reason, // Use the reason passed from the modal
     });
   };
 
