@@ -19,14 +19,14 @@ import {
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { FormattedEventData } from '../../types/event';
+import { CreateEventData } from '../../types/event'; // Import CreateEventData
 import { UseMutationResult } from '@tanstack/react-query';
 
 interface CreateEventModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreateEvent: (data: FormattedEventData) => void;
-  createEventMutation: UseMutationResult<any, Error, FormattedEventData, unknown>;
+  onCreateEvent: (data: CreateEventData) => void; // Use CreateEventData
+  createEventMutation: UseMutationResult<any, Error, CreateEventData, unknown>; // Use CreateEventData
 }
 
 const createEventSchema = z.object({
@@ -69,7 +69,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({
   });
 
   const onSubmit = (data: CreateEventForm) => {
-    const formattedData: FormattedEventData = {
+    const formattedData: CreateEventData = { // Use CreateEventData
       ...data,
       type: data.type as 'WORKSHOP' | 'HACKATHON',
       url: data.url || undefined, // Send undefined if empty string

@@ -19,15 +19,15 @@ import {
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Event, FormattedEventData } from '../../types/event';
+import { Event, UpdateEventData } from '../../types/event'; // Import UpdateEventData
 import { UseMutationResult } from '@tanstack/react-query';
 
 interface EditEventModalProps {
   isOpen: boolean;
   onClose: () => void;
   eventToEdit: Event | null;
-  onUpdateEvent: (eventId: string, data: Partial<FormattedEventData>) => void;
-  updateEventMutation: UseMutationResult<any, Error, { eventId: string; data: Partial<FormattedEventData> }, unknown>;
+  onUpdateEvent: (eventId: string, data: Partial<UpdateEventData>) => void; // Use Partial<UpdateEventData>
+  updateEventMutation: UseMutationResult<any, Error, { eventId: string; data: Partial<UpdateEventData> }, unknown>; // Use Partial<UpdateEventData>
 }
 
 const editEventSchema = z.object({
@@ -81,21 +81,34 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
   const onSubmit = (data: EditEventForm) => {
     if (!eventToEdit) return;
 
-    const formattedData: Partial<FormattedEventData> = {
-      name: data.name,
-      type: data.type as 'WORKSHOP' | 'HACKATHON',
+    // Helper to normalize values for comparison (empty string, null, undefined all treated as 'empty')
+    const normalizeValue = (val: any) => (val === null || val === undefined || val === '') ? undefined : val;
+
+    const formattedData: Partial<UpdateEventData> = { // Use Partial<UpdateEventData>
+      name: normalizeValue(data.name),
+      type: normalizeValue(data.type) as 'WORKSHOP' | 'HACKATHON' | undefined, // Ensure type is correct or undefined
       date: data.date ? new Date(data.date).toISOString() : undefined,
-      organizer: data.organizer,
-      url: data.url || undefined,
-      link: data.link || undefined,
+      organizer: normalizeValue(data.organizer),
+      url: normalizeValue(data.url),
+      link: normalizeValue(data.link),
       certificationDeadline: data.certificationDeadline ? new Date(data.certificationDeadline).toISOString() : undefined,
     };
 
-    // Filter out unchanged fields to send only what's necessary
-    const changes: Partial<FormattedEventData> = {};
+    const changes: Partial<UpdateEventData> = {}; // Use Partial<UpdateEventData>
     for (const key in formattedData) {
-      const typedKey = key as keyof FormattedEventData;
-      if (formattedData[typedKey] !== (eventToEdit as any)[typedKey]) {
+      const typedKey = key as keyof UpdateEventData; // Use keyof UpdateEventData
+
+      const currentVal = normalizeValue(formattedData[typedKey]);
+      const originalVal = normalizeValue((eventToEdit as any)[typedKey]);
+
+      // Special handling for date and certificationDeadline to compare ISO strings
+      if ((typedKey === 'date' || typedKey === 'certificationDeadline') && (currentVal !== undefined || originalVal !== undefined)) {
+        const currentIso = currentVal ? new Date(currentVal as string).toISOString() : undefined;
+        const originalIso = originalVal ? new Date(originalVal as string).toISOString() : undefined;
+        if (currentIso !== originalIso) {
+          changes[typedKey] = formattedData[typedKey];
+        }
+      } else if (currentVal !== originalVal) {
         changes[typedKey] = formattedData[typedKey];
       }
     }
