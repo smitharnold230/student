@@ -36,7 +36,7 @@ const ProfilePage: React.FC = () => {
     queryKey: ['profile'],
     queryFn: () => profileAPI.getProfile(),
   });
-  const profile: Profile = profileResponse?.data || {};
+  const profile: Profile | undefined = profileResponse?.data; // Changed to Profile | undefined
 
   // Mutations
   const editRequestMutation = useMutation({
