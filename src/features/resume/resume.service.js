@@ -1,4 +1,4 @@
-const { Profile, CodingStat, Event, Submission } = require('../../db/ResumeModels');
+const { Profile, CodingStat, Event, Submission } = require('../../db/models');
 
 async function getResumeData(userId) {
   return Profile.findOne({
@@ -11,4 +11,4 @@ async function getResumeData(userId) {
   });
 }
 
-module.exports = { getResumeData }; 
+module.exports = { getResumeData };
