@@ -7,6 +7,6 @@ const router = express.Router();
 
 router.post('/leetcode', authenticateToken, requireRole('STUDENT'), validate('codingStats.leetcode'), submitLeetCode);
 router.post('/hackerrank', authenticateToken, requireRole('STUDENT'), validate('codingStats.hackerrank'), submitHackerRank);
-router.get('/', authenticateToken, requireRole('STUDENT'), getStats);
+router.get('/', authenticateToken, requireRole(['STUDENT', 'ADMIN']), getStats); // Modified to allow both STUDENT and ADMIN
 
-module.exports = router; 
+module.exports = router;
