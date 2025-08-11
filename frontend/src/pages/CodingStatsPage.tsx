@@ -99,11 +99,7 @@ const CodingStatsPage: React.FC = () => {
     reset,
   } = useForm<AddStatForm>({
     resolver: zodResolver(addStatSchema),
-    defaultValues: {
-      platform: hasLeetCode ? 'HACKERRANK' : 'LEETCODE', // Default to available platform
-      username: '',
-      manualCount: undefined,
-    },
+    // Default values will be set dynamically in handleAddModalOpen
   });
 
   const selectedPlatform = watch('platform');
@@ -210,13 +206,19 @@ const CodingStatsPage: React.FC = () => {
   };
 
   const handleAddModalOpen = () => {
-    // Reset form and set default platform based on what's available
+    let defaultPlatform: 'LEETCODE' | 'HACKERRANK' | '' = '';
+    if (!hasLeetCode) {
+      defaultPlatform = 'LEETCODE';
+    } else if (!hasHackerRank) {
+      defaultPlatform = 'HACKERRANK';
+    }
+
     reset({
-      platform: hasLeetCode && !hasHackerRank ? 'HACKERRANK' : 'LEETCODE',
+      platform: defaultPlatform,
       username: '',
       manualCount: undefined,
     });
-    setShowManualCount(hasLeetCode && !hasHackerRank); // If only LeetCode exists, default to HackerRank and show manual count
+    setShowManualCount(defaultPlatform === 'HACKERRANK');
     onAddModalOpen();
   };
 
