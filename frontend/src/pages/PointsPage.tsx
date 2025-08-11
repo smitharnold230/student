@@ -5,132 +5,38 @@ import {
   HStack,
   Text,
   Heading,
-  Card,
-  CardBody,
-  Badge,
+  Button,
+  useToast,
   useColorModeValue,
+  useDisclosure,
+  Skeleton,
   Grid,
   GridItem,
-  Icon,
-  Skeleton,
-  Progress,
-  Stat,
-  StatLabel,
-  StatNumber,
-  StatHelpText,
-  Accordion,
-  AccordionItem,
-  AccordionButton,
-  AccordionPanel,
-  AccordionIcon,
-  Divider,
-  Button,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
-  useDisclosure,
-  FormControl,
-  FormLabel,
-  Input,
-  Select,
-  useToast,
 } from '@chakra-ui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { FiAward, FiTrendingUp, FiCode, FiCalendar, FiCheckCircle, FiStar, FiEdit, FiPlus, FiRefreshCw } from 'react-icons/fi';
+import { FiRefreshCw } from 'react-icons/fi';
 import { pointsAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
-import { getStudentLevel } from '../utils/points'; // Import the utility
+import { PointBreakdown, UserWithPoints, PointStatistics, PointRule } from '../types/points';
+import { getStudentLevel } from '../utils/points';
 
-interface PointBreakdown {
-  totalPoints: number;
-  breakdown: {
-    workshops?: {
-      count: number;
-      points: number;
-      events: string[];
-    };
-    hackathons?: {
-      count: number;
-      points: number;
-      events: string[];
-    };
-    certifications?: {
-      count: number;
-      points: number;
-      certifications: string[];
-    };
-    coding?: {
-      totalPoints: number;
-      breakdown: {
-        leetcode?: {
-          problemsSolved: number;
-          basePoints: number;
-          bonusPoints: number;
-          totalPoints: number;
-        };
-        hackerrank?: {
-          problemsSolved: number;
-          basePoints: number;
-          bonusPoints: number;
-          totalPoints: number;
-        };
-      };
-    };
-    bonuses?: {
-      totalPoints: number;
-      breakdown: {
-        firstWorkshop?: number;
-        firstHackathon?: number;
-        certificationStreak?: number;
-      };
-    };
-  };
-  profileId: string;
-  manualAdjustment: number;
-}
-
-interface UserWithPoints {
-  id: string;
-  name: string;
-  email: string;
-  class: string;
-  batch: string;
-  points: number;
-  profileId: string;
-  manualAdjustment: number;
-}
-
-interface PointStatistics {
-  totalUsers: number;
-  totalPoints: number;
-  averagePoints: number;
-  topPerformers: UserWithPoints[];
-}
-
-interface PointRule {
-  id: string;
-  key: string;
-  value: number;
-  description: string;
-}
+// Import new modular components
+import AdminPointsSummaryCards from '../components/points/AdminPointsSummaryCards';
+import AdminUserPointsTable from '../components/points/AdminUserPointsTable';
+import UpdatePointsModal from '../components/points/UpdatePointsModal';
+import ResetPointsModal from '../components/points/ResetPointsModal';
+import StudentPointsSummaryCards from '../components/points/StudentPointsSummaryCards';
+import StudentDetailedBreakdown from '../components/points/StudentDetailedBreakdown';
+import PointRulesDisplay from '../components/points/PointRulesDisplay';
 
 // Admin Points View Component
 const AdminPointsView: React.FC<{ 
   statistics: PointStatistics | undefined; 
   onUpdateAllPoints: () => void;
-}> = ({ statistics, onUpdateAllPoints }) => {
-  const cardBg = useColorModeValue('gray.800', 'gray.900');
-  const borderColor = useColorModeValue('gray.700', 'gray.600');
+  users: UserWithPoints[];
+  usersLoading: boolean;
+  rules: PointRule[];
+}> = ({ statistics, onUpdateAllPoints, users, usersLoading, rules }) => {
   const toast = useToast();
   const queryClient = useQueryClient();
 
@@ -139,13 +45,6 @@ const AdminPointsView: React.FC<{
   const { isOpen: isResetModalOpen, onOpen: onResetModalOpen, onClose: onResetModalClose } = useDisclosure();
   const [updateForm, setUpdateForm] = useState({ pointsToAdd: 0, reason: '' });
   const [resetForm, setResetForm] = useState({ reason: '' });
-
-  const { data: usersResponse, isLoading: usersLoading } = useQuery({
-    queryKey: ['allUsers'],
-    queryFn: () => pointsAPI.getAllUsers(),
-  });
-
-  const users: UserWithPoints[] = usersResponse?.data?.data || [];
 
   const updateUsersMutation = useMutation({
     mutationFn: (data: { userIds: string[]; pointsToAdd: number; reason: string }) =>
@@ -292,312 +191,46 @@ const AdminPointsView: React.FC<{
         </Button>
       </HStack>
 
-      {/* Statistics Overview */}
-      <Grid templateColumns={{ base: '1fr', md: 'repeat(4, 1fr)' }} gap={6}>
-        <GridItem>
-          <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
-            <CardBody>
-              <VStack spacing={3}>
-                <Icon as={FiTrendingUp} color="blue.500" boxSize={8} />
-                <Stat>
-                  <StatLabel color="gray.400" fontSize="sm">Total Users</StatLabel>
-                  <StatNumber color="white" fontSize="2xl" fontWeight="bold">
-                    {statistics?.totalUsers || 0}
-                  </StatNumber>
-                  <StatHelpText color="gray.500" fontSize="xs">
-                    Active students
-                  </StatHelpText>
-                </Stat>
-              </VStack>
-            </CardBody>
-          </Card>
-        </GridItem>
+      <AdminPointsSummaryCards statistics={statistics} />
 
-        <GridItem>
-          <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
-            <CardBody>
-              <VStack spacing={3}>
-                <Icon as={FiAward} color="green.500" boxSize={8} />
-                <Stat>
-                  <StatLabel color="gray.400" fontSize="sm">Total Points</StatLabel>
-                  <StatNumber color="white" fontSize="2xl" fontWeight="bold">
-                    {statistics?.totalPoints?.toLocaleString() || 0}
-                  </StatNumber>
-                  <StatHelpText color="gray.500" fontSize="xs">
-                    System-wide points
-                  </StatHelpText>
-                </Stat>
-              </VStack>
-            </CardBody>
-          </Card>
-        </GridItem>
+      <AdminUserPointsTable
+        users={users}
+        usersLoading={usersLoading}
+        selectedUsers={selectedUsers}
+        handleUserSelection={handleUserSelection}
+        handleSelectAll={handleSelectAll}
+        handleClearSelection={handleClearSelection}
+        onUpdateModalOpen={onUpdateModalOpen}
+        onResetModalOpen={onResetModalOpen}
+      />
 
-        <GridItem>
-          <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
-            <CardBody>
-              <VStack spacing={3}>
-                <Icon as={FiCode} color="purple.500" boxSize={8} />
-                <Stat>
-                  <StatLabel color="gray.400" fontSize="sm">Average Points</StatLabel>
-                  <StatNumber color="white" fontSize="2xl" fontWeight="bold">
-                    {statistics?.averagePoints || 0}
-                  </StatNumber>
-                  <StatHelpText color="gray.500" fontSize="xs">
-                    Per student
-                  </StatHelpText>
-                </Stat>
-              </VStack>
-            </CardBody>
-          </Card>
-        </GridItem>
+      <PointRulesDisplay rules={rules} />
 
-        <GridItem>
-          <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
-            <CardBody>
-              <VStack spacing={3}>
-                <Icon as={FiStar} color="yellow.500" boxSize={8} />
-                <Stat>
-                  <StatLabel color="gray.400" fontSize="sm">Top Score</StatLabel>
-                  <StatNumber color="white" fontSize="2xl" fontWeight="bold">
-                    {statistics?.topPerformers?.[0]?.points || 0}
-                  </StatNumber>
-                  <StatHelpText color="gray.500" fontSize="xs">
-                    Highest points
-                  </StatHelpText>
-                </Stat>
-              </VStack>
-            </CardBody>
-          </Card>
-        </GridItem>
-      </Grid>
+      <UpdatePointsModal
+        isOpen={isUpdateModalOpen}
+        onClose={onUpdateModalClose}
+        selectedUsersCount={selectedUsers.length}
+        updateForm={updateForm}
+        setUpdateForm={setUpdateForm}
+        handleUpdatePoints={handleUpdatePoints}
+        isUpdating={updateUsersMutation.isPending}
+      />
 
-      {/* User Management */}
-      <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
-        <CardBody>
-          <VStack spacing={4} align="stretch">
-            <HStack justify="space-between">
-              <Heading size="md" color="white">
-                User Management
-              </Heading>
-              <HStack spacing={2}>
-                <Button
-                  size="sm"
-                  colorScheme="blue"
-                  onClick={handleSelectAll}
-                  isDisabled={usersLoading || users.length === 0}
-                >
-                  Select All
-                </Button>
-                <Button
-                  size="sm"
-                  colorScheme="gray"
-                  onClick={handleClearSelection}
-                  isDisabled={selectedUsers.length === 0}
-                >
-                  Clear ({selectedUsers.length})
-                </Button>
-              </HStack>
-            </HStack>
-
-            {selectedUsers.length > 0 && (
-              <HStack spacing={2}>
-                <Button
-                  leftIcon={<FiEdit />}
-                  colorScheme="green"
-                  size="sm"
-                  onClick={onUpdateModalOpen}
-                >
-                  Update Points ({selectedUsers.length})
-                </Button>
-                <Button
-                  leftIcon={<FiRefreshCw />}
-                  colorScheme="red"
-                  size="sm"
-                  onClick={onResetModalOpen}
-                >
-                  Reset Points ({selectedUsers.length})
-                </Button>
-              </HStack>
-            )}
-
-            {usersLoading ? (
-              <VStack spacing={4}>
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} height="60px" />
-                ))}
-              </VStack>
-            ) : (
-              <Box overflowX="auto">
-                <Table variant="simple">
-                  <Thead>
-                    <Tr>
-                      <Th color="gray.300" borderColor={borderColor} width="50px">
-                        <input
-                          type="checkbox"
-                          checked={selectedUsers.length === users.length && users.length > 0}
-                          onChange={(e) => e.target.checked ? handleSelectAll() : handleClearSelection()}
-                          style={{ cursor: 'pointer' }}
-                        />
-                      </Th>
-                      <Th color="gray.300" borderColor={borderColor}>Student</Th>
-                      <Th color="gray.300" borderColor={borderColor}>Class</Th>
-                      <Th color="gray.300" borderColor={borderColor}>Batch</Th>
-                      <Th color="gray.300" borderColor={borderColor}>Points</Th>
-                      <Th color="gray.300" borderColor={borderColor}>Manual Adj.</Th>
-                      <Th color="gray.300" borderColor={borderColor}>Level</Th> {/* Added Level column */}
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {users.map((user: UserWithPoints) => (
-                      <Tr key={user.id} _hover={{ bg: 'gray.700' }}>
-                        <Td borderColor={borderColor}>
-                          <input
-                            type="checkbox"
-                            checked={selectedUsers.includes(user.id)}
-                            onChange={() => handleUserSelection(user.id)}
-                            style={{ cursor: 'pointer' }}
-                          />
-                        </Td>
-                        <Td borderColor={borderColor}>
-                          <VStack align="start" spacing={0}>
-                            <Text color="white" fontWeight="medium">
-                              {user.name}
-                            </Text>
-                            <Text color="gray.400" fontSize="sm">
-                              {user.email}
-                            </Text>
-                          </VStack>
-                        </Td>
-                        <Td borderColor={borderColor}>
-                          <Text color="gray.300">{user.class}</Text>
-                        </Td>
-                        <Td borderColor={borderColor}>
-                          <Badge colorScheme="blue" variant="subtle">
-                            {user.batch}
-                          </Badge>
-                        </Td>
-                        <Td borderColor={borderColor}>
-                          <Text color="white" fontWeight="bold">
-                            {user.points}
-                          </Text>
-                        </Td>
-                        <Td borderColor={borderColor}>
-                          <Text color={user.manualAdjustment >= 0 ? 'green.300' : 'red.300'} fontWeight="bold">
-                            {user.manualAdjustment}
-                          </Text>
-                        </Td>
-                        <Td borderColor={borderColor}> {/* Display Level */}
-                          <Badge colorScheme="blue" variant="outline">
-                            {getStudentLevel(user.points).level}
-                          </Badge>
-                        </Td>
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-              </Box>
-            )}
-          </VStack>
-        </CardBody>
-      </Card>
-
-      {/* Update Points Modal */}
-      <Modal isOpen={isUpdateModalOpen} onClose={onUpdateModalClose}>
-        <ModalOverlay />
-        <ModalContent bg={cardBg} border="1px solid" borderColor={borderColor}>
-          <ModalHeader color="white">Update Points</ModalHeader>
-          <ModalCloseButton color="gray.400" />
-          <ModalBody>
-            <VStack spacing={4}>
-              <FormControl>
-                <FormLabel color="gray.300">Points to Add/Subtract</FormLabel>
-                <Input
-                  type="number"
-                  value={updateForm.pointsToAdd}
-                  onChange={(e) => setUpdateForm(prev => ({ ...prev, pointsToAdd: parseInt(e.target.value) || 0 }))}
-                  placeholder="Enter points (use negative for subtraction)"
-                  bg="gray.700"
-                  borderColor={borderColor}
-                  color="white"
-                  _placeholder={{ color: 'gray.400' }}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel color="gray.300">Reason</FormLabel>
-                <Input
-                  value={updateForm.reason}
-                  onChange={(e) => setUpdateForm(prev => ({ ...prev, reason: e.target.value }))}
-                  placeholder="Enter reason for points update"
-                  bg="gray.700"
-                  borderColor={borderColor}
-                  color="white"
-                  _placeholder={{ color: 'gray.400' }}
-                />
-              </FormControl>
-            </VStack>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={onUpdateModalClose}>
-              Cancel
-            </Button>
-            <Button
-              colorScheme="green"
-              onClick={handleUpdatePoints}
-              isLoading={updateUsersMutation.isPending}
-            >
-              Update Points
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-
-      {/* Reset Points Modal */}
-      <Modal isOpen={isResetModalOpen} onClose={onResetModalClose}>
-        <ModalOverlay />
-        <ModalContent bg={cardBg} border="1px solid" borderColor={borderColor}>
-          <ModalHeader color="white">Reset Points</ModalHeader>
-          <ModalCloseButton color="gray.400" />
-          <ModalBody>
-            <VStack spacing={4}>
-              <Text color="gray.300" textAlign="center">
-                This will reset points to 0 for {selectedUsers.length} selected user(s).
-              </Text>
-              <FormControl>
-                <FormLabel color="gray.300">Reason</FormLabel>
-                <Input
-                  value={resetForm.reason}
-                  onChange={(e) => setResetForm(prev => ({ ...prev, reason: e.target.value }))}
-                  placeholder="Enter reason for points reset"
-                  bg="gray.700"
-                  borderColor={borderColor}
-                  color="white"
-                  _placeholder={{ color: 'gray.400' }}
-                />
-              </FormControl>
-            </VStack>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={onResetModalClose}>
-              Cancel
-            </Button>
-            <Button
-              colorScheme="red"
-              onClick={handleResetPoints}
-              isLoading={resetUsersMutation.isPending}
-            >
-              Reset Points
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <ResetPointsModal
+        isOpen={isResetModalOpen}
+        onClose={onResetModalClose}
+        selectedUsersCount={selectedUsers.length}
+        resetForm={resetForm}
+        setResetForm={setResetForm}
+        handleResetPoints={handleResetPoints}
+        isResetting={resetUsersMutation.isPending}
+      />
     </VStack>
   );
 };
 
 // Student Points View Component
 const StudentPointsView: React.FC<{ breakdown: PointBreakdown | undefined; rules: PointRule[] }> = ({ breakdown, rules }) => {
-  const cardBg = useColorModeValue('gray.800', 'gray.900');
-  const borderColor = useColorModeValue('gray.700', 'gray.600');
   const { level, nextLevelPoints, progressPercentage } = getStudentLevel(breakdown?.totalPoints || 0);
 
   return (
@@ -611,411 +244,16 @@ const StudentPointsView: React.FC<{ breakdown: PointBreakdown | undefined; rules
         </Text>
       </Box>
 
-      {/* Total Points and Progression */}
-      <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={6}>
-        <GridItem>
-          <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
-            <CardBody>
-              <VStack spacing={4} align="stretch">
-                <HStack justify="space-between">
-                  <Heading size="md" color="white">
-                    Total Points
-                  </Heading>
-                  <Badge
-                    colorScheme="green"
-                    variant="subtle"
-                    fontSize="lg"
-                  >
-                    {breakdown?.totalPoints || 0} pts
-                  </Badge>
-                </HStack>
-                
-                <Stat>
-                  <StatNumber color="white" fontSize="4xl" fontWeight="bold">
-                    {breakdown?.totalPoints || 0}
-                  </StatNumber>
-                  <StatHelpText color="gray.400">
-                    Total points earned
-                  </StatHelpText>
-                </Stat>
+      <StudentPointsSummaryCards
+        breakdown={breakdown}
+        level={level}
+        nextLevelPoints={nextLevelPoints}
+        progressPercentage={progressPercentage}
+      />
 
-                <Box>
-                  <HStack justify="space-between" mb={2}>
-                    <Text color="gray.400" fontSize="sm">
-                      Current Level: <Text as="span" fontWeight="bold" color="white">{level}</Text>
-                    </Text>
-                    <Text color="white" fontSize="sm">
-                      {breakdown?.totalPoints || 0} / {nextLevelPoints === Infinity ? 'Max' : nextLevelPoints} points
-                    </Text>
-                  </HStack>
-                  <Progress
-                    value={progressPercentage}
-                    colorScheme="green"
-                    size="lg"
-                    borderRadius="full"
-                  />
-                  {nextLevelPoints !== Infinity && (
-                    <Text color="gray.500" fontSize="xs" mt={1}>
-                      {nextLevelPoints - (breakdown?.totalPoints || 0)} points to reach next level
-                    </Text>
-                  )}
-                </Box>
-              </VStack>
-            </CardBody>
-          </Card>
-        </GridItem>
+      <StudentDetailedBreakdown breakdown={breakdown} rules={rules} />
 
-        <GridItem>
-          <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
-            <CardBody>
-              <VStack spacing={4} align="stretch">
-                <Heading size="md" color="white">
-                  Quick Stats
-                </Heading>
-                
-                <Grid templateColumns="repeat(2, 1fr)" gap={4}>
-                  <Box textAlign="center">
-                    <Icon as={FiCalendar} color="blue.500" boxSize={6} mb={2} />
-                    <Text color="white" fontSize="lg" fontWeight="bold">
-                      {breakdown?.breakdown?.workshops?.count || 0}
-                    </Text>
-                    <Text color="gray.400" fontSize="sm">
-                      Workshops
-                    </Text>
-                  </Box>
-                  
-                  <Box textAlign="center">
-                    <Icon as={FiCode} color="purple.500" boxSize={6} mb={2} />
-                    <Text color="white" fontSize="lg" fontWeight="bold">
-                      {breakdown?.breakdown?.hackathons?.count || 0}
-                    </Text>
-                    <Text color="gray.400" fontSize="sm">
-                      Hackathons
-                    </Text>
-                  </Box>
-                  
-                  <Box textAlign="center">
-                    <Icon as={FiCheckCircle} color="green.500" boxSize={6} mb={2} />
-                    <Text color="white" fontSize="lg" fontWeight="bold">
-                      {breakdown?.breakdown?.certifications?.count || 0}
-                    </Text>
-                    <Text color="gray.400" fontSize="sm">
-                      Certifications
-                    </Text>
-                  </Box>
-                  
-                  <Box textAlign="center">
-                    <Icon as={FiStar} color="yellow.500" boxSize={6} mb={2} />
-                    <Text color="white" fontSize="lg" fontWeight="bold">
-                      {breakdown?.breakdown?.bonuses?.totalPoints || 0}
-                    </Text>
-                    <Text color="gray.400" fontSize="sm">
-                      Bonus Points
-                    </Text>
-                  </Box>
-                </Grid>
-              </VStack>
-            </CardBody>
-          </Card>
-        </GridItem>
-      </Grid>
-
-      {/* Detailed Breakdown */}
-      <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
-        <CardBody>
-          <VStack spacing={4} align="stretch">
-            <Heading size="md" color="white">
-              Detailed Breakdown
-            </Heading>
-            
-            <Accordion allowToggle>
-              {/* Workshops */}
-              {breakdown?.breakdown?.workshops && (
-                <AccordionItem borderColor={borderColor}>
-                  <AccordionButton>
-                    <HStack flex="1" justify="space-between">
-                      <HStack>
-                        <Icon as={FiCalendar} color="blue.500" />
-                        <Text color="white" fontWeight="medium">
-                          Workshops ({breakdown.breakdown.workshops.count})
-                        </Text>
-                      </HStack>
-                      <HStack>
-                        <Text color="green.400" fontWeight="bold">
-                          +{breakdown.breakdown.workshops.points} pts
-                        </Text>
-                        <AccordionIcon color="gray.400" />
-                      </HStack>
-                    </HStack>
-                  </AccordionButton>
-                  <AccordionPanel>
-                    <VStack align="stretch" spacing={2}>
-                      {breakdown.breakdown.workshops.events.map((event, index) => (
-                        <HStack key={index} justify="space-between" p={2} bg="gray.700" borderRadius="md">
-                          <Text color="white" fontSize="sm">{event}</Text>
-                          <Badge colorScheme="blue" variant="subtle">+{rules.find(r => r.key === 'WORKSHOP_PARTICIPATION')?.value || 50} pts</Badge>
-                        </HStack>
-                      ))}
-                    </VStack>
-                  </AccordionPanel>
-                </AccordionItem>
-              )}
-
-              {/* Hackathons */}
-              {breakdown?.breakdown?.hackathons && (
-                <AccordionItem borderColor={borderColor}>
-                  <AccordionButton>
-                    <HStack flex="1" justify="space-between">
-                      <HStack>
-                        <Icon as={FiCode} color="purple.500" />
-                        <Text color="white" fontWeight="medium">
-                          Hackathons ({breakdown.breakdown.hackathons.count})
-                        </Text>
-                      </HStack>
-                      <HStack>
-                        <Text color="green.400" fontWeight="bold">
-                          +{breakdown.breakdown.hackathons.points} pts
-                        </Text>
-                        <AccordionIcon color="gray.400" />
-                      </HStack>
-                    </HStack>
-                  </AccordionButton>
-                  <AccordionPanel>
-                    <VStack align="stretch" spacing={2}>
-                      {breakdown.breakdown.hackathons.events.map((event, index) => (
-                        <HStack key={index} justify="space-between" p={2} bg="gray.700" borderRadius="md">
-                          <Text color="white" fontSize="sm">{event}</Text>
-                          <Badge colorScheme="purple" variant="subtle">+{rules.find(r => r.key === 'HACKATHON_PARTICIPATION')?.value || 100} pts</Badge>
-                        </HStack>
-                      ))}
-                    </VStack>
-                  </AccordionPanel>
-                </AccordionItem>
-              )}
-
-              {/* Certifications */}
-              {breakdown?.breakdown?.certifications && (
-                <AccordionItem borderColor={borderColor}>
-                  <AccordionButton>
-                    <HStack flex="1" justify="space-between">
-                      <HStack>
-                        <Icon as={FiCheckCircle} color="green.500" />
-                        <Text color="white" fontWeight="medium">
-                          Certifications ({breakdown.breakdown.certifications.count})
-                        </Text>
-                      </HStack>
-                      <HStack>
-                        <Text color="green.400" fontWeight="bold">
-                          +{breakdown.breakdown.certifications.points} pts
-                        </Text>
-                        <AccordionIcon color="gray.400" />
-                      </HStack>
-                    </HStack>
-                  </AccordionButton>
-                  <AccordionPanel>
-                    <VStack align="stretch" spacing={2}>
-                      {breakdown.breakdown.certifications.certifications.map((cert, index) => (
-                        <HStack key={index} justify="space-between" p={2} bg="gray.700" borderRadius="md">
-                          <Text color="white" fontSize="sm">{cert}</Text>
-                          <Badge colorScheme="green" variant="subtle">+{rules.find(r => r.key === 'CERTIFICATION_APPROVED')?.value || 75} pts</Badge>
-                        </HStack>
-                      ))}
-                    </VStack>
-                  </AccordionPanel>
-                </AccordionItem>
-              )}
-
-              {/* Coding Platforms */}
-              {breakdown?.breakdown?.coding && (
-                <AccordionItem borderColor={borderColor}>
-                  <AccordionButton>
-                    <HStack flex="1" justify="space-between">
-                      <HStack>
-                        <Icon as={FiTrendingUp} color="orange.500" />
-                        <Text color="white" fontWeight="medium">
-                          Coding Platforms
-                        </Text>
-                      </HStack>
-                      <HStack>
-                        <Text color="green.400" fontWeight="bold">
-                          +{breakdown.breakdown.coding.totalPoints} pts
-                        </Text>
-                        <AccordionIcon color="gray.400" />
-                      </HStack>
-                    </HStack>
-                  </AccordionButton>
-                  <AccordionPanel>
-                    <VStack align="stretch" spacing={3}>
-                      {breakdown.breakdown.coding.breakdown.leetcode && (
-                        <Box p={3} bg="gray.700" borderRadius="md">
-                          <HStack justify="space-between" mb={2}>
-                            <Text color="white" fontWeight="medium">LeetCode</Text>
-                            <Badge colorScheme="orange" variant="subtle">
-                              +{breakdown.breakdown.coding.breakdown.leetcode.totalPoints} pts
-                            </Badge>
-                          </HStack>
-                          <VStack align="stretch" spacing={1}>
-                            <HStack justify="space-between">
-                              <Text color="gray.400" fontSize="sm">Problems Solved</Text>
-                              <Text color="white" fontSize="sm">
-                                {breakdown.breakdown.coding.breakdown.leetcode.problemsSolved}
-                              </Text>
-                            </HStack>
-                            <HStack justify="space-between">
-                              <Text color="gray.400" fontSize="sm">Base Points</Text>
-                              <Text color="white" fontSize="sm">
-                                +{breakdown.breakdown.coding.breakdown.leetcode.basePoints}
-                              </Text>
-                            </HStack>
-                            <HStack justify="space-between">
-                              <Text color="gray.400" fontSize="sm">Bonus Points</Text>
-                              <Text color="white" fontSize="sm">
-                                +{breakdown.breakdown.coding.breakdown.leetcode.bonusPoints}
-                              </Text>
-                            </HStack>
-                          </VStack>
-                        </Box>
-                      )}
-                      
-                      {breakdown.breakdown.coding.breakdown.hackerrank && (
-                        <Box p={3} bg="gray.700" borderRadius="md">
-                          <HStack justify="space-between" mb={2}>
-                            <Text color="white" fontWeight="medium">HackerRank</Text>
-                            <Badge colorScheme="orange" variant="subtle">
-                              +{breakdown.breakdown.coding.breakdown.hackerrank.totalPoints} pts
-                            </Badge>
-                          </HStack>
-                          <VStack align="stretch" spacing={1}>
-                            <HStack justify="space-between">
-                              <Text color="gray.400" fontSize="sm">Problems Solved</Text>
-                              <Text color="white" fontSize="sm">
-                                {breakdown.breakdown.coding.breakdown.hackerrank.problemsSolved}
-                              </Text>
-                            </HStack>
-                            <HStack justify="space-between">
-                              <Text color="gray.400" fontSize="sm">Base Points</Text>
-                              <Text color="white" fontSize="sm">
-                                +{breakdown.breakdown.coding.breakdown.hackerrank.basePoints}
-                              </Text>
-                            </HStack>
-                            <HStack justify="space-between">
-                              <Text color="gray.400" fontSize="sm">Bonus Points</Text>
-                              <Text color="white" fontSize="sm">
-                                +{breakdown.breakdown.coding.breakdown.hackerrank.bonusPoints}
-                              </Text>
-                            </HStack>
-                          </VStack>
-                        </Box>
-                      )}
-                    </VStack>
-                  </AccordionPanel>
-                </AccordionItem>
-              )}
-
-              {/* Bonuses */}
-              {breakdown?.breakdown?.bonuses && breakdown.breakdown.bonuses.totalPoints > 0 && (
-                <AccordionItem borderColor={borderColor}>
-                  <AccordionButton>
-                    <HStack flex="1" justify="space-between">
-                      <HStack>
-                        <Icon as={FiStar} color="yellow.500" />
-                        <Text color="white" fontWeight="medium">
-                          Bonus Points
-                        </Text>
-                      </HStack>
-                      <HStack>
-                        <Text color="green.400" fontWeight="bold">
-                          +{breakdown.breakdown.bonuses.totalPoints} pts
-                        </Text>
-                        <AccordionIcon color="gray.400" />
-                      </HStack>
-                    </HStack>
-                  </AccordionButton>
-                  <AccordionPanel>
-                    <VStack align="stretch" spacing={2}>
-                      {breakdown.breakdown.bonuses.breakdown.firstWorkshop && (
-                        <HStack justify="space-between" p={2} bg="gray.700" borderRadius="md">
-                          <Text color="white" fontSize="sm">First Workshop Bonus</Text>
-                          <Badge colorScheme="yellow" variant="subtle">
-                            +{breakdown.breakdown.bonuses.breakdown.firstWorkshop} pts
-                          </Badge>
-                        </HStack>
-                      )}
-                      {breakdown.breakdown.bonuses.breakdown.firstHackathon && (
-                        <HStack justify="space-between" p={2} bg="gray.700" borderRadius="md">
-                          <Text color="white" fontSize="sm">First Hackathon Bonus</Text>
-                          <Badge colorScheme="yellow" variant="subtle">
-                            +{breakdown.breakdown.bonuses.breakdown.firstHackathon} pts
-                          </Badge>
-                        </HStack>
-                      )}
-                      {breakdown.breakdown.bonuses.breakdown.certificationStreak && (
-                        <HStack justify="space-between" p={2} bg="gray.700" borderRadius="md">
-                          <Text color="white" fontSize="sm">Certification Streak Bonus</Text>
-                          <Badge colorScheme="yellow" variant="subtle">
-                            +{breakdown.breakdown.bonuses.breakdown.certificationStreak} pts
-                          </Badge>
-                        </HStack>
-                      )}
-                    </VStack>
-                  </AccordionPanel>
-                </AccordionItem>
-              )}
-              {breakdown?.manualAdjustment !== undefined && (
-                <AccordionItem borderColor={borderColor}>
-                  <AccordionButton>
-                    <HStack flex="1" justify="space-between">
-                      <HStack>
-                        <Icon as={FiEdit} color="blue.500" />
-                        <Text color="white" fontWeight="medium">
-                          Manual Adjustments
-                        </Text>
-                      </HStack>
-                      <HStack>
-                        <Text color={breakdown.manualAdjustment >= 0 ? 'green.400' : 'red.400'} fontWeight="bold">
-                          {breakdown.manualAdjustment >= 0 ? '+' : ''}{breakdown.manualAdjustment} pts
-                        </Text>
-                        <AccordionIcon color="gray.400" />
-                      </HStack>
-                    </HStack>
-                  </AccordionButton>
-                  <AccordionPanel>
-                    <Text color="gray.400" fontSize="sm">
-                      Points manually adjusted by an administrator.
-                    </Text>
-                  </AccordionPanel>
-                </AccordionItem>
-              )}
-            </Accordion>
-          </VStack>
-        </CardBody>
-      </Card>
-
-      {/* Point Rules */}
-      <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
-        <CardBody>
-          <VStack spacing={4} align="stretch">
-            <Heading size="md" color="white">
-              Point Rules
-            </Heading>
-            
-            <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={4}>
-              {rules.map((rule: PointRule) => (
-                <Box key={rule.key} p={3} bg="gray.700" borderRadius="md">
-                  <HStack justify="space-between" mb={2}>
-                    <Text color="white" fontSize="sm" fontWeight="medium">
-                      {rule.description}
-                    </Text>
-                    <Badge colorScheme="green" variant="subtle">
-                      +{rule.value} pts
-                    </Badge>
-                  </HStack>
-                </Box>
-              ))}
-            </Grid>
-          </VStack>
-        </CardBody>
-      </Card>
+      <PointRulesDisplay rules={rules} />
     </VStack>
   );
 };
@@ -1046,9 +284,16 @@ const PointsPage: React.FC = () => {
     enabled: user?.role === 'ADMIN',
   });
 
+  const { data: usersResponse, isLoading: usersLoading } = useQuery({
+    queryKey: ['allUsers'],
+    queryFn: () => pointsAPI.getAllUsers(),
+    enabled: user?.role === 'ADMIN',
+  });
+
   const breakdown: PointBreakdown | undefined = breakdownResponse?.data?.data;
   const rules: PointRule[] = rulesResponse?.data?.data || [];
   const statistics: PointStatistics | undefined = statisticsResponse?.data?.data;
+  const users: UserWithPoints[] = usersResponse?.data?.data || [];
 
   const updateAllPointsMutation = useMutation({
     mutationFn: () => pointsAPI.updateAllUserPoints(),
@@ -1076,7 +321,7 @@ const PointsPage: React.FC = () => {
     updateAllPointsMutation.mutate();
   };
 
-  const isLoading = user?.role === 'STUDENT' ? (breakdownLoading || rulesLoading) : (statsLoading || rulesLoading);
+  const isLoading = user?.role === 'STUDENT' ? (breakdownLoading || rulesLoading) : (statsLoading || rulesLoading || usersLoading);
 
   if (isLoading) {
     return (
@@ -1102,7 +347,15 @@ const PointsPage: React.FC = () => {
   }
 
   if (user?.role === 'ADMIN') {
-    return <AdminPointsView statistics={statistics} onUpdateAllPoints={handleUpdateAllPoints} />;
+    return (
+      <AdminPointsView
+        statistics={statistics}
+        onUpdateAllPoints={handleUpdateAllPoints}
+        users={users}
+        usersLoading={usersLoading}
+        rules={rules}
+      />
+    );
   }
 
   return <StudentPointsView breakdown={breakdown} rules={rules} />;
