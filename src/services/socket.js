@@ -1,8 +1,8 @@
 const { Server } = require('socket.io');
 let io;
 
-const initSocket = (server) => {
-    io = new Server(server, {
+const initSocket = (httpServer) => { // Changed parameter name to clarify it's the HTTP server
+    io = new Server(httpServer, { // Initialize Socket.io Server with the HTTP server
         cors: {
             origin: process.env.FRONTEND_URL || 'http://localhost:3000',
             methods: ['GET', 'POST']

@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const http = require('http');
-const { Server } = require('socket.io');
+const { Server } = require('socket.io'); // Keep import for type hinting if needed, but not directly used for instantiation here
 const fs = require('fs'); // Import fs module
 const path = require('path'); // Import path module
 
@@ -85,21 +85,12 @@ app.use((err, req, res, next) => {
   });
 });
 
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    methods: ['GET', 'POST'],
-    credentials: true
-  },
-});
+const server = http.createServer(app); // Create the HTTP server
 
-// Initialize socket service
+// Initialize socket service with the HTTP server
 const socketService = require('./services/socket');
-socketService.initSocket(io);
-
-// Make io available throughout the app (though direct usage of socketService is preferred)
-app.set('io', io);
+const ioInstance = socketService.initSocket(server); // Pass the HTTP server to initSocket
+app.set('io', ioInstance); // Set the actual io instance on the app
 
 // Connect to DB, run migrations, then sync models and start server
 sequelize.authenticate().then(async () => {
