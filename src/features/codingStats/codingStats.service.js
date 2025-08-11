@@ -135,10 +135,13 @@ async function deleteCodingStat(userId, platform) {
   }
 
   // Recalculate points after deletion
+  // IMPORTANT: Re-throw the error if point recalculation fails
   try {
     await pointsService.updateUserPoints(userId);
   } catch (error) {
     console.error('Error recalculating points after coding stat deletion:', error);
+    // Re-throw the error so the calling controller/middleware can handle it
+    throw new Error(`Failed to recalculate points after deleting ${platform} profile: ${error.message}`);
   }
 
   return { message: `${platform} profile deleted successfully.` };
