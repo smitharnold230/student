@@ -114,10 +114,10 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
         const currentIso = currentVal ? new Date(currentVal as string).toISOString() : undefined;
         const originalIso = normalizedOriginalVal ? new Date(normalizedOriginalVal as string).toISOString() : undefined;
         if (currentIso !== originalIso) {
-          changes[typedKey] = currentVal;
+          changes[typedKey] = currentVal as UpdateEventData[typeof typedKey]; // Add type assertion here
         }
       } else if (currentVal !== normalizedOriginalVal) {
-        changes[typedKey] = currentVal;
+        changes[typedKey] = currentVal as UpdateEventData[typeof typedKey]; // Add type assertion here
       }
     }
 
