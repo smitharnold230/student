@@ -50,10 +50,10 @@ const adminLimiter = createRateLimiter(
   'Too many admin requests, please try again later.'
 );
 
-// Points calculation rate limiter (20 requests per 15 minutes)
+// Points calculation rate limiter (Increased to 100 requests per 15 minutes)
 const pointsLimiter = createRateLimiter(
   15 * 60 * 1000, // 15 minutes
-  20,
+  100, // Increased from 20 to 100
   'Too many points calculation requests, please try again later.'
 );
 
@@ -63,4 +63,4 @@ module.exports = {
   uploadLimiter,
   adminLimiter,
   pointsLimiter
-}; 
+};
