@@ -30,6 +30,7 @@ require('./db/models');
 const uploadDir = path.join(__dirname, '../uploads');
 const certificationsDir = path.join(uploadDir, 'certifications');
 const profilePhotosDir = path.join(uploadDir, 'profile_photos');
+const bulkUsersDir = path.join(uploadDir, 'bulk_users'); // New directory for bulk user uploads
 
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
@@ -39,6 +40,9 @@ if (!fs.existsSync(certificationsDir)) {
 }
 if (!fs.existsSync(profilePhotosDir)) {
   fs.mkdirSync(profilePhotosDir);
+}
+if (!fs.existsSync(bulkUsersDir)) { // Create new directory if it doesn't exist
+  fs.mkdirSync(bulkUsersDir);
 }
 
 

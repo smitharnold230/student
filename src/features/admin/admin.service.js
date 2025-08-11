@@ -4,9 +4,12 @@ const User = require('../../db/User'); // Import User model
 const ApiLog = require('../../db/ApiLog');
 const PointRule = require('../../db/PointRule');
 const pointsService = require('../points/points.service');
+const userService = require('../user/user.service'); // Import userService for user creation
+const { signupSchema } = require('../user/user.validation'); // Import signup schema for validation
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const path = require('path');
 const fs = require('fs');
+const xlsx = require('xlsx'); // Import xlsx library
 
 async function getApiLogs({ userId, endpoint, method, limit = 100 } = {}) {
   const where = {};
@@ -95,4 +98,63 @@ async function exportStudentsCsv() {
   return filePath;
 }
 
-module.exports = { getApiLogs, exportStudentsCsv, getPointRules, updatePointRule, getSystemStats };
+async function bulkUploadUsers(filePath) {
+  const workbook = xlsx.readFile(filePath);
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+  const data = xlsx.utils.sheet_to_json(sheet);
+
+  const results = {
+    total: data.length,
+    successful: 0,
+    failed: 0,
+    errors: [],
+  };
+
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    const rowNumber = i + 2; // +2 for 1-based index and header row
+
+    try {
+      // Validate row data using signupSchema
+      const validatedData = signupSchema.parse({
+        email: row.email,
+        password: row.password,
+        role: row.role || 'STUDENT', // Default to STUDENT if not provided
+      });
+
+      // Check if user already exists
+      const existingUser = await userService.findByEmail(validatedData.email);
+      if (existingUser) {
+        results.failed++;
+        results.errors.push({
+          row: rowNumber,
+          email: row.email,
+          reason: 'User with this email already exists.',
+        });
+        continue;
+      }
+
+      // Create user
+      await userService.createUser(validatedData);
+      results.successful++;
+    } catch (error) {
+      results.failed++;
+      let errorMessage = 'Unknown error';
+      if (error.errors && Array.isArray(error.errors)) {
+        errorMessage = error.errors.map(err => `${err.path.join('.')}: ${err.message}`).join('; ');
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      results.errors.push({
+        row: rowNumber,
+        email: row.email || 'N/A',
+        reason: errorMessage,
+      });
+    }
+  }
+
+  return results;
+}
+
+module.exports = { getApiLogs, exportStudentsCsv, getPointRules, updatePointRule, getSystemStats, bulkUploadUsers };

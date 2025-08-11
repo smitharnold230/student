@@ -47,12 +47,17 @@ import {
   FiMail,
   FiCalendar,
   FiShield,
-  FiUser
+  FiUser,
+  FiUploadCloud // New icon for bulk upload
 } from 'react-icons/fi';
-import { authAPI } from '../services/api';
+import { authAPI, adminAPI } from '../services/api'; // Import adminAPI
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { AxiosProgressEvent } from 'axios'; // Import AxiosProgressEvent
+
+// Import new modal component
+import BulkUserUploadModal from '../components/admin/BulkUserUploadModal';
 
 interface User {
   id: string;
@@ -79,11 +84,13 @@ const UserManagementPage: React.FC = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isBulkUploadModalOpen, onOpen: onBulkUploadModalOpen, onClose: onBulkUploadModalClose } = useDisclosure();
   const [createForm, setCreateForm] = useState<CreateUserForm>({
     email: '',
     password: '',
     role: 'STUDENT'
   });
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
@@ -139,6 +146,22 @@ const UserManagementPage: React.FC = () => {
         status: 'error',
         duration: 5000,
       });
+    },
+  });
+
+  // Bulk upload users mutation
+  const bulkUploadUsersMutation = useMutation({
+    mutationFn: (file: File) => adminAPI.bulkUploadUsers(file, (progressEvent: AxiosProgressEvent) => {
+      if (progressEvent.total) {
+        setUploadProgress(Math.round((progressEvent.loaded * 100) / progressEvent.total));
+      }
+    }),
+    onSuccess: () => {
+      // Success toast and result display handled in BulkUserUploadModal
+      queryClient.invalidateQueries({ queryKey: ['users'] }); // Invalidate to refresh user list
+    },
+    onError: () => {
+      // Error toast handled in BulkUserUploadModal
     },
   });
 
@@ -258,13 +281,22 @@ const UserManagementPage: React.FC = () => {
             <Heading size="md" color="white">
               Users
             </Heading>
-            <Button
-              leftIcon={<Icon as={FiUserPlus} />}
-              colorScheme="green"
-              onClick={onOpen}
-            >
-              Add User
-            </Button>
+            <HStack spacing={3}>
+              <Button
+                leftIcon={<Icon as={FiUploadCloud} />}
+                colorScheme="purple"
+                onClick={onBulkUploadModalOpen}
+              >
+                Bulk Upload Users
+              </Button>
+              <Button
+                leftIcon={<Icon as={FiUserPlus} />}
+                colorScheme="green"
+                onClick={onOpen}
+              >
+                Add User
+              </Button>
+            </HStack>
           </HStack>
         </CardBody>
       </Card>
@@ -433,8 +465,17 @@ const UserManagementPage: React.FC = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* Bulk User Upload Modal */}
+      <BulkUserUploadModal
+        isOpen={isBulkUploadModalOpen}
+        onClose={onBulkUploadModalClose}
+        uploadMutation={bulkUploadUsersMutation}
+        uploadProgress={uploadProgress}
+        setUploadProgress={setUploadProgress}
+      />
     </VStack>
   );
 };
 
-export default UserManagementPage; 
+export default UserManagementPage;

@@ -54,4 +54,24 @@ async function getSystemStats(req, res, next) {
   }
 }
 
-module.exports = { getApiLogs, exportStudentsCsv, getPointRules, updatePointRule, getSystemStats }; 
+async function bulkUploadUsers(req, res, next) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    const filePath = req.file.path;
+    const results = await adminService.bulkUploadUsers(filePath);
+    res.json(results);
+  } catch (err) {
+    next(err);
+  } finally {
+    // Clean up the uploaded file
+    if (req.file && req.file.path) {
+      fs.unlink(req.file.path, (err) => {
+        if (err) console.error('Failed to delete uploaded file:', err);
+      });
+    }
+  }
+}
+
+module.exports = { getApiLogs, exportStudentsCsv, getPointRules, updatePointRule, getSystemStats, bulkUploadUsers };

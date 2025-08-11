@@ -126,6 +126,16 @@ export const adminAPI = {
   getPointRules: () => api.get('/admin/point-rules'),
   updatePointRule: (key: string, value: number, description: string) =>
     api.post('/admin/point-rules', { key, value, description }),
+  bulkUploadUsers: (file: File, onUploadProgress?: (progressEvent: AxiosProgressEvent) => void) => { // New API call
+    const formData = new FormData();
+    formData.append('bulkUsers', file);
+    return api.post('/admin/users/bulk-upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress,
+    });
+  },
 };
 
 export const eligibilityAPI = {
