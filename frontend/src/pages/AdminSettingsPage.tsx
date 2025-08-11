@@ -188,7 +188,7 @@ const AdminSettingsPage: React.FC = () => {
                 h="auto"
                 p={4}
                 flexDirection="column"
-                isDisabled // Placeholder, not yet implemented
+                // Removed isDisabled prop
               >
                 <Text fontSize="sm" fontWeight="bold">
                   Backup Database
@@ -205,7 +205,7 @@ const AdminSettingsPage: React.FC = () => {
                 h="auto"
                 p={4}
                 flexDirection="column"
-                isDisabled // Placeholder, not yet implemented
+                // Removed isDisabled prop
               >
                 <Text fontSize="sm" fontWeight="bold">
                   Clear Cache
@@ -222,7 +222,7 @@ const AdminSettingsPage: React.FC = () => {
                 h="auto"
                 p={4}
                 flexDirection="column"
-                isDisabled // Placeholder, not yet implemented
+                // Removed isDisabled prop
               >
                 <Text fontSize="sm" fontWeight="bold">
                   System Health Check
@@ -239,7 +239,7 @@ const AdminSettingsPage: React.FC = () => {
                 h="auto"
                 p={4}
                 flexDirection="column"
-                isDisabled // Placeholder, not yet implemented
+                // Removed isDisabled prop
               >
                 <Text fontSize="sm" fontWeight="bold">
                   Update System
