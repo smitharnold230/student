@@ -39,6 +39,7 @@ import {
   AlertTitle,
   AlertDescription,
   Icon,
+  Input, // Import Input for the search bar
 } from '@chakra-ui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
@@ -51,7 +52,8 @@ import {
   FiSettings,
   FiUserCheck,
   FiUserX,
-  FiRefreshCw
+  FiRefreshCw,
+  FiSearch // Import FiSearch icon
 } from 'react-icons/fi';
 import { eligibilityAPI, profileAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
@@ -82,6 +84,7 @@ const EligibilityPage: React.FC = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [selectedBatch, setSelectedBatch] = useState<string>('SERVICE_C3');
   const [isAutoAssign, setIsAutoAssign] = useState<boolean>(true);
+  const [searchTerm, setSearchTerm] = useState<string>(''); // New state for search term
 
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
@@ -94,6 +97,12 @@ const EligibilityPage: React.FC = () => {
   });
 
   const students: Student[] = studentsResponse?.data?.data || [];
+
+  // Filter students based on search term
+  const filteredStudents = students.filter(student =>
+    student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    student.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // Check eligibility for current user (student view)
   const { data: eligibilityResponse, isLoading: eligibilityLoading } = useQuery({
@@ -415,23 +424,36 @@ const EligibilityPage: React.FC = () => {
           <VStack spacing={4} align="stretch">
             <HStack justify="space-between">
               <Heading size="md" color="white">Student Eligibility</Heading>
-              <Button
-                leftIcon={<FiSettings />}
-                colorScheme="blue"
-                onClick={() => {
-                  // This would need to be implemented in the backend
-                  // For now, refetch students to update eligibility status
-                  refetchStudents();
-                  toast({
-                    title: 'Eligibility Refreshed',
-                    description: 'Student eligibility data has been refreshed.',
-                    status: 'info',
-                    duration: 3000,
-                  });
-                }}
-              >
-                Refresh Eligibility Data
-              </Button>
+              <HStack>
+                <Input
+                  placeholder="Search students by name or email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  bg="gray.700"
+                  borderColor="gray.600"
+                  color="white"
+                  _placeholder={{ color: 'gray.400' }}
+                  width="250px"
+                  leftElement={<Icon as={FiSearch} color="gray.400" ml={2} />}
+                />
+                <Button
+                  leftIcon={<FiSettings />}
+                  colorScheme="blue"
+                  onClick={() => {
+                    // This would need to be implemented in the backend
+                    // For now, refetch students to update eligibility status
+                    refetchStudents();
+                    toast({
+                      title: 'Eligibility Refreshed',
+                      description: 'Student eligibility data has been refreshed.',
+                      status: 'info',
+                      duration: 3000,
+                    });
+                  }}
+                >
+                  Refresh Eligibility Data
+                </Button>
+              </HStack>
             </HStack>
 
             {studentsLoading ? (
@@ -454,7 +476,7 @@ const EligibilityPage: React.FC = () => {
                     </Tr>
                   </Thead>
                   <Tbody>
-                    {students.map((student) => (
+                    {filteredStudents.map((student) => (
                       <Tr key={student.id} _hover={{ bg: 'gray.700' }}>
                         <Td>
                           <VStack align="start" spacing={1}>
