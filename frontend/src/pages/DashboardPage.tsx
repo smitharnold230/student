@@ -174,15 +174,9 @@ const DashboardPage: React.FC = () => {
     },
   ];
 
-  const getProgressionLevel = (points: number) => {
-    if (points >= 1000) return { level: 'Expert', color: 'purple', progress: 100 };
-    if (points >= 750) return { level: 'Advanced', color: 'blue', progress: 75 };
-    if (points >= 500) return { level: 'Intermediate', color: 'green', progress: 50 };
-    if (points >= 250) return { level: 'Beginner', color: 'yellow', progress: 25 };
-    return { level: 'Novice', color: 'gray', progress: 0 };
-  };
+    // Removed progression level function - only using batches now
 
-  const progression = getProgressionLevel(myRank?.points || 0);
+  // Removed progression - only using batches now
 
   return (
     <VStack spacing={6} align="stretch">
@@ -221,31 +215,31 @@ const DashboardPage: React.FC = () => {
         ))}
       </Grid>
 
-      {/* Progression Level */}
+      {/* Points Overview */}
       <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
         <CardBody>
           <VStack spacing={4} align="stretch">
             <HStack justify="space-between">
               <Heading size="md" color="white">
-                Your Progression
+                Your Points
               </Heading>
-              <Badge colorScheme={progression.color} variant="subtle" fontSize="sm">
-                {progression.level}
+              <Badge colorScheme="green" variant="subtle" fontSize="sm">
+                {myRank?.points || 0} pts
               </Badge>
             </HStack>
             
             <Box>
               <HStack justify="space-between" mb={2}>
                 <Text color="gray.400" fontSize="sm">
-                  Progress to next level
+                  Current Points
                 </Text>
                 <Text color="white" fontSize="sm">
-                  {myRank?.points || 0} / 1000 points
+                  {myRank?.points || 0} points
                 </Text>
               </HStack>
               <Progress
-                value={progression.progress}
-                colorScheme={progression.color}
+                value={Math.min(100, ((myRank?.points || 0) / 1000) * 100)}
+                colorScheme="green"
                 size="lg"
                 borderRadius="full"
               />

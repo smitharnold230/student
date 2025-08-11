@@ -40,4 +40,29 @@ async function login(req, res, next) {
   }
 }
 
-module.exports = { getMe, signup, login }; 
+async function getAllUsers(req, res, next) {
+  try {
+    const users = await userService.getAllUsers();
+    res.json({ data: users });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function deleteUser(req, res, next) {
+  try {
+    const { userId } = req.params;
+    
+    // Prevent admin from deleting themselves
+    if (userId === req.user.userId) {
+      return res.status(400).json({ error: 'Cannot delete your own account' });
+    }
+    
+    const result = await userService.deleteUser(userId);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { getMe, signup, login, getAllUsers, deleteUser }; 

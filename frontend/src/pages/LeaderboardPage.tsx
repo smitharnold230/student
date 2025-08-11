@@ -52,16 +52,7 @@ const LeaderboardPage: React.FC = () => {
     return rank;
   };
 
-  const getProgressionColor = (progression: string) => {
-    switch (progression?.toLowerCase()) {
-      case 'advanced':
-        return 'green';
-      case 'intermediate':
-        return 'yellow';
-      default:
-        return 'blue';
-    }
-  };
+  // Removed progression color function - only using batches now
 
   const getBatchColor = (batch: string) => {
     if (!batch) return 'gray';
@@ -160,7 +151,7 @@ const LeaderboardPage: React.FC = () => {
                   <Th color="gray.300" borderColor={borderColor}>Class</Th>
                   <Th color="gray.300" borderColor={borderColor}>Batch</Th>
                   <Th color="gray.300" borderColor={borderColor}>Points</Th>
-                  <Th color="gray.300" borderColor={borderColor}>Level</Th>
+                  <Th color="gray.300" borderColor={borderColor}>Status</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -214,10 +205,10 @@ const LeaderboardPage: React.FC = () => {
                     </Td>
                     <Td borderColor={borderColor}>
                       <Badge
-                        colorScheme={getProgressionColor(student.progression)}
+                        colorScheme="blue"
                         variant="subtle"
                       >
-                        {student.progression}
+                        Active
                       </Badge>
                     </Td>
                   </Tr>

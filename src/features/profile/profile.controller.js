@@ -55,9 +55,19 @@ async function getPendingProfileRequests(req, res, next) {
   }
 }
 
+async function getAllStudents(req, res, next) {
+  try {
+    const students = await profileService.getAllStudents();
+    res.json({ data: students });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = { 
   getProfile, 
   requestProfileEdit, 
   adminApproveProfileEdit,
-  getPendingProfileRequests
+  getPendingProfileRequests,
+  getAllStudents
 }; 

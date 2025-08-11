@@ -15,6 +15,10 @@ import AdminLogsPage from './pages/AdminLogsPage';
 import AdminSettingsPage from './pages/AdminSettingsPage';
 import AdminProfileRequestsPage from './pages/AdminProfileRequestsPage';
 import NotificationsPage from './pages/NotificationsPage';
+import PointsPage from './pages/PointsPage';
+import EligibilityPage from './pages/EligibilityPage';
+import PointRulesPage from './pages/PointRulesPage';
+import UserManagementPage from './pages/UserManagementPage';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles?: string[] }> = ({
   children,
@@ -61,6 +65,8 @@ function App() {
           <Route path="coding-stats" element={<CodingStatsPage />} />
           <Route path="certifications" element={<CertificationsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="points" element={<PointsPage />} />
+          <Route path="eligibility" element={<EligibilityPage />} />
           
           {/* Admin Routes */}
           <Route
@@ -71,6 +77,22 @@ function App() {
               </ProtectedRoute>
             }
           />
+                  <Route
+          path="admin/point-rules"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <PointRulesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="admin/users"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <UserManagementPage />
+            </ProtectedRoute>
+          }
+        />
           <Route
             path="admin/logs"
             element={

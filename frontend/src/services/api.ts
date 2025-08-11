@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
+import { io as socketIOClient, Socket } from 'socket.io-client';
+import { AxiosProgressEvent } from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
 
@@ -35,6 +37,12 @@ api.interceptors.response.use(
   }
 );
 
+const SOCKET_URL = API_BASE_URL.replace(/\/api$/, '');
+export const socket: Socket = socketIOClient(SOCKET_URL, {
+  autoConnect: false,
+  transports: ['websocket'],
+});
+
 // API endpoints
 export const authAPI = {
   login: (email: string, password: string) =>
@@ -42,6 +50,8 @@ export const authAPI = {
   signup: (email: string, password: string, role: 'STUDENT' | 'ADMIN') =>
     api.post('/user/signup', { email, password, role }),
   getMe: () => api.get('/user/me'),
+  getAllUsers: () => api.get('/user/admin/all'),
+  deleteUser: (userId: string) => api.delete(`/user/admin/${userId}`),
 };
 
 export const profileAPI = {
@@ -50,6 +60,7 @@ export const profileAPI = {
   getPendingRequests: () => api.get('/profile/admin/pending'),
   approveRequest: (ticketId: string, status: 'APPROVED' | 'REJECTED', adminNote?: string) => 
     api.post(`/profile/admin/approve/${ticketId}`, { status, adminNote }),
+  getAllStudents: () => api.get('/profile/admin/students'),
 };
 
 export const eventAPI = {
@@ -70,7 +81,7 @@ export const codingStatsAPI = {
 };
 
 export const certificationAPI = {
-  upload: (eventId: string, file: File) => {
+  upload: (eventId: string, file: File, onUploadProgress?: (progressEvent: AxiosProgressEvent) => void) => {
     const formData = new FormData();
     formData.append('eventId', eventId);
     formData.append('certification', file);
@@ -78,6 +89,7 @@ export const certificationAPI = {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      onUploadProgress,
     });
   },
   getPending: () => api.get('/certification/pending'),
@@ -105,12 +117,28 @@ export const adminAPI = {
   exportLogs: () => api.get('/admin/export-logs'),
   getSystemStats: () => api.get('/admin/stats'),
   getRecentActivity: () => api.get('/admin/recent-activity'),
+  getPointRules: () => api.get('/admin/point-rules'),
   updatePointRule: (key: string, value: number, description: string) =>
-    api.post('/admin/point-rule', { key, value, description }),
+    api.post('/admin/point-rules', { key, value, description }),
 };
 
 export const eligibilityAPI = {
   checkEligibility: () => api.get('/eligibility/check'),
   assignBatch: (userId: string, batch: string, auto: boolean) =>
     api.post('/eligibility/assign', { userId, batch, auto }),
+};
+
+export const pointsAPI = {
+  calculateMyPoints: () => api.get('/points/my-points'),
+  getMyBreakdown: () => api.get('/points/my-breakdown'),
+  getPointRules: () => api.get('/points/rules'),
+  addPointsForActivity: (activityType: string, activityData?: any) =>
+    api.post('/points/add-activity', { activityType, activityData }),
+  getPointStatistics: () => api.get('/points/statistics'),
+  updateAllUserPoints: () => api.post('/points/update-all'),
+  getAllUsers: () => api.get('/points/users'),
+  updateUserPoints: (userIds: string[], pointsToAdd: number, reason: string) =>
+    api.post('/points/update-users', { userIds, pointsToAdd, reason }),
+  resetUserPoints: (userIds: string[], reason: string) =>
+    api.post('/points/reset-users', { userIds, reason }),
 }; 

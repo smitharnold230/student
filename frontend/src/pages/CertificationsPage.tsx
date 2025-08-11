@@ -33,11 +33,17 @@ import {
   Tr,
   Th,
   Td,
+  FormErrorMessage,
+  Progress,
 } from '@chakra-ui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FiAward, FiUpload, FiCheck, FiX, FiClock, FiPlus } from 'react-icons/fi';
 import { certificationAPI, eventAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { AxiosProgressEvent } from 'axios';
 
 interface Certification {
   id: string;
@@ -66,6 +72,16 @@ interface Event {
   certificationDeadline?: string;
 }
 
+const uploadCertificationSchema = z.object({
+  eventId: z.string().min(1, 'Event is required'),
+  file: z
+    .any()
+    .refine((file) => file instanceof File && file.type === 'application/pdf', 'PDF file is required')
+    .refine((file) => !file || (file && file.size <= 10 * 1024 * 1024), 'File must be less than 10MB'),
+});
+
+type UploadCertificationForm = z.infer<typeof uploadCertificationSchema>;
+
 const CertificationsPage: React.FC = () => {
   const { user } = useAuthStore();
   const toast = useToast();
@@ -75,6 +91,7 @@ const CertificationsPage: React.FC = () => {
     eventId: '',
     file: null,
   });
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
   
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
@@ -97,9 +114,18 @@ const CertificationsPage: React.FC = () => {
       if (!data.file) {
         throw new Error('Please select a file');
       }
-      return certificationAPI.upload(data.eventId, data.file);
+      // Use FormData and axios for progress
+      const formData = new FormData();
+      formData.append('eventId', data.eventId);
+      formData.append('file', data.file);
+      return certificationAPI.upload(data.eventId, data.file, (progressEvent: AxiosProgressEvent) => {
+        if (progressEvent.total) {
+          setUploadProgress(Math.round((progressEvent.loaded * 100) / progressEvent.total));
+        }
+      });
     },
     onSuccess: () => {
+      setUploadProgress(0);
       toast({
         title: 'Certification uploaded',
         description: 'Your certification has been uploaded successfully.',
@@ -108,12 +134,11 @@ const CertificationsPage: React.FC = () => {
       });
       queryClient.invalidateQueries({ queryKey: ['certifications'] });
       onClose();
-      setUploadData({
-        eventId: '',
-        file: null,
-      });
+      setUploadData({ eventId: '', file: null });
+      reset();
     },
     onError: (error: any) => {
+      setUploadProgress(0);
       toast({
         title: 'Upload failed',
         description: error.response?.data?.error || 'Failed to upload certification',
@@ -145,28 +170,19 @@ const CertificationsPage: React.FC = () => {
     },
   });
 
-  const handleUpload = () => {
-    if (!uploadData.eventId) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please select an event.',
-        status: 'error',
-        duration: 3000,
-      });
-      return;
-    }
-    
-    if (!uploadData.file) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please select a PDF file.',
-        status: 'error',
-        duration: 3000,
-      });
-      return;
-    }
-    
-    uploadCertificationMutation.mutate(uploadData);
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+    reset,
+  } = useForm<UploadCertificationForm>({
+    resolver: zodResolver(uploadCertificationSchema),
+    defaultValues: { eventId: '', file: undefined },
+  });
+
+  const handleUpload = (data: UploadCertificationForm) => {
+    uploadCertificationMutation.mutate(data);
   };
 
   const handleVerify = (submissionId: string, status: 'APPROVED' | 'REJECTED') => {
@@ -393,16 +409,15 @@ const CertificationsPage: React.FC = () => {
           <ModalHeader color="white">Upload Certification</ModalHeader>
           <ModalCloseButton color="white" />
           <ModalBody>
-            <VStack spacing={4}>
-              <FormControl isRequired>
+            <VStack spacing={4} as="form" id="form" onSubmit={handleSubmit(handleUpload)}>
+              <FormControl isInvalid={!!errors.eventId} isRequired>
                 <FormLabel color="gray.300">Event</FormLabel>
                 <Select
                   placeholder="Select event"
-                  value={uploadData.eventId}
-                  onChange={(e) => setUploadData({ ...uploadData, eventId: e.target.value })}
                   bg="gray.700"
                   borderColor="gray.600"
                   color="white"
+                  {...register('eventId')}
                 >
                   {events.map((event) => (
                     <option key={event.id} value={event.id}>
@@ -410,26 +425,52 @@ const CertificationsPage: React.FC = () => {
                     </option>
                   ))}
                 </Select>
+                <FormErrorMessage>{errors.eventId?.message}</FormErrorMessage>
               </FormControl>
-
-              <FormControl isRequired>
+              <FormControl isInvalid={!!errors.file} isRequired>
                 <FormLabel color="gray.300">Certification PDF File</FormLabel>
                 <Input
                   type="file"
                   accept=".pdf"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] || null;
-                    setUploadData({ ...uploadData, file });
-                  }}
                   bg="gray.700"
                   borderColor="gray.600"
                   color="white"
                   _placeholder={{ color: 'gray.400' }}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      if (file.type !== 'application/pdf') {
+                        toast({
+                          title: 'Invalid file type',
+                          description: 'Only PDF files are allowed.',
+                          status: 'error',
+                          duration: 4000,
+                        });
+                        setValue('file', undefined);
+                        return;
+                      }
+                      if (file.size > 10 * 1024 * 1024) {
+                        toast({
+                          title: 'File too large',
+                          description: 'File must be less than 10MB.',
+                          status: 'error',
+                          duration: 4000,
+                        });
+                        setValue('file', undefined);
+                        return;
+                      }
+                      setValue('file', file);
+                    }
+                  }}
                 />
                 <Text color="gray.400" fontSize="xs" mt={1}>
                   Only PDF files are allowed (max 10MB)
                 </Text>
+                <FormErrorMessage>{String(errors.file?.message || '')}</FormErrorMessage>
               </FormControl>
+              {uploadProgress > 0 && (
+                <Progress value={uploadProgress} size="sm" colorScheme="green" mt={2} />
+              )}
             </VStack>
           </ModalBody>
           <ModalFooter>
@@ -438,8 +479,10 @@ const CertificationsPage: React.FC = () => {
             </Button>
             <Button
               colorScheme="brand"
-              onClick={handleUpload}
+              type="submit"
+              form="form"
               isLoading={uploadCertificationMutation.isPending}
+              isDisabled={uploadCertificationMutation.isPending || uploadProgress > 0}
             >
               Upload Certification
             </Button>

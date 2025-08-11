@@ -21,18 +21,28 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       isAuthenticated: false,
-      login: (user: User, token: string) =>
+      login: (user: User, token: string) => {
+        const SocketService = require('../services/socket').default;
+        const socketService = SocketService.getInstance();
+        socketService.connect(user.id);
+        
         set({
           user,
           token,
           isAuthenticated: true,
-        }),
-      logout: () =>
+        });
+      },
+      logout: () => {
+        const SocketService = require('../services/socket').default;
+        const socketService = SocketService.getInstance();
+        socketService.disconnect();
+        
         set({
           user: null,
           token: null,
           isAuthenticated: false,
-        }),
+        });
+      },
     }),
     {
       name: 'auth-storage',

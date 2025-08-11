@@ -2,6 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const { generalLimiter } = require('./middleware/rateLimiter');
+const http = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -10,10 +13,16 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 app.use('/uploads', express.static('uploads'));
+
+// Apply rate limiting to all routes
+app.use(generalLimiter);
+
 const apiLogger = require('./middleware/apiLogger');
 app.use(apiLogger);
 
 const sequelize = require('./db/sequelize');
+// Import models to set up associations
+require('./db/models');
 const userRoutes = require('./features/user/user.routes');
 const profileRoutes = require('./features/profile/profile.routes');
 const eventRoutes = require('./features/event/event.routes');
@@ -24,22 +33,27 @@ const notificationRoutes = require('./features/notification/notification.routes'
 const leaderboardRoutes = require('./features/leaderboard/leaderboard.routes');
 const adminRoutes = require('./features/admin/admin.routes');
 const eligibilityRoutes = require('./features/eligibility/eligibility.routes');
+const pointsRoutes = require('./features/points/points.routes');
 const { authenticateToken, requireRole } = require('./middleware/auth');
 
 // Remove old authRoutes import and usage
 // const authRoutes = require('./routes/auth');
 // app.use('/api/auth', authRoutes);
 
-app.use('/api/user', userRoutes);
+const { authLimiter, uploadLimiter, adminLimiter, pointsLimiter } = require('./middleware/rateLimiter');
+
+// Apply specific rate limiters to different route groups
+app.use('/api/user', authLimiter, userRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/event', eventRoutes);
-app.use('/api/certification', certificationRoutes);
+app.use('/api/certification', uploadLimiter, certificationRoutes);
 app.use('/api/coding-stats', codingStatsRoutes);
 app.use('/api/resume', resumeRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
-app.use('/api/admin', adminRoutes);
+app.use('/api/admin', adminLimiter, adminRoutes);
 app.use('/api/eligibility', eligibilityRoutes);
+app.use('/api/points', pointsLimiter, pointsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -94,66 +108,48 @@ app.post('/api/test-body', (req, res) => {
 
 // TODO: Import and use routes here
 
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    methods: ['GET', 'POST'],
+    credentials: true
+  },
+});
+
+// Initialize socket service
+const socketService = require('./services/socket');
+socketService.initSocket(io);
+
+// Make io available throughout the app
+app.set('io', io);
+
 // Sync Sequelize models and then start server
 sequelize.sync({ force: false, alter: true }).then(async () => {
   console.log('Database synced successfully with alterations');
   
-  // Manually add certificationDeadline column if it doesn't exist
+  // Run database migrations
   try {
-    const Event = require('./db/Event');
-    const sequelize = Event.sequelize;
-    
-    // Check if certificationDeadline column exists
-    const [results] = await sequelize.query(`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name = 'events' AND column_name = 'certificationDeadline'
-    `);
-    
-    if (results.length === 0) {
-      console.log('Adding certificationDeadline column...');
-      await sequelize.query(`
-        ALTER TABLE events 
-        ADD COLUMN "certificationDeadline" TIMESTAMP WITH TIME ZONE
-      `);
-      console.log('certificationDeadline column added successfully');
-    } else {
-      console.log('certificationDeadline column already exists');
-    }
+    const Migration = require('./migrations/migration');
+    const migration = new Migration();
+    await migration.runMigrations();
   } catch (error) {
-    console.error('Error checking/adding certificationDeadline column:', error);
+    console.error('Migration error:', error);
   }
   
-  // Manually add verifiedById column to submissions table if it doesn't exist
-  try {
-    const Event = require('./db/Event');
-    const sequelize = Event.sequelize;
-    
-    // Check if verifiedById column exists
-    const [results] = await sequelize.query(`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name = 'submissions' AND column_name = 'verifiedById'
-    `);
-    
-    if (results.length === 0) {
-      console.log('Adding verifiedById column...');
-      await sequelize.query(`
-        ALTER TABLE submissions 
-        ADD COLUMN "verifiedById" UUID
-      `);
-      console.log('verifiedById column added successfully');
-    } else {
-      console.log('verifiedById column already exists');
-    }
-  } catch (error) {
-    console.error('Error checking/adding verifiedById column:', error);
-  }
-  
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+  });
+  io.on('connection', (socket) => {
+    // Join user room by userId if provided
+    socket.on('join', (userId) => {
+      if (userId) {
+        socket.join(`user_${userId}`);
+      }
+    });
+    socket.on('disconnect', () => {});
   });
 }).catch((err) => {
   console.error('Failed to sync database:', err);
   process.exit(1);
-}); 
+});

@@ -54,10 +54,36 @@ async function getPendingProfileRequests() {
   return ticketsWithUsers;
 }
 
+async function getAllStudents() {
+  const students = await Profile.findAll({
+    include: [{
+      model: User,
+      attributes: ['id', 'email', 'role']
+    }],
+    where: {
+      '$User.role$': 'STUDENT'
+    },
+    order: [['name', 'ASC']]
+  });
+  
+  return students.map(student => ({
+    id: student.User.id,
+    name: student.name,
+    email: student.User.email,
+    class: student.class,
+    batch: student.batch,
+    degree: student.degree,
+    status: student.status,
+    transport: student.transport,
+    hostelInfo: student.hostelInfo
+  }));
+}
+
 module.exports = { 
   getProfileByUserId, 
   createEditTicket, 
   updateTicketStatus, 
   updateProfileByUserId,
-  getPendingProfileRequests
+  getPendingProfileRequests,
+  getAllStudents
 }; 

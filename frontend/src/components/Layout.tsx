@@ -31,6 +31,8 @@ import {
   FiBarChart,
   FiFileText,
   FiUsers,
+  FiTrendingUp,
+  FiCheckCircle
 } from 'react-icons/fi';
 import { useAuthStore } from '../store/authStore';
 
@@ -48,8 +50,12 @@ const navItems: NavItem[] = [
   { label: 'Events', icon: FiCalendar, path: '/events' },
   { label: 'Coding Stats', icon: FiCode, path: '/coding-stats' },
   { label: 'Certifications', icon: FiAward, path: '/certifications' },
+  { label: 'Points', icon: FiTrendingUp, path: '/points' },
+  { label: 'Eligibility', icon: FiCheckCircle, path: '/eligibility' },
   { label: 'Notifications', icon: FiBell, path: '/notifications' },
   { label: 'Admin Dashboard', icon: FiSettings, path: '/admin', roles: ['ADMIN'] },
+  { label: 'Point Rules', icon: FiTrendingUp, path: '/admin/point-rules', roles: ['ADMIN'] },
+  { label: 'User Management', icon: FiUsers, path: '/admin/users', roles: ['ADMIN'] },
   { label: 'Profile Requests', icon: FiUsers, path: '/admin/profile-requests', roles: ['ADMIN'] },
   { label: 'Admin Logs', icon: FiFileText, path: '/admin/logs', roles: ['ADMIN'] },
 ];

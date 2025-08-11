@@ -26,10 +26,14 @@ import {
   useDisclosure,
   Textarea,
   Grid,
+  FormErrorMessage,
 } from '@chakra-ui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { profileAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 interface Profile {
   id: string;
@@ -50,6 +54,17 @@ interface EditRequest {
   transport?: string;
   hostelInfo?: string;
 }
+
+const editRequestSchema = z.object({
+  name: z.string().min(1, 'Full name is required'),
+  degree: z.string().min(1, 'Degree is required'),
+  class: z.string().min(1, 'Class is required'),
+  status: z.string().min(1, 'Status is required'),
+  transport: z.string().optional(),
+  hostelInfo: z.string().optional(),
+});
+
+type EditRequestForm = z.infer<typeof editRequestSchema>;
 
 const ProfilePage: React.FC = () => {
   const { user } = useAuthStore();
@@ -90,8 +105,27 @@ const ProfilePage: React.FC = () => {
     },
   });
 
-  const handleEditRequest = () => {
-    editRequestMutation.mutate(editData);
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+    reset,
+  } = useForm<EditRequestForm>({
+    resolver: zodResolver(editRequestSchema),
+    defaultValues: {
+      name: '',
+      degree: '',
+      class: '',
+      status: '',
+      transport: '',
+      hostelInfo: '',
+    },
+  });
+  const statusValue = watch('status');
+
+  const handleEditRequest = (data: EditRequestForm) => {
+    editRequestMutation.mutate(data);
   };
 
   const getStatusColor = (status: string) => {
@@ -261,29 +295,27 @@ const ProfilePage: React.FC = () => {
           <ModalHeader color="white">Request Profile Edit</ModalHeader>
           <ModalCloseButton color="white" />
           <ModalBody>
-            <VStack spacing={4}>
-              <FormControl>
+            <VStack spacing={4} as="form" onSubmit={handleSubmit(handleEditRequest)}>
+              <FormControl isInvalid={!!errors.name} isRequired>
                 <FormLabel color="gray.300">Full Name</FormLabel>
                 <Input
                   placeholder="Enter your full name"
-                  value={editData.name || ''}
-                  onChange={(e) => setEditData({ ...editData, name: e.target.value })}
                   bg="gray.700"
                   borderColor="gray.600"
                   color="white"
                   _placeholder={{ color: 'gray.400' }}
+                  {...register('name')}
                 />
+                <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
               </FormControl>
-
-              <FormControl>
+              <FormControl isInvalid={!!errors.degree} isRequired>
                 <FormLabel color="gray.300">Degree</FormLabel>
                 <Select
                   placeholder="Select degree"
-                  value={editData.degree || ''}
-                  onChange={(e) => setEditData({ ...editData, degree: e.target.value })}
                   bg="gray.700"
                   borderColor="gray.600"
                   color="white"
+                  {...register('degree')}
                 >
                   <option value="B.E">B.E</option>
                   <option value="B.Tech">B.Tech</option>
@@ -291,17 +323,16 @@ const ProfilePage: React.FC = () => {
                   <option value="M.Tech">M.Tech</option>
                   <option value="Ph.D">Ph.D</option>
                 </Select>
+                <FormErrorMessage>{errors.degree?.message}</FormErrorMessage>
               </FormControl>
-
-              <FormControl>
+              <FormControl isInvalid={!!errors.class} isRequired>
                 <FormLabel color="gray.300">Class</FormLabel>
                 <Select
                   placeholder="Select class"
-                  value={editData.class || ''}
-                  onChange={(e) => setEditData({ ...editData, class: e.target.value })}
                   bg="gray.700"
                   borderColor="gray.600"
                   color="white"
+                  {...register('class')}
                 >
                   <option value="CSE">CSE</option>
                   <option value="AIDS">AIDS</option>
@@ -310,53 +341,51 @@ const ProfilePage: React.FC = () => {
                   <option value="MECH">MECH</option>
                   <option value="CIVIL">CIVIL</option>
                 </Select>
+                <FormErrorMessage>{errors.class?.message}</FormErrorMessage>
               </FormControl>
-
-              <FormControl>
+              <FormControl isInvalid={!!errors.status} isRequired>
                 <FormLabel color="gray.300">Status</FormLabel>
                 <Select
                   placeholder="Select status"
-                  value={editData.status || ''}
-                  onChange={(e) => setEditData({ ...editData, status: e.target.value })}
                   bg="gray.700"
                   borderColor="gray.600"
                   color="white"
+                  {...register('status')}
                 >
                   <option value="Dayscholar">Dayscholar</option>
                   <option value="Hosteller">Hosteller</option>
                 </Select>
+                <FormErrorMessage>{errors.status?.message}</FormErrorMessage>
               </FormControl>
-
-              {editData.status === 'Dayscholar' && (
-                <FormControl>
+              {statusValue === 'Dayscholar' && (
+                <FormControl isInvalid={!!errors.transport} isRequired>
                   <FormLabel color="gray.300">Transport</FormLabel>
                   <Select
                     placeholder="Select transport"
-                    value={editData.transport || ''}
-                    onChange={(e) => setEditData({ ...editData, transport: e.target.value })}
                     bg="gray.700"
                     borderColor="gray.600"
                     color="white"
+                    {...register('transport')}
                   >
                     <option value="College Bus">College Bus</option>
                     <option value="Out Bus">Out Bus</option>
                     <option value="Self Transport">Self Transport</option>
                   </Select>
+                  <FormErrorMessage>{errors.transport?.message}</FormErrorMessage>
                 </FormControl>
               )}
-
-              {editData.status === 'Hosteller' && (
-                <FormControl>
+              {statusValue === 'Hosteller' && (
+                <FormControl isInvalid={!!errors.hostelInfo} isRequired>
                   <FormLabel color="gray.300">Hostel Information</FormLabel>
                   <Textarea
                     placeholder="Enter hostel details"
-                    value={editData.hostelInfo || ''}
-                    onChange={(e) => setEditData({ ...editData, hostelInfo: e.target.value })}
                     bg="gray.700"
                     borderColor="gray.600"
                     color="white"
                     _placeholder={{ color: 'gray.400' }}
+                    {...register('hostelInfo')}
                   />
+                  <FormErrorMessage>{errors.hostelInfo?.message}</FormErrorMessage>
                 </FormControl>
               )}
             </VStack>
@@ -367,8 +396,10 @@ const ProfilePage: React.FC = () => {
             </Button>
             <Button
               colorScheme="brand"
-              onClick={handleEditRequest}
+              type="submit"
+              form="form"
               isLoading={editRequestMutation.isPending}
+              onClick={handleSubmit(handleEditRequest)}
             >
               Submit Request
             </Button>

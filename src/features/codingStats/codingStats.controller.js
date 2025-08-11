@@ -14,6 +14,17 @@ async function submitLeetCode(req, res, next) {
   }
 }
 
+async function submitHackerRank(req, res, next) {
+  console.log('[ROUTE] /api/coding-stats/hackerrank called');
+  try {
+    const { url, manualCount } = req.body;
+    const stat = await codingStatsService.submitHackerRank(req.user.userId, url, manualCount);
+    res.status(201).json({ message: 'HackerRank stats updated', stat });
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function getStats(req, res, next) {
   try {
     const stats = await codingStatsService.getStats(req.user.userId);
@@ -23,4 +34,4 @@ async function getStats(req, res, next) {
   }
 }
 
-module.exports = { submitLeetCode, getStats };
+module.exports = { submitLeetCode, submitHackerRank, getStats };

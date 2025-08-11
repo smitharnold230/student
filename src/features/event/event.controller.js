@@ -21,10 +21,10 @@ async function createEvent(req, res, next) {
       });
     }
     
-    let name, type, date, organizer, url, link, certificationDeadline;
+    let name, type, date, organizer, url, link;
     
     try {
-      ({ name, type, date, organizer, url, link, certificationDeadline } = req.body);
+      ({ name, type, date, organizer, url, link } = req.body);
     } catch (destructuringError) {
       console.error('Destructuring error:', destructuringError);
       return res.status(400).json({ 
@@ -49,7 +49,9 @@ async function createEvent(req, res, next) {
       });
     }
     
-    const event = await eventService.createEvent(req.body);
+    // Exclude certificationDeadline from the request body
+    const { certificationDeadline, ...eventData } = req.body;
+    const event = await eventService.createEvent(eventData);
     res.status(201).json({ message: 'Event created', event });
   } catch (err) {
     console.error('Event creation error:', err);
@@ -122,4 +124,4 @@ async function getCertificationDeadline(req, res, next) {
   }
 }
 
-module.exports = { createEvent, getEvents, participateInEvent, acceptEvent, getEventDetails, setCertificationDeadline, getCertificationDeadline }; 
+module.exports = { createEvent, getEvents, participateInEvent, acceptEvent, getEventDetails, setCertificationDeadline, getCertificationDeadline };

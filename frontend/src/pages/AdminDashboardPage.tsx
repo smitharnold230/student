@@ -34,7 +34,7 @@ import {
   FiCheckCircle,
   FiClock
 } from 'react-icons/fi';
-import { adminAPI, leaderboardAPI, eventAPI, profileAPI } from '../services/api';
+import { adminAPI, leaderboardAPI, eventAPI, profileAPI, pointsAPI } from '../services/api';
 
 interface SystemStats {
   totalStudents: number;
@@ -83,6 +83,16 @@ const AdminDashboardPage: React.FC = () => {
     queryFn: () => profileAPI.getPendingRequests(),
   });
 
+  const { data: pointStatsResponse } = useQuery({
+    queryKey: ['pointStats'],
+    queryFn: () => pointsAPI.getPointStatistics(),
+  });
+
+  const { data: allUsersResponse } = useQuery({
+    queryKey: ['allUsers'],
+    queryFn: () => pointsAPI.getAllUsers(),
+  });
+
   // Use real data from API responses
   const systemStats: SystemStats = systemStatsResponse?.data || {
     totalStudents: 0,
@@ -97,6 +107,8 @@ const AdminDashboardPage: React.FC = () => {
   const events = eventsResponse?.data || [];
   const leaderboard = leaderboardResponse?.data || [];
   const profileRequests: any[] = profileRequestsResponse?.data || [];
+  const pointStats = pointStatsResponse?.data || {};
+  const allUsers = allUsersResponse?.data?.data || [];
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -396,6 +408,128 @@ const AdminDashboardPage: React.FC = () => {
                 </Text>
               </VStack>
             )}
+          </VStack>
+        </CardBody>
+      </Card>
+
+      {/* Enhanced Point Statistics */}
+      <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
+        <CardBody>
+          <VStack spacing={4} align="stretch">
+            <Heading size="md" color="white">
+              Point System Overview
+            </Heading>
+            
+            <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={4}>
+              <Stat>
+                <StatLabel color="gray.400" fontSize="sm">Total Users</StatLabel>
+                <StatNumber color="white" fontSize="xl">
+                  {pointStats.totalUsers || 0}
+                </StatNumber>
+                <StatHelpText color="gray.500" fontSize="xs">
+                  With point records
+                </StatHelpText>
+              </Stat>
+              
+              <Stat>
+                <StatLabel color="gray.400" fontSize="sm">Total Points</StatLabel>
+                <StatNumber color="white" fontSize="xl">
+                  {pointStats.totalPoints || 0}
+                </StatNumber>
+                <StatHelpText color="gray.500" fontSize="xs">
+                  System-wide total
+                </StatHelpText>
+              </Stat>
+              
+              <Stat>
+                <StatLabel color="gray.400" fontSize="sm">Average Points</StatLabel>
+                <StatNumber color="white" fontSize="xl">
+                  {pointStats.averagePoints || 0}
+                </StatNumber>
+                <StatHelpText color="gray.500" fontSize="xs">
+                  Per user
+                </StatHelpText>
+              </Stat>
+            </Grid>
+
+            <VStack spacing={3} align="stretch">
+              <Text color="white" fontSize="sm" fontWeight="medium">
+                Points Overview
+              </Text>
+              <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={3}>
+                <HStack justify="space-between" p={2} bg="gray.700" borderRadius="md">
+                  <Text color="white" fontSize="sm">Total Users</Text>
+                  <Badge colorScheme="blue" fontSize="sm">{pointStats.totalUsers || 0}</Badge>
+                </HStack>
+                <HStack justify="space-between" p={2} bg="gray.700" borderRadius="md">
+                  <Text color="white" fontSize="sm">Average Points</Text>
+                  <Badge colorScheme="green" fontSize="sm">{Math.round(pointStats.averagePoints || 0)}</Badge>
+                </HStack>
+              </Grid>
+            </VStack>
+          </VStack>
+        </CardBody>
+      </Card>
+
+      {/* User Activity Overview */}
+      <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
+        <CardBody>
+          <VStack spacing={4} align="stretch">
+            <Heading size="md" color="white">
+              User Activity Overview
+            </Heading>
+            
+            <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={4}>
+              <VStack spacing={3} align="stretch">
+                <Text color="white" fontSize="sm" fontWeight="medium">
+                  Top Performers
+                </Text>
+                {allUsers.slice(0, 5).map((user: any, index: number) => (
+                  <HStack key={user.id} justify="space-between" p={2} bg="gray.700" borderRadius="md">
+                    <HStack spacing={3}>
+                      <Badge colorScheme="yellow" fontSize="xs">#{index + 1}</Badge>
+                      <VStack align="start" spacing={0}>
+                        <Text color="white" fontSize="sm" fontWeight="medium">
+                          {user.name}
+                        </Text>
+                        <Text color="gray.400" fontSize="xs">
+                          {user.email}
+                        </Text>
+                      </VStack>
+                    </HStack>
+                    <Badge colorScheme="green" fontSize="sm">
+                      {user.points} pts
+                    </Badge>
+                  </HStack>
+                ))}
+              </VStack>
+              
+              <VStack spacing={3} align="stretch">
+                <Text color="white" fontSize="sm" fontWeight="medium">
+                  Recent Activity
+                </Text>
+                <VStack spacing={2} align="stretch">
+                  <HStack justify="space-between" p={2} bg="gray.700" borderRadius="md">
+                    <Text color="gray.400" fontSize="sm">Profile Requests</Text>
+                    <Badge colorScheme="orange" fontSize="sm">
+                      {profileRequests.length}
+                    </Badge>
+                  </HStack>
+                                      <HStack justify="space-between" p={2} bg="gray.700" borderRadius="md">
+                      <Text color="gray.400" fontSize="sm">Active Events</Text>
+                      <Badge colorScheme="blue" fontSize="sm">
+                        {events.filter((e: any) => new Date(e.date) > new Date()).length}
+                      </Badge>
+                    </HStack>
+                  <HStack justify="space-between" p={2} bg="gray.700" borderRadius="md">
+                    <Text color="gray.400" fontSize="sm">Pending Certifications</Text>
+                    <Badge colorScheme="red" fontSize="sm">
+                      {systemStats.pendingCertifications}
+                    </Badge>
+                  </HStack>
+                </VStack>
+              </VStack>
+            </Grid>
           </VStack>
         </CardBody>
       </Card>

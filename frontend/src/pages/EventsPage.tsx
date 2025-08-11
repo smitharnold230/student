@@ -28,11 +28,15 @@ import {
   GridItem,
   Icon,
   Skeleton,
+  FormErrorMessage,
 } from '@chakra-ui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FiCalendar, FiMapPin, FiUsers, FiPlus, FiExternalLink } from 'react-icons/fi';
 import { eventAPI, notificationAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 interface Event {
   id: string;
@@ -64,6 +68,18 @@ interface FormattedEventData {
   link: string;
   certificationDeadline?: string | null;
 }
+
+const createEventSchema = z.object({
+  name: z.string().min(1, 'Event name is required'),
+  type: z.string().refine(val => val === 'WORKSHOP' || val === 'HACKATHON', { message: 'Event type is required' }),
+  date: z.string().min(1, 'Date is required'),
+  organizer: z.string().min(1, 'Organizer is required'),
+  url: z.string().optional(),
+  link: z.string().optional(),
+  certificationDeadline: z.string().optional(),
+});
+
+type CreateEventForm = z.infer<typeof createEventSchema>;
 
 const EventsPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -165,23 +181,33 @@ const EventsPage: React.FC = () => {
     },
   });
 
-  const handleCreateEvent = () => {
-    // Validate required fields
-    if (!createEventData.name || !createEventData.type || !createEventData.date || !createEventData.organizer) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please fill in all required fields (Name, Type, Date, Organizer).',
-        status: 'error',
-        duration: 5000,
-      });
-      return;
-    }
-    
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<CreateEventForm>({
+    resolver: zodResolver(createEventSchema),
+    defaultValues: {
+      name: '',
+      type: 'WORKSHOP',
+      date: '',
+      organizer: '',
+      url: '',
+      link: '',
+      certificationDeadline: '',
+    },
+  });
+
+  const handleCreateEvent = (data: CreateEventForm) => {
     // Format dates to ISO string for backend
     const formattedData = {
-      ...createEventData,
-      date: createEventData.date ? new Date(createEventData.date).toISOString() : null,
-      certificationDeadline: createEventData.certificationDeadline ? new Date(createEventData.certificationDeadline).toISOString() : null,
+      ...data,
+      type: data.type as 'WORKSHOP' | 'HACKATHON',
+      url: data.url || '',
+      link: data.link || '',
+      date: data.date ? new Date(data.date).toISOString() : null,
+      certificationDeadline: data.certificationDeadline ? new Date(data.certificationDeadline).toISOString() : null,
     };
     createEventMutation.mutate(formattedData);
   };
@@ -357,94 +383,85 @@ const EventsPage: React.FC = () => {
           <ModalHeader color="white">Create New Event</ModalHeader>
           <ModalCloseButton color="white" />
           <ModalBody>
-            <VStack spacing={4}>
-              <FormControl isRequired>
+            <VStack spacing={4} as="form" onSubmit={handleSubmit(handleCreateEvent)}>
+              <FormControl isInvalid={!!errors.name} isRequired>
                 <FormLabel color="gray.300">Event Name</FormLabel>
                 <Input
                   placeholder="Enter event name"
-                  value={createEventData.name}
-                  onChange={(e) => setCreateEventData({ ...createEventData, name: e.target.value })}
                   bg="gray.700"
                   borderColor="gray.600"
                   color="white"
                   _placeholder={{ color: 'gray.400' }}
+                  {...register('name')}
                 />
+                <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
               </FormControl>
-
-              <FormControl isRequired>
+              <FormControl isInvalid={!!errors.type} isRequired>
                 <FormLabel color="gray.300">Event Type</FormLabel>
                 <Select
-                  value={createEventData.type}
-                  onChange={(e) => setCreateEventData({ ...createEventData, type: e.target.value as 'WORKSHOP' | 'HACKATHON' })}
                   bg="gray.700"
                   borderColor="gray.600"
                   color="white"
+                  {...register('type')}
                 >
                   <option value="WORKSHOP">Workshop</option>
                   <option value="HACKATHON">Hackathon</option>
                 </Select>
+                <FormErrorMessage>{errors.type?.message}</FormErrorMessage>
               </FormControl>
-
-              <FormControl isRequired>
+              <FormControl isInvalid={!!errors.date} isRequired>
                 <FormLabel color="gray.300">Date</FormLabel>
                 <Input
                   type="date"
-                  value={createEventData.date}
-                  onChange={(e) => setCreateEventData({ ...createEventData, date: e.target.value })}
                   bg="gray.700"
                   borderColor="gray.600"
                   color="white"
+                  {...register('date')}
                 />
+                <FormErrorMessage>{errors.date?.message}</FormErrorMessage>
               </FormControl>
-
-              <FormControl isRequired>
+              <FormControl isInvalid={!!errors.organizer} isRequired>
                 <FormLabel color="gray.300">Organizer</FormLabel>
                 <Input
                   placeholder="Enter organizer name"
-                  value={createEventData.organizer}
-                  onChange={(e) => setCreateEventData({ ...createEventData, organizer: e.target.value })}
                   bg="gray.700"
                   borderColor="gray.600"
                   color="white"
                   _placeholder={{ color: 'gray.400' }}
+                  {...register('organizer')}
                 />
+                <FormErrorMessage>{errors.organizer?.message}</FormErrorMessage>
               </FormControl>
-
               <FormControl>
                 <FormLabel color="gray.300">Event URL</FormLabel>
                 <Input
                   placeholder="Enter event URL"
-                  value={createEventData.url}
-                  onChange={(e) => setCreateEventData({ ...createEventData, url: e.target.value })}
                   bg="gray.700"
                   borderColor="gray.600"
                   color="white"
                   _placeholder={{ color: 'gray.400' }}
+                  {...register('url')}
                 />
               </FormControl>
-
               <FormControl>
                 <FormLabel color="gray.300">Registration Link</FormLabel>
                 <Input
                   placeholder="Enter registration link"
-                  value={createEventData.link}
-                  onChange={(e) => setCreateEventData({ ...createEventData, link: e.target.value })}
                   bg="gray.700"
                   borderColor="gray.600"
                   color="white"
                   _placeholder={{ color: 'gray.400' }}
+                  {...register('link')}
                 />
               </FormControl>
-
               <FormControl>
                 <FormLabel color="gray.300">Certification Deadline</FormLabel>
                 <Input
                   type="date"
-                  value={createEventData.certificationDeadline || ''}
-                  onChange={(e) => setCreateEventData({ ...createEventData, certificationDeadline: e.target.value })}
                   bg="gray.700"
                   borderColor="gray.600"
                   color="white"
+                  {...register('certificationDeadline')}
                 />
               </FormControl>
             </VStack>
@@ -455,8 +472,10 @@ const EventsPage: React.FC = () => {
             </Button>
             <Button
               colorScheme="brand"
-              onClick={handleCreateEvent}
+              type="submit"
+              form="form"
               isLoading={createEventMutation.isPending}
+              onClick={handleSubmit(handleCreateEvent)}
             >
               Create Event
             </Button>

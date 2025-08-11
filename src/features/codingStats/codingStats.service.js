@@ -3,6 +3,7 @@ const Profile = require('../../db/Profile');
 const { execFile } = require('child_process');
 const path = require('path');
 const axios = require('axios');
+const pointsService = require('../points/points.service');
 
 function extractLeetCodeUsername(url) {
   // Accepts URLs like https://leetcode.com/u/username/ or https://leetcode.com/username/
@@ -109,6 +110,52 @@ async function submitLeetCode(userId, url, manualCount) {
     problemsSolved,
   }, { where: { profileId: profile.id, platform: 'LeetCode' } });
   console.log('[submitLeetCode] Upsert result:', upsertResult);
+  
+  // Add points for LeetCode submission
+  try {
+    await pointsService.addPointsForActivity(userId, 'LEETCODE_SUBMISSION', { platform: 'LeetCode', problemsSolved });
+    console.log('[submitLeetCode] Points added for LeetCode submission');
+  } catch (error) {
+    console.error('[submitLeetCode] Error adding points:', error);
+    // Don't fail the submission if points fail
+  }
+  
+  return upsertResult;
+}
+
+async function submitHackerRank(userId, url, manualCount) {
+  console.log('[submitHackerRank] userId:', userId, 'url:', url, 'manualCount:', manualCount);
+  const profile = await Profile.findOne({ where: { userId } });
+  if (!profile) {
+    console.error('[submitHackerRank] Profile not found for userId:', userId);
+    throw new Error('Profile not found');
+  }
+  
+  // For now, we'll use manual count since HackerRank scraping is more complex
+  let problemsSolved = manualCount || 0;
+  
+  if (!problemsSolved) {
+    console.error('[submitHackerRank] No problems solved count provided');
+    throw new Error('Please provide the number of problems solved on HackerRank');
+  }
+  
+  const upsertResult = await CodingStat.upsert({
+    profileId: profile.id,
+    platform: 'HackerRank',
+    url,
+    problemsSolved,
+  }, { where: { profileId: profile.id, platform: 'HackerRank' } });
+  console.log('[submitHackerRank] Upsert result:', upsertResult);
+  
+  // Add points for HackerRank submission
+  try {
+    await pointsService.addPointsForActivity(userId, 'HACKERRANK_SUBMISSION', { platform: 'HackerRank', problemsSolved });
+    console.log('[submitHackerRank] Points added for HackerRank submission');
+  } catch (error) {
+    console.error('[submitHackerRank] Error adding points:', error);
+    // Don't fail the submission if points fail
+  }
+  
   return upsertResult;
 }
 
@@ -118,4 +165,4 @@ async function getStats(userId) {
   return CodingStat.findAll({ where: { profileId: profile.id } });
 }
 
-module.exports = { submitLeetCode, getStats }; 
+module.exports = { submitLeetCode, submitHackerRank, getStats }; 

@@ -14,7 +14,10 @@ async function getApiLogs(req, res, next) {
 async function getPointRules(req, res, next) {
   try {
     const rules = await adminService.getPointRules();
-    res.json(rules);
+    res.json({
+      success: true,
+      data: rules
+    });
   } catch (err) {
     next(err);
   }
@@ -42,4 +45,13 @@ async function exportStudentsCsv(req, res, next) {
   }
 }
 
-module.exports = { getApiLogs, exportStudentsCsv, getPointRules, updatePointRule }; 
+async function getSystemStats(req, res, next) {
+  try {
+    const stats = await adminService.getSystemStats();
+    res.json(stats);
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { getApiLogs, exportStudentsCsv, getPointRules, updatePointRule, getSystemStats }; 

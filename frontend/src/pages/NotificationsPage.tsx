@@ -16,22 +16,17 @@ import {
   Divider,
 } from '@chakra-ui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { FiBell, FiCheck, FiAward, FiAlertCircle, FiInfo, FiClock } from 'react-icons/fi';
+import { FiBell, FiCheck, FiAlertCircle, FiInfo, FiClock } from 'react-icons/fi';
 import { notificationAPI } from '../services/api';
-
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR';
-  isRead: boolean;
-  createdAt: string;
-  actionUrl?: string;
-}
+import { useNotifications } from '../hooks/useNotifications';
+import { Notification } from '../types/notification';
 
 const NotificationsPage: React.FC = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
+  
+  // Initialize real-time notifications
+  useNotifications();
   
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
@@ -39,6 +34,8 @@ const NotificationsPage: React.FC = () => {
   const { data: notificationsResponse, isLoading } = useQuery({
     queryKey: ['notifications'],
     queryFn: () => notificationAPI.getNotifications(),
+    staleTime: 0, // Always fetch fresh data
+    refetchOnWindowFocus: true,
   });
 
   const notifications: Notification[] = notificationsResponse?.data || [];
@@ -108,7 +105,7 @@ const NotificationsPage: React.FC = () => {
     }
   };
 
-  const unreadCount = notifications.filter(notification => !notification.isRead).length;
+  const unreadCount = notifications.filter(notification => !notification.read).length;
   const totalCount = notifications.length;
 
   if (isLoading) {
@@ -162,8 +159,8 @@ const NotificationsPage: React.FC = () => {
               key={notification.id}
               bg={cardBg}
               border="1px solid"
-              borderColor={notification.isRead ? borderColor : 'brand.500'}
-              opacity={notification.isRead ? 0.7 : 1}
+              borderColor={notification.read ? borderColor : 'brand.500'}
+              opacity={notification.read ? 0.7 : 1}
               transition="all 0.2s"
               _hover={{ opacity: 1 }}
             >
@@ -195,7 +192,7 @@ const NotificationsPage: React.FC = () => {
                         >
                           {notification.type}
                         </Badge>
-                        {!notification.isRead && (
+                        {!notification.read && (
                           <Badge colorScheme="brand" variant="solid" fontSize="xs">
                             NEW
                           </Badge>
@@ -208,7 +205,7 @@ const NotificationsPage: React.FC = () => {
                           {formatDate(notification.createdAt)}
                         </Text>
                         
-                        {!notification.isRead && (
+                        {!notification.read && (
                           <Button
                             size="xs"
                             colorScheme="brand"
@@ -222,17 +219,17 @@ const NotificationsPage: React.FC = () => {
                       </HStack>
                     </VStack>
                   </HStack>
-                  
-                  {notification.actionUrl && (
+
+                  {notification.eventId && (
                     <>
                       <Divider borderColor={borderColor} />
                       <Button
                         size="sm"
                         colorScheme="brand"
                         variant="outline"
-                        onClick={() => window.open(notification.actionUrl, '_blank')}
+                        onClick={() => window.location.href = `/events/${notification.eventId}`}
                       >
-                        View Details
+                        View Event Details
                       </Button>
                     </>
                   )}
@@ -262,4 +259,4 @@ const NotificationsPage: React.FC = () => {
   );
 };
 
-export default NotificationsPage; 
+export default NotificationsPage;

@@ -16,7 +16,12 @@ const Point = sequelize.define('Point', {
     type: DataTypes.INTEGER,
     defaultValue: 0,
   },
-  progression: DataTypes.STRING,
+  // Removed progression field - only using batches
+  manualAdjustment: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+    comment: 'Manual points added/subtracted by admin'
+  },
 }, {
   tableName: 'points',
   timestamps: true,

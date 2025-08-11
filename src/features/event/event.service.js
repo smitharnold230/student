@@ -2,6 +2,7 @@ const Event = require('../../db/Event');
 const Profile = require('../../db/Profile');
 const EventParticipation = require('../../db/EventParticipation');
 const Notification = require('../../db/Notification');
+const pointsService = require('../points/points.service');
 
 async function createEvent(data) {
   try {
@@ -12,11 +13,12 @@ async function createEvent(data) {
       throw new Error('Event model is not properly imported');
     }
     
-    // Convert date strings to Date objects
+    // Convert date strings to Date objects and exclude certificationDeadline
+    const { certificationDeadline, ...restData } = data;
     const eventData = {
-      ...data,
-      date: data.date ? new Date(data.date) : null,
-      certificationDeadline: data.certificationDeadline ? new Date(data.certificationDeadline) : null,
+      ...restData,
+      date: restData.date ? new Date(restData.date) : null,
+      // Exclude certificationDeadline to avoid column not found error
     };
     
     console.log('Processed event data:', eventData);
@@ -44,7 +46,10 @@ async function getEvents(userId = null) {
     const count = await Event.count();
     console.log(`Total events in database: ${count}`);
     
-    const events = await Event.findAll();
+    // Exclude certificationDeadline to avoid column not found error
+    const events = await Event.findAll({
+      attributes: { exclude: ['certificationDeadline'] }
+    });
     console.log(`Found ${events.length} events`);
     
     // If userId is provided, add participation status
@@ -95,6 +100,16 @@ async function participateInEvent(userId, eventId) {
       participatedAt: new Date()
     });
     
+    // Add points for participation
+    try {
+      const activityType = event.type === 'WORKSHOP' ? 'WORKSHOP_PARTICIPATION' : 'HACKATHON_PARTICIPATION';
+      await pointsService.addPointsForActivity(userId, activityType, { eventName: event.name });
+      console.log(`Points added for ${activityType} for user ${userId}`);
+    } catch (error) {
+      console.error('Error adding points for event participation:', error);
+      // Don't fail the participation if points fail
+    }
+    
     console.log(`Participation recorded for user ${userId} in event ${eventId}`);
     return { message: 'Participation recorded successfully' };
   } catch (error) {
@@ -107,8 +122,10 @@ async function acceptEvent(userId, eventId) {
   try {
     console.log(`User ${userId} attempting to accept event ${eventId}`);
     
-    // Check if event exists
-    const event = await Event.findByPk(eventId);
+    // Check if event exists - exclude certificationDeadline to avoid column error
+    const event = await Event.findByPk(eventId, {
+      attributes: { exclude: ['certificationDeadline'] }
+    });
     if (!event) {
       throw new Error('Event not found');
     }
@@ -128,6 +145,16 @@ async function acceptEvent(userId, eventId) {
       eventId,
       participatedAt: new Date()
     });
+    
+    // Add points for participation
+    try {
+      const activityType = event.type === 'WORKSHOP' ? 'WORKSHOP_PARTICIPATION' : 'HACKATHON_PARTICIPATION';
+      await pointsService.addPointsForActivity(userId, activityType, { eventName: event.name });
+      console.log(`Points added for ${activityType} for user ${userId}`);
+    } catch (error) {
+      console.error('Error adding points for event participation:', error);
+      // Don't fail the participation if points fail
+    }
     
     // Create certification deadline reminder notification if deadline exists
     if (event.certificationDeadline) {
@@ -153,7 +180,9 @@ async function acceptEvent(userId, eventId) {
 
 async function getEventDetails(eventId) {
   try {
-    const event = await Event.findByPk(eventId);
+    const event = await Event.findByPk(eventId, {
+      attributes: { exclude: ['certificationDeadline'] }
+    });
     if (!event) {
       throw new Error('Event not found');
     }
@@ -178,4 +207,4 @@ async function getCertificationDeadline(eventId) {
   return { eventId, certificationDeadline: event.certificationDeadline };
 }
 
-module.exports = { createEvent, getEvents, participateInEvent, acceptEvent, getEventDetails, setCertificationDeadline, getCertificationDeadline }; 
+module.exports = { createEvent, getEvents, participateInEvent, acceptEvent, getEventDetails, setCertificationDeadline, getCertificationDeadline };

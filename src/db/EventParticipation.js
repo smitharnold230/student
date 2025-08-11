@@ -19,9 +19,19 @@ const EventParticipation = sequelize.define('EventParticipation', {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
   },
+  status: {
+    type: DataTypes.ENUM('PENDING', 'CONFIRMED', 'CANCELLED'),
+    defaultValue: 'CONFIRMED',
+  },
 }, {
   tableName: 'event_participations',
   timestamps: true,
+  indexes: [
+    {
+      unique: true,
+      fields: ['userId', 'eventId']
+    }
+  ]
 });
 
 module.exports = EventParticipation; 

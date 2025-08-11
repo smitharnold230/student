@@ -22,11 +22,15 @@ import { useForm } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
 import { authAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-interface LoginForm {
-  email: string;
-  password: string;
-}
+const loginSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+type LoginForm = z.infer<typeof loginSchema>;
 
 interface LoginResponse {
   token: string;
@@ -51,7 +55,10 @@ const LoginPage: React.FC = () => {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<LoginForm>();
+  } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
+  });
 
   const loginMutation = useMutation({
     mutationFn: (data: LoginForm) => authAPI.login(data.email, data.password),
@@ -152,13 +159,7 @@ const LoginPage: React.FC = () => {
                       borderColor: 'brand.500',
                       boxShadow: '0 0 0 1px var(--chakra-colors-brand-500)',
                     }}
-                    {...register('email', {
-                      required: 'Email is required',
-                      pattern: {
-                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: 'Invalid email address',
-                      },
-                    })}
+                    {...register('email')}
                   />
                   <FormErrorMessage>
                     {errors.email?.message}
@@ -178,13 +179,7 @@ const LoginPage: React.FC = () => {
                       borderColor: 'brand.500',
                       boxShadow: '0 0 0 1px var(--chakra-colors-brand-500)',
                     }}
-                    {...register('password', {
-                      required: 'Password is required',
-                      minLength: {
-                        value: 6,
-                        message: 'Password must be at least 6 characters',
-                      },
-                    })}
+                    {...register('password')}
                   />
                   <FormErrorMessage>
                     {errors.password?.message}
