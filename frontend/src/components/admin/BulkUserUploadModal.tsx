@@ -27,6 +27,8 @@ import {
   Box,
   HStack,
   Badge,
+  Heading, // Added missing import
+  Icon, // Added missing import
 } from '@chakra-ui/react';
 import { UseMutationResult } from '@tanstack/react-query';
 import { AxiosProgressEvent } from 'axios';
