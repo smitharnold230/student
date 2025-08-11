@@ -4,6 +4,8 @@ const cors = require('cors');
 const morgan = require('morgan');
 const http = require('http');
 const { Server } = require('socket.io');
+const fs = require('fs'); // Import fs module
+const path = require('path'); // Import path module
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -23,6 +25,22 @@ app.use(apiLogger);
 const sequelize = require('./db/sequelize');
 // Import models to set up associations
 require('./db/models');
+
+// Ensure upload directories exist
+const uploadDir = path.join(__dirname, '../uploads');
+const certificationsDir = path.join(uploadDir, 'certifications');
+const profilePhotosDir = path.join(uploadDir, 'profile_photos');
+
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+if (!fs.existsSync(certificationsDir)) {
+  fs.mkdirSync(certificationsDir);
+}
+if (!fs.existsSync(profilePhotosDir)) {
+  fs.mkdirSync(profilePhotosDir);
+}
+
 
 // Import routes
 const userRoutes = require('./features/user/user.routes');
