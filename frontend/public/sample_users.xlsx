@@ -1,0 +1,4 @@
+email,password,role
+student1@example.com,password123,STUDENT
+student2@example.com,securepass,
+admin_user@example.com,adminpass,ADMIN

@@ -27,8 +27,8 @@ import {
   Box,
   HStack,
   Badge,
-  Heading, // Added missing import
-  Icon, // Added missing import
+  Heading,
+  Icon,
 } from '@chakra-ui/react';
 import { UseMutationResult } from '@tanstack/react-query';
 import { AxiosProgressEvent } from 'axios';
@@ -179,9 +179,9 @@ const BulkUserUploadModal: React.FC<BulkUserUploadModalProps> = ({
                     </ListItem>
                   </List>
                   <Text mt={2}>
-                    <Link href="/path/to/sample_users.xlsx" isExternal color="brand.300">
+                    <Link href="/sample_users.xlsx" isExternal color="brand.300">
                       Download Sample Template
-                    </Link> (Placeholder link, replace with actual if available)
+                    </Link>
                   </Text>
                 </AlertDescription>
               </Box>
