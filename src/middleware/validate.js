@@ -79,6 +79,9 @@ const validationSchemas = {
     hackerrank: z.object({
       url: z.string().url('Invalid HackerRank URL').regex(/hackerrank\.com/, 'Must be a HackerRank URL'),
       manualCount: z.number().int().min(0, 'Problems solved must be non-negative').optional()
+    }),
+    delete: z.object({ // New schema for deleting a coding stat
+      platform: z.enum(['LEETCODE', 'HACKERRANK'], { message: 'Platform must be LEETCODE or HACKERRANK' })
     })
   },
 

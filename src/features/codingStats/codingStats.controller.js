@@ -32,4 +32,14 @@ async function getStats(req, res, next) {
   }
 }
 
-module.exports = { submitLeetCode, submitHackerRank, getStats };
+async function deleteStat(req, res, next) {
+  try {
+    const { platform } = req.params; // Get platform from URL params
+    const result = await codingStatsService.deleteCodingStat(req.user.userId, platform);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { submitLeetCode, submitHackerRank, getStats, deleteStat };

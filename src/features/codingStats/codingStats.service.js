@@ -117,4 +117,31 @@ async function getStats(userId) {
   return CodingStat.findAll({ where: { profileId: profile.id } });
 }
 
-module.exports = { submitLeetCode, submitHackerRank, getStats };
+async function deleteCodingStat(userId, platform) {
+  const profile = await Profile.findOne({ where: { userId } });
+  if (!profile) {
+    throw new Error('Profile not found');
+  }
+
+  const result = await CodingStat.destroy({
+    where: {
+      profileId: profile.id,
+      platform: platform.toUpperCase() // Ensure platform is uppercase
+    }
+  });
+
+  if (result === 0) {
+    throw new Error(`No ${platform} profile found for this user.`);
+  }
+
+  // Recalculate points after deletion
+  try {
+    await pointsService.updateUserPoints(userId);
+  } catch (error) {
+    console.error('Error recalculating points after coding stat deletion:', error);
+  }
+
+  return { message: `${platform} profile deleted successfully.` };
+}
+
+module.exports = { submitLeetCode, submitHackerRank, getStats, deleteCodingStat };

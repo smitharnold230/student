@@ -33,9 +33,15 @@ import {
   StatNumber,
   StatHelpText,
   FormErrorMessage,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
 } from '@chakra-ui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { FiCode, FiTrendingUp, FiAward, FiPlus } from 'react-icons/fi';
+import { FiCode, FiTrendingUp, FiAward, FiPlus, FiTrash2 } from 'react-icons/fi';
 import { codingStatsAPI } from '../services/api';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -62,19 +68,25 @@ type AddStatForm = z.infer<typeof addStatSchema>;
 const CodingStatsPage: React.FC = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isAddModalOpen, onOpen: onAddModalOpen, onClose: onAddModalClose } = useDisclosure();
+  const { isOpen: isConfirmDeleteOpen, onOpen: onConfirmDeleteOpen, onClose: onConfirmDeleteClose } = useDisclosure();
   const [showManualCount, setShowManualCount] = useState(false);
+  const [statToDelete, setStatToDelete] = useState<CodingStat | null>(null);
   const { user } = useAuthStore(); // Get user from auth store
   
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
+
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
 
-  const { data: statsResponse, isLoading } = useQuery({
+  const { data: statsResponse, isLoading, refetch } = useQuery({
     queryKey: ['codingStats'],
     queryFn: () => codingStatsAPI.getStats(),
   });
 
   const stats: CodingStat[] = statsResponse?.data || [];
+  const hasLeetCode = stats.some(s => s.platform === 'LEETCODE');
+  const hasHackerRank = stats.some(s => s.platform === 'HACKERRANK');
 
   const {
     register,
@@ -88,7 +100,7 @@ const CodingStatsPage: React.FC = () => {
   } = useForm<AddStatForm>({
     resolver: zodResolver(addStatSchema),
     defaultValues: {
-      platform: 'LEETCODE',
+      platform: hasLeetCode ? 'HACKERRANK' : 'LEETCODE', // Default to available platform
       username: '',
       manualCount: undefined,
     },
@@ -106,7 +118,7 @@ const CodingStatsPage: React.FC = () => {
         duration: 3000,
       });
       queryClient.invalidateQueries({ queryKey: ['codingStats'] });
-      onClose();
+      onAddModalClose();
       reset();
       setShowManualCount(false);
     },
@@ -135,7 +147,7 @@ const CodingStatsPage: React.FC = () => {
         duration: 3000,
       });
       queryClient.invalidateQueries({ queryKey: ['codingStats'] });
-      onClose();
+      onAddModalClose();
       reset();
       setShowManualCount(false);
     },
@@ -143,6 +155,29 @@ const CodingStatsPage: React.FC = () => {
       toast({
         title: 'Failed to submit HackerRank stats',
         description: error.response?.data?.error || 'Failed to submit HackerRank statistics',
+        status: 'error',
+        duration: 5000,
+      });
+    },
+  });
+
+  const deleteStatMutation = useMutation({
+    mutationFn: (platform: 'LEETCODE' | 'HACKERRANK') => codingStatsAPI.deleteStat(platform),
+    onSuccess: () => {
+      toast({
+        title: 'Profile Removed',
+        description: 'Coding profile has been removed successfully.',
+        status: 'success',
+        duration: 3000,
+      });
+      queryClient.invalidateQueries({ queryKey: ['codingStats'] });
+      onConfirmDeleteClose();
+      setStatToDelete(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Removal Failed',
+        description: error.response?.data?.error || 'Failed to remove coding profile',
         status: 'error',
         duration: 5000,
       });
@@ -163,10 +198,32 @@ const CodingStatsPage: React.FC = () => {
     }
   };
 
-  const handleModalClose = () => {
+  const handleDeleteClick = (stat: CodingStat) => {
+    setStatToDelete(stat);
+    onConfirmDeleteOpen();
+  };
+
+  const handleConfirmDelete = () => {
+    if (statToDelete) {
+      deleteStatMutation.mutate(statToDelete.platform);
+    }
+  };
+
+  const handleAddModalOpen = () => {
+    // Reset form and set default platform based on what's available
+    reset({
+      platform: hasLeetCode && !hasHackerRank ? 'HACKERRANK' : 'LEETCODE',
+      username: '',
+      manualCount: undefined,
+    });
+    setShowManualCount(hasLeetCode && !hasHackerRank); // If only LeetCode exists, default to HackerRank and show manual count
+    onAddModalOpen();
+  };
+
+  const handleAddModalClose = () => {
     reset();
     setShowManualCount(false);
-    onClose();
+    onAddModalClose();
   };
 
   const getPlatformColor = (platform: string) => {
@@ -187,8 +244,6 @@ const CodingStatsPage: React.FC = () => {
   };
 
   const totalProblemsSolved = stats?.reduce((sum, stat) => sum + (stat.problemsSolved || 0), 0) || 0;
-  // Removed averageRating and totalProblems as they are not consistently available from backend
-  // For a professional app, only display data that is reliably provided by the API.
 
   if (isLoading) {
     return (
@@ -229,7 +284,8 @@ const CodingStatsPage: React.FC = () => {
           <Button
             leftIcon={<FiPlus />}
             colorScheme="brand"
-            onClick={onOpen}
+            onClick={handleAddModalOpen}
+            isDisabled={hasLeetCode && hasHackerRank} // Disable if both platforms are added
           >
             Add Stats
           </Button>
@@ -283,7 +339,7 @@ const CodingStatsPage: React.FC = () => {
           <GridItem key={stat.id}>
             <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
               <CardBody>
-                <VStack spacing={4} align="stretch">
+                <VStack spacing={4} align="stretch" position="relative">
                   <HStack justify="space-between">
                     <Badge
                       colorScheme={getPlatformColor(stat.platform)}
@@ -325,6 +381,21 @@ const CodingStatsPage: React.FC = () => {
                       </HStack>
                     </VStack>
                   </Box>
+                  {user?.role === 'STUDENT' && (
+                    <Button
+                      size="sm"
+                      colorScheme="red"
+                      variant="outline"
+                      leftIcon={<FiTrash2 />}
+                      onClick={() => handleDeleteClick(stat)}
+                      isLoading={deleteStatMutation.isPending}
+                      position="absolute"
+                      bottom={4}
+                      right={4}
+                    >
+                      Remove
+                    </Button>
+                  )}
                 </VStack>
               </CardBody>
             </Card>
@@ -349,7 +420,7 @@ const CodingStatsPage: React.FC = () => {
       )}
 
       {/* Add Stats Modal */}
-      <Modal isOpen={isOpen} onClose={handleModalClose} size="lg">
+      <Modal isOpen={isAddModalOpen} onClose={handleAddModalClose} size="lg">
         <ModalOverlay />
         <ModalContent bg={cardBg} border="1px solid" borderColor={borderColor}>
           <ModalHeader color="white">Add Coding Statistics</ModalHeader>
@@ -369,8 +440,12 @@ const CodingStatsPage: React.FC = () => {
                     clearErrors('manualCount');
                   }}
                 >
-                  <option value="LEETCODE">LeetCode</option>
-                  <option value="HACKERRANK">HackerRank</option>
+                  <option value="LEETCODE" disabled={hasLeetCode}>
+                    LeetCode {hasLeetCode && '(Already Added)'}
+                  </option>
+                  <option value="HACKERRANK" disabled={hasHackerRank}>
+                    HackerRank {hasHackerRank && '(Already Added)'}
+                  </option>
                 </Select>
                 <FormErrorMessage>{errors.platform?.message}</FormErrorMessage>
               </FormControl>
@@ -406,7 +481,7 @@ const CodingStatsPage: React.FC = () => {
             </VStack>
           </ModalBody>
           <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={handleModalClose}>
+            <Button variant="ghost" mr={3} onClick={handleAddModalClose}>
               Cancel
             </Button>
             <Button
@@ -420,6 +495,34 @@ const CodingStatsPage: React.FC = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        isOpen={isConfirmDeleteOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onConfirmDeleteClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent bg={cardBg} border="1px solid" borderColor={borderColor}>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold" color="white">
+              Remove {statToDelete?.platform} Profile
+            </AlertDialogHeader>
+
+            <AlertDialogBody color="gray.300">
+              Are you sure you want to remove your {statToDelete?.platform} profile? This action cannot be undone and will affect your total points.
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onConfirmDeleteClose}>
+                Cancel
+              </Button>
+              <Button colorScheme="red" onClick={handleConfirmDelete} ml={3} isLoading={deleteStatMutation.isPending}>
+                Remove
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </VStack>
   );
 };

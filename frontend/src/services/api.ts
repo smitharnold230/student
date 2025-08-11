@@ -85,6 +85,7 @@ export const codingStatsAPI = {
   getStats: () => api.get('/coding-stats'),
   submitLeetCode: (url: string) => api.post('/coding-stats/leetcode', { url }),
   submitHackerRank: (url: string, manualCount: number) => api.post('/coding-stats/hackerrank', { url, manualCount }),
+  deleteStat: (platform: 'LEETCODE' | 'HACKERRANK') => api.delete(`/coding-stats/${platform.toLowerCase()}`), // New: Delete stat
 };
 
 export const certificationAPI = {
