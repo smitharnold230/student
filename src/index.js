@@ -73,6 +73,18 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'SDMS backend is running.' });
 });
 
+// Global error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Global Error Handler:', err.stack || err.message);
+  const statusCode = err.statusCode || 500;
+  const message = err.message || 'Internal Server Error';
+  res.status(statusCode).json({
+    error: message,
+    // Only send stack trace in development
+    stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
+  });
+});
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
