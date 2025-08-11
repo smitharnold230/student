@@ -1,5 +1,5 @@
 const Profile = require('../../db/Profile');
-const Point = require('../../('../../db/Point');
+const Point = require('../../db/Point'); // Corrected path
 const pointsService = require('../points/points.service');
 const User = require('../../db/User'); // Import User model
 
@@ -16,7 +16,7 @@ async function getLeaderboard() {
       {
         model: User,
         attributes: ['email'],
-        where: { role: 'STUDENT' } // This correctly filters for students
+        where: { role: 'STUDENT' } // Filter to include only students
       }
     ],
     order: [[{ model: Point }, 'value', 'DESC']],
