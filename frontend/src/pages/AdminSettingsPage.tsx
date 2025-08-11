@@ -73,7 +73,17 @@ const AdminSettingsPage: React.FC = () => {
 
   const exportStudentsMutation = useMutation({
     mutationFn: () => adminAPI.exportStudents(),
-    onSuccess: () => {
+    onSuccess: (response) => {
+      // Create a blob URL and trigger download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'students_export.csv'); // Set desired filename
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
       toast({
         title: 'Export Successful',
         description: 'Student data has been exported to CSV.',
