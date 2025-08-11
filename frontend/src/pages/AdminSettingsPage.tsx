@@ -43,8 +43,9 @@ const AdminSettingsPage: React.FC = () => {
   const [pointRules, setPointRules] = useState<PointRule[]>([]);
 
   React.useEffect(() => {
-    if (rulesResponse?.data) {
-      setPointRules(rulesResponse.data);
+    // Correctly access the 'data' property from the response
+    if (rulesResponse?.data?.data) {
+      setPointRules(rulesResponse.data.data);
     }
   }, [rulesResponse]);
 

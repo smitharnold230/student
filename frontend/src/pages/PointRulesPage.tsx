@@ -92,7 +92,8 @@ const PointRulesPage: React.FC = () => {
     queryFn: () => adminAPI.getPointRules(),
   });
 
-  const rules: PointRule[] = (rulesResponse?.data && Array.isArray(rulesResponse.data)) ? rulesResponse.data : [];
+  // Correctly access the 'data' property from the response
+  const rules: PointRule[] = (rulesResponse?.data?.data && Array.isArray(rulesResponse.data.data)) ? rulesResponse.data.data : [];
 
   // Update point rule mutation
   const updateRuleMutation = useMutation({
@@ -376,7 +377,7 @@ const PointRulesPage: React.FC = () => {
                       bg="gray.700"
                       color="white"
                       borderColor={borderColor}
-                      _focus={{ borderColor: 'blue.400' }}
+                      _placeholder={{ color: 'gray.400' }}
                       rows={3}
                     />
                   </FormControl>
@@ -416,4 +417,4 @@ const PointRulesPage: React.FC = () => {
   );
 };
 
-export default PointRulesPage; 
+export default PointRulesPage;
