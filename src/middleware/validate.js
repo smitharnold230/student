@@ -1,5 +1,10 @@
 const { z } = require('zod');
 
+// Define event delete schema separately for clarity and to ensure proper assignment
+const eventDeleteSchema = z.object({
+  eventId: z.string().uuid('Invalid event ID format')
+});
+
 const validationSchemas = {
   user: {
     login: z.object({
@@ -41,7 +46,18 @@ const validationSchemas = {
     }),
     participate: z.object({
       eventId: z.string().uuid('Invalid event ID format')
-    })
+    }),
+    update: z.object({ // New schema for updating an event
+      id: z.string().uuid('Invalid event ID format'), // Event ID is required for update
+      name: z.string().min(1, 'Event name is required').max(100, 'Event name too long').optional(),
+      type: z.enum(['WORKSHOP', 'HACKATHON'], { message: 'Event type must be WORKSHOP or HACKATHON' }).optional(),
+      date: z.string().datetime('Invalid date format').optional(),
+      organizer: z.string().min(1, 'Organizer is required').max(100, 'Organizer name too long').optional(),
+      url: z.string().url('Invalid URL format').or(z.literal('')).optional(),
+      link: z.string().url('Invalid URL format').or(z.literal('')).optional(),
+      certificationDeadline: z.string().datetime('Invalid date format').optional().or(z.literal(''))
+    }).refine(data => Object.keys(data).some(key => key !== 'id' && data[key] !== undefined), 'At least one field must be provided for update'),
+    delete: eventDeleteSchema // Assign the pre-defined schema here
   },
 
   certification: {
