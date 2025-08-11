@@ -34,9 +34,9 @@ const createEventSchema = z.object({
   type: z.string().refine(val => val === 'WORKSHOP' || val === 'HACKATHON', { message: 'Event type is required' }),
   date: z.string().min(1, 'Date is required'),
   organizer: z.string().min(1, 'Organizer is required'),
-  url: z.string().optional(),
-  link: z.string().optional(),
-  certificationDeadline: z.string().optional(),
+  url: z.string().url('Invalid URL format').or(z.literal('')).optional(),
+  link: z.string().url('Invalid URL format').or(z.literal('')).optional(),
+  certificationDeadline: z.string().or(z.literal('')).optional(), // Allow empty string or undefined
 });
 
 type CreateEventForm = z.infer<typeof createEventSchema>;
@@ -72,10 +72,10 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({
     const formattedData: FormattedEventData = {
       ...data,
       type: data.type as 'WORKSHOP' | 'HACKATHON',
-      url: data.url || '',
-      link: data.link || '',
-      date: data.date ? new Date(data.date).toISOString() : null,
-      certificationDeadline: data.certificationDeadline ? new Date(data.certificationDeadline).toISOString() : null,
+      url: data.url || undefined, // Send undefined if empty string
+      link: data.link || undefined, // Send undefined if empty string
+      date: new Date(data.date).toISOString(),
+      certificationDeadline: data.certificationDeadline ? new Date(data.certificationDeadline).toISOString() : undefined, // Send undefined if empty string
     };
     onCreateEvent(formattedData);
   };
@@ -141,29 +141,31 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({
               />
               <FormErrorMessage>{errors.organizer?.message}</FormErrorMessage>
             </FormControl>
-            <FormControl>
+            <FormControl isInvalid={!!errors.url}>
               <FormLabel color="gray.300">Event URL</FormLabel>
               <Input
-                placeholder="Enter event URL"
+                placeholder="Enter event URL (e.g., https://example.com/event)"
                 bg="gray.700"
                 borderColor="gray.600"
                 color="white"
                 _placeholder={{ color: 'gray.400' }}
                 {...register('url')}
               />
+              <FormErrorMessage>{errors.url?.message}</FormErrorMessage>
             </FormControl>
-            <FormControl>
+            <FormControl isInvalid={!!errors.link}>
               <FormLabel color="gray.300">Registration Link</FormLabel>
               <Input
-                placeholder="Enter registration link"
+                placeholder="Enter registration link (e.g., https://example.com/register)"
                 bg="gray.700"
                 borderColor="gray.600"
                 color="white"
                 _placeholder={{ color: 'gray.400' }}
                 {...register('link')}
               />
+              <FormErrorMessage>{errors.link?.message}</FormErrorMessage>
             </FormControl>
-            <FormControl>
+            <FormControl isInvalid={!!errors.certificationDeadline}>
               <FormLabel color="gray.300">Certification Deadline</FormLabel>
               <Input
                 type="date"
@@ -172,6 +174,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({
                 color="white"
                 {...register('certificationDeadline')}
               />
+              <FormErrorMessage>{errors.certificationDeadline?.message}</FormErrorMessage>
             </FormControl>
           </VStack>
         </ModalBody>
