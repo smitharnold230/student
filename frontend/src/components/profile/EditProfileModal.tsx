@@ -95,29 +95,27 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   }, [profile, reset]);
 
   const onSubmit = (data: EditRequestForm) => {
-    const changedData: Partial<EditRequestForm> = {};
-    if (data.name !== profile?.name) changedData.name = data.name;
-    // Only include student-specific fields if the user is a student
+    const changedData: Partial<Profile> = {}; // Use Partial<Profile> as the target type for direct updates
+
+    // Always check for name change
+    if (data.name !== profile?.name) {
+      changedData.name = data.name;
+    }
+
     if (userRole === 'STUDENT') {
-      if (data.degree !== profile?.degree) changedData.degree = data.degree;
-      if (data.class !== profile?.class) changedData.class = data.class;
-      if (data.status !== profile?.status) changedData.status = data.status;
-      if (data.transport !== profile?.transport) changedData.transport = data.transport;
-      if (data.hostelInfo !== profile?.hostelInfo) changedData.hostelInfo = data.hostelInfo;
-    } else if (userRole === 'ADMIN') {
-      // For admin, all fields are directly editable, so include them if they changed
+      // For students, include all relevant fields for the request
       if (data.degree !== profile?.degree) changedData.degree = data.degree;
       if (data.class !== profile?.class) changedData.class = data.class;
       if (data.status !== profile?.status) changedData.status = data.status;
       if (data.transport !== profile?.transport) changedData.transport = data.transport;
       if (data.hostelInfo !== profile?.hostelInfo) changedData.hostelInfo = data.hostelInfo;
     }
-
+    // For ADMIN, only name is considered for direct update. Other fields are not even rendered.
 
     if (Object.keys(changedData).length === 0) {
       toast({
         title: 'No Changes Detected',
-        description: 'Please make changes to your profile before submitting an edit request.',
+        description: 'Please make changes to your profile before submitting.',
         status: 'info',
         duration: 3000,
       });
@@ -126,8 +124,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     }
 
     if (userRole === 'ADMIN') {
-      updateProfileMutation.mutate(changedData as Partial<Profile>);
+      // For admin, directly update the profile
+      updateProfileMutation.mutate(changedData); // Pass only the changed fields
     } else {
+      // For student, submit an edit request
       editRequestMutation.mutate(changedData);
     }
   };
@@ -154,89 +154,91 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               />
               <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
             </FormControl>
-            {/* Student-specific fields, also editable by admin */}
-            <>
-              <FormControl isInvalid={!!errors.degree}>
-                <FormLabel color="gray.300">Degree</FormLabel>
-                <Select
-                  placeholder="Select degree"
-                  bg="gray.700"
-                  borderColor="gray.600"
-                  color="white"
-                  {...register('degree')}
-                >
-                  <option value="B.E">B.E</option>
-                  <option value="B.Tech">B.Tech</option>
-                  <option value="M.E">M.E</option>
-                  <option value="M.Tech">M.Tech</option>
-                  <option value="Ph.D">Ph.D</option>
-                </Select>
-                <FormErrorMessage>{errors.degree?.message}</FormErrorMessage>
-              </FormControl>
-              <FormControl isInvalid={!!errors.class}>
-                <FormLabel color="gray.300">Class</FormLabel>
-                <Select
-                  placeholder="Select class"
-                  bg="gray.700"
-                  borderColor="gray.600"
-                  color="white"
-                  {...register('class')}
-                >
-                  <option value="CSE">CSE</option>
-                  <option value="AIDS">AIDS</option>
-                  <option value="ECE">ECE</option>
-                  <option value="EEE">EEE</option>
-                  <option value="MECH">MECH</option>
-                  <option value="CIVIL">CIVIL</option>
-                </Select>
-                <FormErrorMessage>{errors.class?.message}</FormErrorMessage>
-              </FormControl>
-              <FormControl isInvalid={!!errors.status}>
-                <FormLabel color="gray.300">Status</FormLabel>
-                <Select
-                  placeholder="Select status"
-                  bg="gray.700"
-                  borderColor="gray.600"
-                  color="white"
-                  {...register('status')}
-                >
-                  <option value="Dayscholar">Dayscholar</option>
-                  <option value="Hosteller">Hosteller</option>
-                </Select>
-                <FormErrorMessage>{errors.status?.message}</FormErrorMessage>
-              </FormControl>
-              {statusValue === 'Dayscholar' && (
-                <FormControl isInvalid={!!errors.transport}>
-                  <FormLabel color="gray.300">Transport</FormLabel>
+            
+            {userRole === 'STUDENT' && (
+              <>
+                <FormControl isInvalid={!!errors.degree}>
+                  <FormLabel color="gray.300">Degree</FormLabel>
                   <Select
-                    placeholder="Select transport"
+                    placeholder="Select degree"
                     bg="gray.700"
                     borderColor="gray.600"
                     color="white"
-                    {...register('transport')}
+                    {...register('degree')}
                   >
-                    <option value="College Bus">College Bus</option>
-                    <option value="Out Bus">Out Bus</option>
-                    <option value="Self Transport">Self Transport</option>
+                    <option value="B.E">B.E</option>
+                    <option value="B.Tech">B.Tech</option>
+                    <option value="M.E">M.E</option>
+                    <option value="M.Tech">M.Tech</option>
+                    <option value="Ph.D">Ph.D</option>
                   </Select>
-                  <FormErrorMessage>{errors.transport?.message}</FormErrorMessage>
+                  <FormErrorMessage>{errors.degree?.message}</FormErrorMessage>
                 </FormControl>
-              )}
-              {statusValue === 'Hosteller' && (
-                <FormControl isInvalid={!!errors.hostelInfo}>
-                  <FormLabel color="gray.300">Hostel Information</FormLabel>
-                  <Textarea
-                    placeholder="Enter hostel details"
+                <FormControl isInvalid={!!errors.class}>
+                  <FormLabel color="gray.300">Class</FormLabel>
+                  <Select
+                    placeholder="Select class"
                     bg="gray.700"
                     borderColor="gray.600"
                     color="white"
-                    _placeholder={{ color: 'gray.400' }}
-                    {...register('hostelInfo')}
-                  />
-                  <FormErrorMessage>{errors.hostelInfo?.message}</FormErrorMessage>
+                    {...register('class')}
+                  >
+                    <option value="CSE">CSE</option>
+                    <option value="AIDS">AIDS</option>
+                    <option value="ECE">ECE</option>
+                    <option value="EEE">EEE</option>
+                    <option value="MECH">MECH</option>
+                    <option value="CIVIL">CIVIL</option>
+                  </Select>
+                  <FormErrorMessage>{errors.class?.message}</FormErrorMessage>
                 </FormControl>
-              )}
-            </>
+                <FormControl isInvalid={!!errors.status}>
+                  <FormLabel color="gray.300">Status</FormLabel>
+                  <Select
+                    placeholder="Select status"
+                    bg="gray.700"
+                    borderColor="gray.600"
+                    color="white"
+                    {...register('status')}
+                  >
+                    <option value="Dayscholar">Dayscholar</option>
+                    <option value="Hosteller">Hosteller</option>
+                  </Select>
+                  <FormErrorMessage>{errors.status?.message}</FormErrorMessage>
+                </FormControl>
+                {statusValue === 'Dayscholar' && (
+                  <FormControl isInvalid={!!errors.transport}>
+                    <FormLabel color="gray.300">Transport</FormLabel>
+                    <Select
+                      placeholder="Select transport"
+                      bg="gray.700"
+                      borderColor="gray.600"
+                      color="white"
+                      {...register('transport')}
+                    >
+                      <option value="College Bus">College Bus</option>
+                      <option value="Out Bus">Out Bus</option>
+                      <option value="Self Transport">Self Transport</option>
+                    </Select>
+                    <FormErrorMessage>{errors.transport?.message}</FormErrorMessage>
+                  </FormControl>
+                )}
+                {statusValue === 'Hosteller' && (
+                  <FormControl isInvalid={!!errors.hostelInfo}>
+                    <FormLabel color="gray.300">Hostel Information</FormLabel>
+                    <Textarea
+                      placeholder="Enter hostel details"
+                      bg="gray.700"
+                      borderColor="gray.600"
+                      color="white"
+                      _placeholder={{ color: 'gray.400' }}
+                      {...register('hostelInfo')}
+                    />
+                    <FormErrorMessage>{errors.hostelInfo?.message}</FormErrorMessage>
+                  </FormControl>
+                )}
+              </>
+            )}
             {errors.root && (
               <Text color="red.400" fontSize="sm">
                 {errors.root.message}
