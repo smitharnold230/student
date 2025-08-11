@@ -19,7 +19,7 @@ import {
   Skeleton,
 } from '@chakra-ui/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { FiSettings, FiSave, FiAward, FiTrendingUp, FiUsers } from 'react-icons/fi';
+import { FiSettings, FiSave, FiAward, FiTrendingUp, FiUsers, FiDownload, FiRefreshCw, FiMonitor } from 'react-icons/fi';
 import { adminAPI } from '../services/api';
 
 interface PointRule {
@@ -71,6 +71,26 @@ const AdminSettingsPage: React.FC = () => {
     },
   });
 
+  const exportStudentsMutation = useMutation({
+    mutationFn: () => adminAPI.exportStudents(),
+    onSuccess: () => {
+      toast({
+        title: 'Export Successful',
+        description: 'Student data has been exported to CSV.',
+        status: 'success',
+        duration: 3000,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Export Failed',
+        description: error.response?.data?.error || 'Failed to export student data',
+        status: 'error',
+        duration: 5000,
+      });
+    },
+  });
+
   const handleUpdateRule = (rule: PointRule) => {
     updatePointRuleMutation.mutate(rule);
   };
@@ -79,6 +99,19 @@ const AdminSettingsPage: React.FC = () => {
     const updatedRules = [...pointRules];
     updatedRules[index] = { ...updatedRules[index], [field]: value };
     setPointRules(updatedRules);
+  };
+
+  const handleExportStudents = () => {
+    exportStudentsMutation.mutate();
+  };
+
+  const handleFeatureNotImplemented = (featureName: string) => {
+    toast({
+      title: 'Feature Not Implemented',
+      description: `${featureName} functionality is not yet available.`,
+      status: 'info',
+      duration: 3000,
+    });
   };
 
   if (rulesLoading) {
@@ -169,7 +202,7 @@ const AdminSettingsPage: React.FC = () => {
         </CardBody>
       </Card>
 
-      {/* Quick Actions - Placeholder for future admin actions */}
+      {/* Quick Actions */}
       <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
         <CardBody>
           <VStack spacing={4} align="stretch">
@@ -188,13 +221,14 @@ const AdminSettingsPage: React.FC = () => {
                 h="auto"
                 p={4}
                 flexDirection="column"
-                // Removed isDisabled prop
+                onClick={handleExportStudents}
+                isLoading={exportStudentsMutation.isPending}
               >
                 <Text fontSize="sm" fontWeight="bold">
-                  Backup Database
+                  Export Student Data
                 </Text>
                 <Text fontSize="xs" color="gray.400">
-                  Create system backup
+                  Download student records (CSV)
                 </Text>
               </Button>
               
@@ -205,7 +239,7 @@ const AdminSettingsPage: React.FC = () => {
                 h="auto"
                 p={4}
                 flexDirection="column"
-                // Removed isDisabled prop
+                onClick={() => handleFeatureNotImplemented('Clear Cache')}
               >
                 <Text fontSize="sm" fontWeight="bold">
                   Clear Cache
@@ -222,7 +256,7 @@ const AdminSettingsPage: React.FC = () => {
                 h="auto"
                 p={4}
                 flexDirection="column"
-                // Removed isDisabled prop
+                onClick={() => handleFeatureNotImplemented('System Health Check')}
               >
                 <Text fontSize="sm" fontWeight="bold">
                   System Health Check
@@ -239,7 +273,7 @@ const AdminSettingsPage: React.FC = () => {
                 h="auto"
                 p={4}
                 flexDirection="column"
-                // Removed isDisabled prop
+                onClick={() => handleFeatureNotImplemented('Update System')}
               >
                 <Text fontSize="sm" fontWeight="bold">
                   Update System
