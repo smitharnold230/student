@@ -22,7 +22,7 @@ import {
   Skeleton,
 } from '@chakra-ui/react';
 import { useQuery } from '@tanstack/react-query';
-import { FiUsers, FiAward, FiCode, FiCalendar, FiBarChart, FiTrendingUp, FiAlertCircle, FiCheckCircle, FiClock } from 'react-icons/fi';
+import { FiUsers, FiAward, FiCode, FiCalendar, FiBarChart, FiTrendingUp, FiAlertCircle, FiCheckCircle, FiClock, FiBell } from 'react-icons/fi';
 import { leaderboardAPI, profileAPI, eventAPI, codingStatsAPI, notificationAPI, adminAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import { getStudentLevel } from '../utils/points'; // Import the utility
@@ -59,10 +59,10 @@ interface Event {
 interface CodingStat {
   id: string;
   platform: 'LEETCODE' | 'HACKERRANK';
-  url: string;
+  url: string; // This is the profile URL
   problemsSolved: number;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string; // Using createdAt from backend
+  updatedAt: string; // Using updatedAt from backend
 }
 
 interface Notification {
@@ -377,6 +377,9 @@ const DashboardPage: React.FC = () => {
                 <Icon as={FiBell} color="gray.500" boxSize={12} />
                 <Text color="gray.400" textAlign="center">
                   No notifications at the moment.
+                </Text>
+                <Text color="gray.500" fontSize="sm" textAlign="center">
+                  You'll see notifications here when you have updates.
                 </Text>
               </VStack>
             )}

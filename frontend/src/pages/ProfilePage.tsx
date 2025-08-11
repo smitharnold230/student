@@ -30,6 +30,7 @@ import {
   Avatar,
   AvatarBadge,
   Progress,
+  Skeleton, // Import Skeleton
 } from '@chakra-ui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { profileAPI } from '../services/api';
@@ -37,7 +38,7 @@ import { useAuthStore } from '../store/authStore';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AxiosProgressEvent } from 'axios';
+import { AxiosProgressEvent, AxiosResponse } from 'axios'; // Import AxiosResponse
 import { FiUpload } from 'react-icons/fi';
 import { Profile } from '../types/profile'; // Import Profile type
 
@@ -49,9 +50,9 @@ const editRequestSchema = z.object({
   status: z.string().min(1, 'Status is required').optional(),
   transport: z.string().optional(),
   hostelInfo: z.string().optional(),
-}).refine(data => Object.keys(data).some(key => data[key] !== undefined && data[key] !== ''), {
+}).refine(data => Object.values(data).some(value => value !== undefined && value !== null && value !== ''), {
   message: 'At least one field must be provided for edit request',
-  path: ['_root'], // This targets the form as a whole
+  path: ['root'], // This targets the form as a whole
 });
 
 type EditRequestForm = z.infer<typeof editRequestSchema>;
@@ -68,12 +69,14 @@ const ProfilePage: React.FC = () => {
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
 
-  const { data: profileResponse, isLoading } = useQuery<Profile>({
+  // Correctly type useQuery to expect AxiosResponse<Profile>
+  const { data: profileResponse, isLoading } = useQuery<AxiosResponse<Profile>>({
     queryKey: ['profile'],
     queryFn: () => profileAPI.getProfile(),
   });
 
-  const profile: Profile = profileResponse?.data;
+  // Access the actual profile data from profileResponse.data
+  const profile: Profile | undefined = profileResponse?.data;
 
   const {
     register,
@@ -197,7 +200,7 @@ const ProfilePage: React.FC = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | undefined) => { // status can be undefined
     switch (status?.toLowerCase()) {
       case 'dayscholar':
         return 'blue';
@@ -208,7 +211,7 @@ const ProfilePage: React.FC = () => {
     }
   };
 
-  const getBatchColor = (batch: string) => {
+  const getBatchColor = (batch: string | undefined) => { // batch can be undefined
     if (!batch) return 'gray';
     if (batch.includes('PRODUCT')) return 'purple';
     if (batch.includes('SERVICE_A')) return 'blue';
@@ -480,9 +483,9 @@ const ProfilePage: React.FC = () => {
                   <FormErrorMessage>{errors.hostelInfo?.message}</FormErrorMessage>
                 </FormControl>
               )}
-              {errors._root && (
+              {errors.root && ( // Corrected from errors._root to errors.root
                 <Text color="red.400" fontSize="sm">
-                  {errors._root.message}
+                  {errors.root.message}
                 </Text>
               )}
             </VStack>

@@ -132,7 +132,7 @@ const UploadCertificationModal: React.FC<UploadCertificationModalProps> = ({
                         status: 'error',
                         duration: 4000,
                       });
-                      setValue('file', undefined);
+                      // No need to setValue(undefined), reset() handles it on close
                       return;
                     }
                     if (file.size > 10 * 1024 * 1024) {
@@ -142,7 +142,7 @@ const UploadCertificationModal: React.FC<UploadCertificationModalProps> = ({
                         status: 'error',
                         duration: 4000,
                       });
-                      setValue('file', undefined);
+                      // No need to setValue(undefined), reset() handles it on close
                       return;
                     }
                     setValue('file', file);

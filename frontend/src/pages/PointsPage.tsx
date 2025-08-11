@@ -294,73 +294,81 @@ const AdminPointsView: React.FC<{
 
       {/* Statistics Overview */}
       <Grid templateColumns={{ base: '1fr', md: 'repeat(4, 1fr)' }} gap={6}>
-        <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
-          <CardBody>
-            <VStack spacing={3}>
-              <Icon as={FiTrendingUp} color="blue.500" boxSize={8} />
-              <Stat>
-                <StatLabel color="gray.400" fontSize="sm">Total Users</StatLabel>
-                <StatNumber color="white" fontSize="2xl" fontWeight="bold">
-                  {statistics?.totalUsers || 0}
-                </StatNumber>
-                <StatHelpText color="gray.500" fontSize="xs">
-                  Active students
-                </StatHelpText>
-              </Stat>
-            </VStack>
-          </CardBody>
-        </Card>
-
-        <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
-          <CardBody>
-            <VStack spacing={3}>
-              <Icon as={FiAward} color="green.500" boxSize={8} />
-              <Stat>
-                <StatLabel color="gray.400" fontSize="sm">Total Points</StatLabel>
-                <StatNumber color="white" fontSize="2xl" fontWeight="bold">
-                  {statistics?.totalPoints?.toLocaleString() || 0}
-                </StatNumber>
-                <StatHelpText color="gray.500" fontSize="xs">
-                  System-wide points
-                </StatHelpText>
-              </Stat>
+        <GridItem>
+          <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
+            <CardBody>
+              <VStack spacing={3}>
+                <Icon as={FiTrendingUp} color="blue.500" boxSize={8} />
+                <Stat>
+                  <StatLabel color="gray.400" fontSize="sm">Total Users</StatLabel>
+                  <StatNumber color="white" fontSize="2xl" fontWeight="bold">
+                    {statistics?.totalUsers || 0}
+                  </StatNumber>
+                  <StatHelpText color="gray.500" fontSize="xs">
+                    Active students
+                  </StatHelpText>
+                </Stat>
+              </VStack>
             </CardBody>
           </Card>
         </GridItem>
 
-        <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
-          <CardBody>
-            <VStack spacing={3}>
-              <Icon as={FiCode} color="purple.500" boxSize={8} />
-              <Stat>
-                <StatLabel color="gray.400" fontSize="sm">Average Points</StatLabel>
-                <StatNumber color="white" fontSize="2xl" fontWeight="bold">
-                  {statistics?.averagePoints || 0}
-                </StatNumber>
-                <StatHelpText color="gray.500" fontSize="xs">
-                  Per student
-                </StatHelpText>
-              </Stat>
-            </VStack>
-          </CardBody>
-        </Card>
+        <GridItem>
+          <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
+            <CardBody>
+              <VStack spacing={3}>
+                <Icon as={FiAward} color="green.500" boxSize={8} />
+                <Stat>
+                  <StatLabel color="gray.400" fontSize="sm">Total Points</StatLabel>
+                  <StatNumber color="white" fontSize="2xl" fontWeight="bold">
+                    {statistics?.totalPoints?.toLocaleString() || 0}
+                  </StatNumber>
+                  <StatHelpText color="gray.500" fontSize="xs">
+                    System-wide points
+                  </StatHelpText>
+                </Stat>
+              </VStack>
+            </CardBody>
+          </Card>
+        </GridItem>
 
-        <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
-          <CardBody>
-            <VStack spacing={3}>
-              <Icon as={FiStar} color="yellow.500" boxSize={8} />
-              <Stat>
-                <StatLabel color="gray.400" fontSize="sm">Top Score</StatLabel>
-                <StatNumber color="white" fontSize="2xl" fontWeight="bold">
-                  {statistics?.topPerformers?.[0]?.points || 0}
-                </StatNumber>
-                <StatHelpText color="gray.500" fontSize="xs">
-                  Highest points
-                </StatHelpText>
-              </Stat>
-            </VStack>
-          </CardBody>
-        </Card>
+        <GridItem>
+          <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
+            <CardBody>
+              <VStack spacing={3}>
+                <Icon as={FiCode} color="purple.500" boxSize={8} />
+                <Stat>
+                  <StatLabel color="gray.400" fontSize="sm">Average Points</StatLabel>
+                  <StatNumber color="white" fontSize="2xl" fontWeight="bold">
+                    {statistics?.averagePoints || 0}
+                  </StatNumber>
+                  <StatHelpText color="gray.500" fontSize="xs">
+                    Per student
+                  </StatHelpText>
+                </Stat>
+              </VStack>
+            </CardBody>
+          </Card>
+        </GridItem>
+
+        <GridItem>
+          <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
+            <CardBody>
+              <VStack spacing={3}>
+                <Icon as={FiStar} color="yellow.500" boxSize={8} />
+                <Stat>
+                  <StatLabel color="gray.400" fontSize="sm">Top Score</StatLabel>
+                  <StatNumber color="white" fontSize="2xl" fontWeight="bold">
+                    {statistics?.topPerformers?.[0]?.points || 0}
+                  </StatNumber>
+                  <StatHelpText color="gray.500" fontSize="xs">
+                    Highest points
+                  </StatHelpText>
+                </Stat>
+              </VStack>
+            </CardBody>
+          </Card>
+        </GridItem>
       </Grid>
 
       {/* User Management */}
@@ -605,107 +613,111 @@ const StudentPointsView: React.FC<{ breakdown: PointBreakdown | undefined; rules
 
       {/* Total Points and Progression */}
       <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={6}>
-        <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
-          <CardBody>
-            <VStack spacing={4} align="stretch">
-              <HStack justify="space-between">
-                <Heading size="md" color="white">
-                  Total Points
-                </Heading>
-                <Badge
-                  colorScheme="green"
-                  variant="subtle"
-                  fontSize="lg"
-                >
-                  {breakdown?.totalPoints || 0} pts
-                </Badge>
-              </HStack>
-              
-              <Stat>
-                <StatNumber color="white" fontSize="4xl" fontWeight="bold">
-                  {breakdown?.totalPoints || 0}
-                </StatNumber>
-                <StatHelpText color="gray.400">
-                  Total points earned
-                </StatHelpText>
-              </Stat>
-
-              <Box>
-                <HStack justify="space-between" mb={2}>
-                  <Text color="gray.400" fontSize="sm">
-                    Current Level: <Text as="span" fontWeight="bold" color="white">{level}</Text>
-                  </Text>
-                  <Text color="white" fontSize="sm">
-                    {breakdown?.totalPoints || 0} / {nextLevelPoints === Infinity ? 'Max' : nextLevelPoints} points
-                  </Text>
+        <GridItem>
+          <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
+            <CardBody>
+              <VStack spacing={4} align="stretch">
+                <HStack justify="space-between">
+                  <Heading size="md" color="white">
+                    Total Points
+                  </Heading>
+                  <Badge
+                    colorScheme="green"
+                    variant="subtle"
+                    fontSize="lg"
+                  >
+                    {breakdown?.totalPoints || 0} pts
+                  </Badge>
                 </HStack>
-                <Progress
-                  value={progressPercentage}
-                  colorScheme="green"
-                  size="lg"
-                  borderRadius="full"
-                />
-                {nextLevelPoints !== Infinity && (
-                  <Text color="gray.500" fontSize="xs" mt={1}>
-                    {nextLevelPoints - (breakdown?.totalPoints || 0)} points to reach next level
-                  </Text>
-                )}
-              </Box>
-            </VStack>
-          </CardBody>
-        </Card>
+                
+                <Stat>
+                  <StatNumber color="white" fontSize="4xl" fontWeight="bold">
+                    {breakdown?.totalPoints || 0}
+                  </StatNumber>
+                  <StatHelpText color="gray.400">
+                    Total points earned
+                  </StatHelpText>
+                </Stat>
 
-        <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
-          <CardBody>
-            <VStack spacing={4} align="stretch">
-              <Heading size="md" color="white">
-                Quick Stats
-              </Heading>
-              
-              <Grid templateColumns="repeat(2, 1fr)" gap={4}>
-                <Box textAlign="center">
-                  <Icon as={FiCalendar} color="blue.500" boxSize={6} mb={2} />
-                  <Text color="white" fontSize="lg" fontWeight="bold">
-                    {breakdown?.breakdown?.workshops?.count || 0}
-                  </Text>
-                  <Text color="gray.400" fontSize="sm">
-                    Workshops
-                  </Text>
+                <Box>
+                  <HStack justify="space-between" mb={2}>
+                    <Text color="gray.400" fontSize="sm">
+                      Current Level: <Text as="span" fontWeight="bold" color="white">{level}</Text>
+                    </Text>
+                    <Text color="white" fontSize="sm">
+                      {breakdown?.totalPoints || 0} / {nextLevelPoints === Infinity ? 'Max' : nextLevelPoints} points
+                    </Text>
+                  </HStack>
+                  <Progress
+                    value={progressPercentage}
+                    colorScheme="green"
+                    size="lg"
+                    borderRadius="full"
+                  />
+                  {nextLevelPoints !== Infinity && (
+                    <Text color="gray.500" fontSize="xs" mt={1}>
+                      {nextLevelPoints - (breakdown?.totalPoints || 0)} points to reach next level
+                    </Text>
+                  )}
                 </Box>
+              </VStack>
+            </CardBody>
+          </Card>
+        </GridItem>
+
+        <GridItem>
+          <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
+            <CardBody>
+              <VStack spacing={4} align="stretch">
+                <Heading size="md" color="white">
+                  Quick Stats
+                </Heading>
                 
-                <Box textAlign="center">
-                  <Icon as={FiCode} color="purple.500" boxSize={6} mb={2} />
-                  <Text color="white" fontSize="lg" fontWeight="bold">
-                    {breakdown?.breakdown?.hackathons?.count || 0}
-                  </Text>
-                  <Text color="gray.400" fontSize="sm">
-                    Hackathons
-                  </Text>
-                </Box>
-                
-                <Box textAlign="center">
-                  <Icon as={FiCheckCircle} color="green.500" boxSize={6} mb={2} />
-                  <Text color="white" fontSize="lg" fontWeight="bold">
-                    {breakdown?.breakdown?.certifications?.count || 0}
-                  </Text>
-                  <Text color="gray.400" fontSize="sm">
-                    Certifications
-                  </Text>
-                </Box>
-                
-                <Box textAlign="center">
-                  <Icon as={FiStar} color="yellow.500" boxSize={6} mb={2} />
-                  <Text color="white" fontSize="lg" fontWeight="bold">
-                    {breakdown?.breakdown?.bonuses?.totalPoints || 0}
-                  </Text>
-                  <Text color="gray.400" fontSize="sm">
-                    Bonus Points
-                  </Text>
-                </Box>
-              </Grid>
-            </VStack>
-          </CardBody>
-        </Card>
+                <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+                  <Box textAlign="center">
+                    <Icon as={FiCalendar} color="blue.500" boxSize={6} mb={2} />
+                    <Text color="white" fontSize="lg" fontWeight="bold">
+                      {breakdown?.breakdown?.workshops?.count || 0}
+                    </Text>
+                    <Text color="gray.400" fontSize="sm">
+                      Workshops
+                    </Text>
+                  </Box>
+                  
+                  <Box textAlign="center">
+                    <Icon as={FiCode} color="purple.500" boxSize={6} mb={2} />
+                    <Text color="white" fontSize="lg" fontWeight="bold">
+                      {breakdown?.breakdown?.hackathons?.count || 0}
+                    </Text>
+                    <Text color="gray.400" fontSize="sm">
+                      Hackathons
+                    </Text>
+                  </Box>
+                  
+                  <Box textAlign="center">
+                    <Icon as={FiCheckCircle} color="green.500" boxSize={6} mb={2} />
+                    <Text color="white" fontSize="lg" fontWeight="bold">
+                      {breakdown?.breakdown?.certifications?.count || 0}
+                    </Text>
+                    <Text color="gray.400" fontSize="sm">
+                      Certifications
+                    </Text>
+                  </Box>
+                  
+                  <Box textAlign="center">
+                    <Icon as={FiStar} color="yellow.500" boxSize={6} mb={2} />
+                    <Text color="white" fontSize="lg" fontWeight="bold">
+                      {breakdown?.breakdown?.bonuses?.totalPoints || 0}
+                    </Text>
+                    <Text color="gray.400" fontSize="sm">
+                      Bonus Points
+                    </Text>
+                  </Box>
+                </Grid>
+              </VStack>
+            </CardBody>
+          </Card>
+        </GridItem>
       </Grid>
 
       {/* Detailed Breakdown */}
@@ -949,7 +961,7 @@ const StudentPointsView: React.FC<{ breakdown: PointBreakdown | undefined; rules
                   </AccordionPanel>
                 </AccordionItem>
               )}
-              {breakdown?.manualAdjustment !== 0 && (
+              {breakdown?.manualAdjustment !== undefined && (
                 <AccordionItem borderColor={borderColor}>
                   <AccordionButton>
                     <HStack flex="1" justify="space-between">
@@ -1034,9 +1046,9 @@ const PointsPage: React.FC = () => {
     enabled: user?.role === 'ADMIN',
   });
 
-  const breakdown: PointBreakdown = breakdownResponse?.data?.data;
+  const breakdown: PointBreakdown | undefined = breakdownResponse?.data?.data;
   const rules: PointRule[] = rulesResponse?.data?.data || [];
-  const statistics: PointStatistics = statisticsResponse?.data?.data;
+  const statistics: PointStatistics | undefined = statisticsResponse?.data?.data;
 
   const updateAllPointsMutation = useMutation({
     mutationFn: () => pointsAPI.updateAllUserPoints(),

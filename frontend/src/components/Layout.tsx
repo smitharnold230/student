@@ -39,6 +39,7 @@ import { useAuthStore } from '../store/authStore';
 import { useQuery } from '@tanstack/react-query';
 import { profileAPI } from '../services/api';
 import { Profile } from '../types/profile'; // Import Profile type
+import { AxiosResponse } from 'axios'; // Import AxiosResponse
 
 interface NavItem {
   label: string;
@@ -74,13 +75,15 @@ const Layout: React.FC = () => {
   const sidebarBorder = useColorModeValue('gray.700', 'gray.600');
   const hoverBg = useColorModeValue('gray.700', 'gray.600');
 
-  const { data: profileResponse } = useQuery<Profile>({
+  // Correctly type useQuery to expect AxiosResponse<Profile>
+  const { data: profileResponse } = useQuery<AxiosResponse<Profile>>({
     queryKey: ['profile'],
     queryFn: () => profileAPI.getProfile(),
     enabled: !!user, // Only fetch if user is logged in
   });
 
-  const profile = profileResponse;
+  // Access the actual profile data from profileResponse.data
+  const profile: Profile | undefined = profileResponse?.data;
 
   const handleLogout = () => {
     logout();

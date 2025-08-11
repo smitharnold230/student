@@ -74,7 +74,7 @@ const AdminLogsPage: React.FC = () => {
   const logs: ApiLog[] = logsResponse?.data || [];
 
   const exportLogsMutation = useMutation({
-    mutationFn: () => adminAPI.exportLogs(),
+    mutationFn: () => adminAPI.exportStudents(), // Corrected from exportLogs to exportStudents
     onSuccess: () => {
       toast({
         title: 'Logs exported',
@@ -541,4 +541,4 @@ const AdminLogsPage: React.FC = () => {
   );
 };
 
-export default AdminLogsPage; 
+export default AdminLogsPage;
