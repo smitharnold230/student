@@ -18,7 +18,7 @@ import {
   Icon,
 } from '@chakra-ui/react';
 import { FiCalendar, FiCode, FiCheckCircle, FiStar } from 'react-icons/fi';
-import { PointBreakdown } from '../../types/points'; // Assuming PointBreakdown is defined or will be
+import { PointBreakdown } from '../../types/points';
 
 interface StudentPointsSummaryCardsProps {
   breakdown: PointBreakdown | undefined;
@@ -142,7 +142,7 @@ const StudentPointsSummaryCards: React.FC<StudentPointsSummaryCardsProps> = ({
             </VStack>
           </CardBody>
         </Card>
-      </Grid>
+      </GridItem>
     </Grid>
   );
 };
