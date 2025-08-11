@@ -1,26 +1,11 @@
 import React from 'react';
-import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Heading,
-  Card,
-  CardBody,
-  Button,
-  Badge,
-  Divider,
-  useColorModeValue,
-  Grid,
-  Avatar,
-  AvatarBadge,
-} from '@chakra-ui/react';
+import { Box, VStack, HStack, Text, Heading, Card, CardBody, Button, Badge, Divider, useColorModeValue, Grid, Avatar, AvatarBadge } from '@chakra-ui/react';
 import { FiUpload } from 'react-icons/fi';
 import { Profile } from '../../types/profile';
 import { User } from '../../store/authStore';
 
 interface ProfileInfoCardProps {
-  profile: Profile | undefined; // Allow profile to be undefined
+  profile: Profile | undefined;
   user: User | null;
   onOpenEditModal: () => void;
   onOpenPhotoModal: () => void;
