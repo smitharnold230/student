@@ -12,7 +12,8 @@ async function getNotifications(req, res, next) {
 async function markAsRead(req, res, next) {
   try {
     const { notificationId } = req.params;
-    const [count, [notification]] = await notificationService.markAsRead(notificationId);
+    // Correctly receive the single notification object from the service
+    const notification = await notificationService.markAsRead(notificationId);
     if (!notification) return res.status(404).json({ error: 'Notification not found' });
     res.json({ message: 'Notification marked as read', notification });
   } catch (err) {
@@ -39,4 +40,4 @@ async function deleteNotification(req, res, next) {
   }
 }
 
-module.exports = { getNotifications, markAsRead, createNotification, deleteNotification }; 
+module.exports = { getNotifications, markAsRead, createNotification, deleteNotification };
