@@ -76,7 +76,7 @@ const ProfilePage: React.FC = () => {
   });
 
   // Access the actual profile data from profileResponse.data
-  const profile: Profile | undefined = profileResponse?.data;
+  const profile: Profile = profileResponse?.data || {}; // Ensure profile is always an object
 
   const {
     register,
@@ -167,11 +167,13 @@ const ProfilePage: React.FC = () => {
     // Filter out unchanged fields or empty strings if they are not meant to be sent
     const changedData: Partial<EditRequestForm> = {};
     if (data.name !== profile?.name) changedData.name = data.name;
-    if (data.degree !== profile?.degree) changedData.degree = data.degree;
-    if (data.class !== profile?.class) changedData.class = data.class;
-    if (data.status !== profile?.status) changedData.status = data.status;
-    if (data.transport !== profile?.transport) changedData.transport = data.transport;
-    if (data.hostelInfo !== profile?.hostelInfo) changedData.hostelInfo = data.hostelInfo;
+    if (user?.role === 'STUDENT') { // Only include student-specific fields if user is a student
+      if (data.degree !== profile?.degree) changedData.degree = data.degree;
+      if (data.class !== profile?.class) changedData.class = data.class;
+      if (data.status !== profile?.status) changedData.status = data.status;
+      if (data.transport !== profile?.transport) changedData.transport = data.transport;
+      if (data.hostelInfo !== profile?.hostelInfo) changedData.hostelInfo = data.hostelInfo;
+    }
 
     if (Object.keys(changedData).length === 0) {
       toast({
@@ -314,69 +316,77 @@ const ProfilePage: React.FC = () => {
                   </Text>
                 </Box>
 
-                <Box>
-                  <Text color="gray.400" fontSize="sm" mb={1}>
-                    Degree
-                  </Text>
-                  <Text color="white" fontSize="md">
-                    {profile?.degree || 'Not set'}
-                  </Text>
-                </Box>
+                {user?.role === 'STUDENT' && (
+                  <>
+                    <Box>
+                      <Text color="gray.400" fontSize="sm" mb={1}>
+                        Degree
+                      </Text>
+                      <Text color="white" fontSize="md">
+                        {profile?.degree || 'Not set'}
+                      </Text>
+                    </Box>
 
-                <Box>
-                  <Text color="gray.400" fontSize="sm" mb={1}>
-                    Class
-                  </Text>
-                  <Text color="white" fontSize="md">
-                    {profile?.class || 'Not set'}
-                  </Text>
-                </Box>
+                    <Box>
+                      <Text color="gray.400" fontSize="sm" mb={1}>
+                        Class
+                      </Text>
+                      <Text color="white" fontSize="md">
+                        {profile?.class || 'Not set'}
+                      </Text>
+                    </Box>
+                  </>
+                )}
               </VStack>
 
               <VStack align="start" spacing={4}>
-                <Box>
-                  <Text color="gray.400" fontSize="sm" mb={1}>
-                    Status
-                  </Text>
-                  <Badge
-                    colorScheme={getStatusColor(profile?.status)}
-                    variant="subtle"
-                    fontSize="sm"
-                  >
-                    {profile?.status || 'Not set'}
-                  </Badge>
-                </Box>
+                {user?.role === 'STUDENT' && (
+                  <>
+                    <Box>
+                      <Text color="gray.400" fontSize="sm" mb={1}>
+                        Status
+                      </Text>
+                      <Badge
+                        colorScheme={getStatusColor(profile?.status)}
+                        variant="subtle"
+                        fontSize="sm"
+                      >
+                        {profile?.status || 'Not set'}
+                      </Badge>
+                    </Box>
 
-                <Box>
-                  <Text color="gray.400" fontSize="sm" mb={1}>
-                    Transport
-                  </Text>
-                  <Text color="white" fontSize="md">
-                    {profile?.transport || 'Not set'}
-                  </Text>
-                </Box>
+                    <Box>
+                      <Text color="gray.400" fontSize="sm" mb={1}>
+                        Transport
+                      </Text>
+                      <Text color="white" fontSize="md">
+                        {profile?.transport || 'Not set'}
+                      </Text>
+                    </Box>
 
-                <Box>
-                  <Text color="gray.400" fontSize="sm" mb={1}>
-                    Hostel Info
-                  </Text>
-                  <Text color="white" fontSize="md">
-                    {profile?.hostelInfo || 'Not set'}
-                  </Text>
-                </Box>
+                    <Box>
+                      <Text color="gray.400" fontSize="sm" mb={1}>
+                        Hostel Info
+                      </Text>
+                      <Text color="white" fontSize="md">
+                        {profile?.hostelInfo || 'Not set'}
+                      </Text>
+                    </Box>
 
-                <Box>
-                  <Text color="gray.400" fontSize="sm" mb={1}>
-                    Current Batch
-                  </Text>
-                  <Badge
-                    colorScheme={getBatchColor(profile?.batch)}
-                    variant="subtle"
-                    fontSize="sm"
-                  >
-                    {profile?.batch || 'Not Assigned'}
-                  </Badge>
-                </Box>
+                    <Box>
+                      <Text color="gray.400" fontSize="sm" mb={1}>
+                        Current Batch
+                      </Text>
+                      <Badge
+                        colorScheme={getBatchColor(profile?.batch)}
+                        variant="subtle"
+                        fontSize="sm"
+                      >
+                        {profile?.batch || 'Not Assigned'}
+                      </Badge>
+                    </Box>
+                  </>
+                )}
               </VStack>
             </Grid>
           </VStack>
@@ -403,85 +413,89 @@ const ProfilePage: React.FC = () => {
                 />
                 <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
               </FormControl>
-              <FormControl isInvalid={!!errors.degree}>
-                <FormLabel color="gray.300">Degree</FormLabel>
-                <Select
-                  placeholder="Select degree"
-                  bg="gray.700"
-                  borderColor="gray.600"
-                  color="white"
-                  {...register('degree')}
-                >
-                  <option value="B.E">B.E</option>
-                  <option value="B.Tech">B.Tech</option>
-                  <option value="M.E">M.E</option>
-                  <option value="M.Tech">M.Tech</option>
-                  <option value="Ph.D">Ph.D</option>
-                </Select>
-                <FormErrorMessage>{errors.degree?.message}</FormErrorMessage>
-              </FormControl>
-              <FormControl isInvalid={!!errors.class}>
-                <FormLabel color="gray.300">Class</FormLabel>
-                <Select
-                  placeholder="Select class"
-                  bg="gray.700"
-                  borderColor="gray.600"
-                  color="white"
-                  {...register('class')}
-                >
-                  <option value="CSE">CSE</option>
-                  <option value="AIDS">AIDS</option>
-                  <option value="ECE">ECE</option>
-                  <option value="EEE">EEE</option>
-                  <option value="MECH">MECH</option>
-                  <option value="CIVIL">CIVIL</option>
-                </Select>
-                <FormErrorMessage>{errors.class?.message}</FormErrorMessage>
-              </FormControl>
-              <FormControl isInvalid={!!errors.status}>
-                <FormLabel color="gray.300">Status</FormLabel>
-                <Select
-                  placeholder="Select status"
-                  bg="gray.700"
-                  borderColor="gray.600"
-                  color="white"
-                  {...register('status')}
-                >
-                  <option value="Dayscholar">Dayscholar</option>
-                  <option value="Hosteller">Hosteller</option>
-                </Select>
-                <FormErrorMessage>{errors.status?.message}</FormErrorMessage>
-              </FormControl>
-              {statusValue === 'Dayscholar' && (
-                <FormControl isInvalid={!!errors.transport}>
-                  <FormLabel color="gray.300">Transport</FormLabel>
-                  <Select
-                    placeholder="Select transport"
-                    bg="gray.700"
-                    borderColor="gray.600"
-                    color="white"
-                    {...register('transport')}
-                  >
-                    <option value="College Bus">College Bus</option>
-                    <option value="Out Bus">Out Bus</option>
-                    <option value="Self Transport">Self Transport</option>
-                  </Select>
-                  <FormErrorMessage>{errors.transport?.message}</FormErrorMessage>
-                </FormControl>
-              )}
-              {statusValue === 'Hosteller' && (
-                <FormControl isInvalid={!!errors.hostelInfo}>
-                  <FormLabel color="gray.300">Hostel Information</FormLabel>
-                  <Textarea
-                    placeholder="Enter hostel details"
-                    bg="gray.700"
-                    borderColor="gray.600"
-                    color="white"
-                    _placeholder={{ color: 'gray.400' }}
-                    {...register('hostelInfo')}
-                  />
-                  <FormErrorMessage>{errors.hostelInfo?.message}</FormErrorMessage>
-                </FormControl>
+              {user?.role === 'STUDENT' && (
+                <>
+                  <FormControl isInvalid={!!errors.degree}>
+                    <FormLabel color="gray.300">Degree</FormLabel>
+                    <Select
+                      placeholder="Select degree"
+                      bg="gray.700"
+                      borderColor="gray.600"
+                      color="white"
+                      {...register('degree')}
+                    >
+                      <option value="B.E">B.E</option>
+                      <option value="B.Tech">B.Tech</option>
+                      <option value="M.E">M.E</option>
+                      <option value="M.Tech">M.Tech</option>
+                      <option value="Ph.D">Ph.D</option>
+                    </Select>
+                    <FormErrorMessage>{errors.degree?.message}</FormErrorMessage>
+                  </FormControl>
+                  <FormControl isInvalid={!!errors.class}>
+                    <FormLabel color="gray.300">Class</FormLabel>
+                    <Select
+                      placeholder="Select class"
+                      bg="gray.700"
+                      borderColor="gray.600"
+                      color="white"
+                      {...register('class')}
+                    >
+                      <option value="CSE">CSE</option>
+                      <option value="AIDS">AIDS</option>
+                      <option value="ECE">ECE</option>
+                      <option value="EEE">EEE</option>
+                      <option value="MECH">MECH</option>
+                      <option value="CIVIL">CIVIL</option>
+                    </Select>
+                    <FormErrorMessage>{errors.class?.message}</FormErrorMessage>
+                  </FormControl>
+                  <FormControl isInvalid={!!errors.status}>
+                    <FormLabel color="gray.300">Status</FormLabel>
+                    <Select
+                      placeholder="Select status"
+                      bg="gray.700"
+                      borderColor="gray.600"
+                      color="white"
+                      {...register('status')}
+                    >
+                      <option value="Dayscholar">Dayscholar</option>
+                      <option value="Hosteller">Hosteller</option>
+                    </Select>
+                    <FormErrorMessage>{errors.status?.message}</FormErrorMessage>
+                  </FormControl>
+                  {statusValue === 'Dayscholar' && (
+                    <FormControl isInvalid={!!errors.transport}>
+                      <FormLabel color="gray.300">Transport</FormLabel>
+                      <Select
+                        placeholder="Select transport"
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        {...register('transport')}
+                      >
+                        <option value="College Bus">College Bus</option>
+                        <option value="Out Bus">Out Bus</option>
+                        <option value="Self Transport">Self Transport</option>
+                      </Select>
+                      <FormErrorMessage>{errors.transport?.message}</FormErrorMessage>
+                    </FormControl>
+                  )}
+                  {statusValue === 'Hosteller' && (
+                    <FormControl isInvalid={!!errors.hostelInfo}>
+                      <FormLabel color="gray.300">Hostel Information</FormLabel>
+                      <Textarea
+                        placeholder="Enter hostel details"
+                        bg="gray.700"
+                        borderColor="gray.600"
+                        color="white"
+                        _placeholder={{ color: 'gray.400' }}
+                        {...register('hostelInfo')}
+                      />
+                      <FormErrorMessage>{errors.hostelInfo?.message}</FormErrorMessage>
+                    </FormControl>
+                  )}
+                </>
               )}
               {errors.root && ( // Corrected from errors._root to errors.root
                 <Text color="red.400" fontSize="sm">
