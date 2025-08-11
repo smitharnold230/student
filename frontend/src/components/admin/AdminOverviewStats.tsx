@@ -152,7 +152,8 @@ const AdminOverviewStats: React.FC<AdminOverviewStatsProps> = ({ systemStats, ca
             </VStack>
           </CardBody>
         </Card>
-      </Grid>
+      </GridItem>
+    </Grid>
   );
 };
 
