@@ -28,9 +28,10 @@ import { useAuthStore } from '../store/authStore';
 import { getStudentLevel } from '../utils/points'; // Import the utility
 
 interface MyRank {
-  rank: number;
-  points: number;
-  totalStudents: number;
+  rank: number | null;
+  points: number | null;
+  totalStudents: number | null;
+  message?: string;
 }
 
 interface Profile {
@@ -142,14 +143,14 @@ const DashboardPage: React.FC = () => {
   const stats = [
     {
       label: 'My Rank',
-      value: myRank?.rank || 'N/A',
+      value: myRank?.rank !== null ? myRank?.rank : 'N/A',
       icon: FiBarChart,
       color: 'blue.500',
-      helpText: `Out of ${myRank?.totalStudents || 0} students`,
+      helpText: myRank?.totalStudents !== null ? `Out of ${myRank?.totalStudents || 0} students` : 'Not applicable for admins',
     },
     {
       label: 'Total Points',
-      value: myRank?.points || 0,
+      value: myRank?.points !== null ? myRank?.points : 'N/A',
       icon: FiTrendingUp,
       color: 'green.500',
       helpText: 'Earned through activities',
@@ -266,43 +267,45 @@ const DashboardPage: React.FC = () => {
         ))}
       </Grid>
 
-      {/* Points Overview */}
-      <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
-        <CardBody>
-          <VStack spacing={4} align="stretch">
-            <HStack justify="space-between">
-              <Heading size="md" color="white">
-                Your Points & Level
-              </Heading>
-              <Badge colorScheme="green" variant="subtle" fontSize="sm">
-                {myRank?.points || 0} pts
-              </Badge>
-            </HStack>
-            
-            <Box>
-              <HStack justify="space-between" mb={2}>
-                <Text color="gray.400" fontSize="sm">
-                  Current Level: <Text as="span" fontWeight="bold" color="white">{level}</Text>
-                </Text>
-                <Text color="white" fontSize="sm">
-                  {myRank?.points || 0} / {nextLevelPoints === Infinity ? 'Max' : nextLevelPoints} points
-                </Text>
+      {/* Points Overview - Only show for students */}
+      {user?.role === 'STUDENT' && (
+        <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
+          <CardBody>
+            <VStack spacing={4} align="stretch">
+              <HStack justify="space-between">
+                <Heading size="md" color="white">
+                  Your Points & Level
+                </Heading>
+                <Badge colorScheme="green" variant="subtle" fontSize="sm">
+                  {myRank?.points || 0} pts
+                </Badge>
               </HStack>
-              <Progress
-                value={progressPercentage}
-                colorScheme="green"
-                size="lg"
-                borderRadius="full"
-              />
-              {nextLevelPoints !== Infinity && (
-                <Text color="gray.500" fontSize="xs" mt={1}>
-                  {nextLevelPoints - (myRank?.points || 0)} points to reach next level
-                </Text>
-              )}
-            </Box>
-          </VStack>
-        </CardBody>
-      </Card>
+              
+              <Box>
+                <HStack justify="space-between" mb={2}>
+                  <Text color="gray.400" fontSize="sm">
+                    Current Level: <Text as="span" fontWeight="bold" color="white">{level}</Text>
+                  </Text>
+                  <Text color="white" fontSize="sm">
+                    {myRank?.points || 0} / {nextLevelPoints === Infinity ? 'Max' : nextLevelPoints} points
+                  </Text>
+                </HStack>
+                <Progress
+                  value={progressPercentage}
+                  colorScheme="green"
+                  size="lg"
+                  borderRadius="full"
+                />
+                {nextLevelPoints !== Infinity && (
+                  <Text color="gray.500" fontSize="xs" mt={1}>
+                    {nextLevelPoints - (myRank?.points || 0)} points to reach next level
+                  </Text>
+                )}
+              </Box>
+            </VStack>
+          </CardBody>
+        </Card>
+      )}
 
       {/* Quick Actions */}
       <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
