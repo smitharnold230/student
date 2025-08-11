@@ -23,7 +23,41 @@ import {
   Icon,
   Skeleton,
 } from '@chakra-ui/react';
-import { useQuery, useMutation, useQueryClient } => eventAPI.createEvent(data), // Using CreateEventData
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'; // Corrected import statement
+import { FiCalendar, FiPlus } from 'react-icons/fi';
+import { eventAPI, notificationAPI } from '../services/api';
+import { useAuthStore } from '../store/authStore';
+import { AxiosProgressEvent } from 'axios';
+import { Event, CreateEventData, UpdateEventData } from '../types/event';
+import EventCard from '../components/events/EventCard';
+import CreateEventModal from '../components/events/CreateEventModal';
+import EventDetailsModal from '../components/events/EventDetailsModal';
+import EditEventModal from '../components/events/EditEventModal';
+
+const EventsPage: React.FC = () => {
+  const { user } = useAuthStore();
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  
+  const { isOpen: isCreateModalOpen, onOpen: onCreateModalOpen, onClose: onCreateModalClose } = useDisclosure();
+  const { isOpen: isDetailsModalOpen, onOpen: onDetailsModalOpen, onClose: onDetailsModalClose } = useDisclosure();
+  const { isOpen: isEditModalOpen, onOpen: onEditModalOpen, onClose: onEditModalClose } = useDisclosure();
+  
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [eventToEdit, setEventToEdit] = useState<Event | null>(null);
+  
+  const cardBg = useColorModeValue('gray.800', 'gray.900');
+  const borderColor = useColorModeValue('gray.700', 'gray.600');
+
+  const { data: eventsResponse, isLoading } = useQuery({
+    queryKey: ['events'],
+    queryFn: () => eventAPI.getEvents(),
+  });
+
+  const events: Event[] = eventsResponse?.data || [];
+
+  const createEventMutation = useMutation({
+    mutationFn: (data: CreateEventData) => eventAPI.createEvent(data),
     onSuccess: () => {
       toast({
         title: 'Event created',
@@ -68,7 +102,7 @@ import { useQuery, useMutation, useQueryClient } => eventAPI.createEvent(data), 
   });
 
   const updateEventMutation = useMutation({
-    mutationFn: ({ eventId, data }: { eventId: string; data: Partial<UpdateEventData> }) => // Using UpdateEventData
+    mutationFn: ({ eventId, data }: { eventId: string; data: Partial<UpdateEventData> }) =>
       eventAPI.updateEvent(eventId, data),
     onSuccess: () => {
       toast({
@@ -188,9 +222,9 @@ import { useQuery, useMutation, useQueryClient } => eventAPI.createEvent(data), 
               onView={handleViewEvent}
               onAccept={handleAcceptEvent}
               acceptMutation={acceptEventMutation}
-              onEdit={handleEditEvent} // Pass edit handler
-              onDelete={handleDeleteEvent} // Pass delete handler
-              deleteMutation={deleteEventMutation} // Pass delete mutation
+              onEdit={handleEditEvent}
+              onDelete={handleDeleteEvent}
+              deleteMutation={deleteEventMutation}
             />
           </GridItem>
         ))}
@@ -228,9 +262,9 @@ import { useQuery, useMutation, useQueryClient } => eventAPI.createEvent(data), 
         userRole={user?.role || null}
         onAccept={handleAcceptEvent}
         acceptMutation={acceptEventMutation}
-        onEdit={handleEditEvent} // Pass edit handler
-        onDelete={handleDeleteEvent} // Pass delete handler
-        deleteMutation={deleteEventMutation} // Pass delete mutation
+        onEdit={handleEditEvent}
+        onDelete={handleDeleteEvent}
+        deleteMutation={deleteEventMutation}
       />
 
       {/* New Edit Event Modal */}

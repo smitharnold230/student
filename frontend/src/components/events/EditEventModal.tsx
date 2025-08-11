@@ -46,12 +46,12 @@ const editEventSchema = z.object({
 type EditEventForm = z.infer<typeof editEventSchema>;
 
 // Helper to normalize values for comparison (empty string, null, undefined all treated as 'empty')
-const normalizeValue = <T,>(val: T | null | undefined | ''): T | undefined => {
+function normalizeValue<T>(val: T | null | undefined | ''): T | undefined {
   if (val === null || val === undefined || val === '') {
     return undefined;
   }
   return val;
-};
+}
 
 const EditEventModal: React.FC<EditEventModalProps> = ({
   isOpen,
