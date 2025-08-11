@@ -23,41 +23,7 @@ import {
   Icon,
   Skeleton,
 } from '@chakra-ui/react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { FiCalendar, FiPlus } from 'react-icons/fi';
-import { eventAPI, notificationAPI } from '../services/api';
-import { useAuthStore } from '../store/authStore';
-import { AxiosProgressEvent } from 'axios';
-import { Event, CreateEventData, UpdateEventData } from '../types/event'; // Corrected import
-import EventCard from '../components/events/EventCard';
-import CreateEventModal from '../components/events/CreateEventModal';
-import EventDetailsModal from '../components/events/EventDetailsModal';
-import EditEventModal from '../components/events/EditEventModal'; // Import new component
-
-const EventsPage: React.FC = () => {
-  const { user } = useAuthStore();
-  const toast = useToast();
-  const queryClient = useQueryClient();
-  
-  const { isOpen: isCreateModalOpen, onOpen: onCreateModalOpen, onClose: onCreateModalClose } = useDisclosure();
-  const { isOpen: isDetailsModalOpen, onOpen: onDetailsModalOpen, onClose: onDetailsModalClose } = useDisclosure();
-  const { isOpen: isEditModalOpen, onOpen: onEditModalOpen, onClose: onEditModalClose } = useDisclosure(); // New disclosure for edit modal
-  
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [eventToEdit, setEventToEdit] = useState<Event | null>(null); // New state for event being edited
-  
-  const cardBg = useColorModeValue('gray.800', 'gray.900');
-  const borderColor = useColorModeValue('gray.700', 'gray.600');
-
-  const { data: eventsResponse, isLoading } = useQuery({
-    queryKey: ['events'],
-    queryFn: () => eventAPI.getEvents(),
-  });
-
-  const events: Event[] = eventsResponse?.data || [];
-
-  const createEventMutation = useMutation({
-    mutationFn: (data: CreateEventData) => eventAPI.createEvent(data), // Using CreateEventData
+import { useQuery, useMutation, useQueryClient } => eventAPI.createEvent(data), // Using CreateEventData
     onSuccess: () => {
       toast({
         title: 'Event created',
@@ -272,7 +238,7 @@ const EventsPage: React.FC = () => {
         isOpen={isEditModalOpen}
         onClose={onEditModalClose}
         eventToEdit={eventToEdit}
-        onUpdateEvent={(eventId, data) => updateEventMutation.mutate({ eventId, data })}
+        onUpdateEvent={(eventId: string, data: Partial<UpdateEventData>) => updateEventMutation.mutate({ eventId, data })}
         updateEventMutation={updateEventMutation}
       />
     </VStack>

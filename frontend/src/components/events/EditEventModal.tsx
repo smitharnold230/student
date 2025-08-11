@@ -19,15 +19,15 @@ import {
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Event, UpdateEventData } from '../../types/event'; // Corrected import
+import { Event, UpdateEventData } from '../../types/event';
 import { UseMutationResult } from '@tanstack/react-query';
 
 interface EditEventModalProps {
   isOpen: boolean;
   onClose: () => void;
   eventToEdit: Event | null;
-  onUpdateEvent: (eventId: string, data: Partial<UpdateEventData>) => void; // Using Partial<UpdateEventData>
-  updateEventMutation: UseMutationResult<any, Error, { eventId: string; data: Partial<UpdateEventData> }, unknown>; // Using Partial<UpdateEventData>
+  onUpdateEvent: (eventId: string, data: Partial<UpdateEventData>) => void;
+  updateEventMutation: UseMutationResult<any, Error, { eventId: string; data: Partial<UpdateEventData> }, unknown>;
 }
 
 const editEventSchema = z.object({
@@ -46,7 +46,7 @@ const editEventSchema = z.object({
 type EditEventForm = z.infer<typeof editEventSchema>;
 
 // Helper to normalize values for comparison (empty string, null, undefined all treated as 'empty')
-const normalizeValue = <T>(val: T | null | undefined | ''): T | undefined => {
+const normalizeValue = <T,>(val: T | null | undefined | ''): T | undefined => {
   if (val === null || val === undefined || val === '') {
     return undefined;
   }
