@@ -264,9 +264,11 @@ const PointsPage: React.FC = () => {
     enabled: user?.role === 'STUDENT',
   });
 
+  // Rules are fetched for both student and admin, so apply staleTime here
   const { data: rulesResponse, isLoading: rulesLoading } = useQuery({
     queryKey: ['pointRules'],
     queryFn: () => pointsAPI.getPointRules(),
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   // Admin queries
@@ -274,12 +276,14 @@ const PointsPage: React.FC = () => {
     queryKey: ['pointStatistics'],
     queryFn: () => pointsAPI.getPointStatistics(),
     enabled: user?.role === 'ADMIN',
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const { data: usersResponse, isLoading: usersLoading } = useQuery({
     queryKey: ['allUsers'],
     queryFn: () => pointsAPI.getAllUsers(),
     enabled: user?.role === 'ADMIN',
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const breakdown: PointBreakdown | undefined = breakdownResponse?.data?.data;
