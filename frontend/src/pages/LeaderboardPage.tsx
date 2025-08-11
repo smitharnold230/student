@@ -152,7 +152,7 @@ const LeaderboardPage: React.FC = () => {
                   <Th color="gray.300" borderColor={borderColor}>Class</Th>
                   <Th color="gray.300" borderColor={borderColor}>Batch</Th>
                   <Th color="gray.300" borderColor={borderColor}>Points</Th>
-                  <Th color="gray.300" borderColor={borderColor}>Level</Th> {/* Added Level column */}
+                  <Th color="gray.300" borderColor={borderColor}>Level</Th>
                   <Th color="gray.300" borderColor={borderColor}>Status</Th>
                 </Tr>
               </Thead>
@@ -205,7 +205,7 @@ const LeaderboardPage: React.FC = () => {
                         {student.points}
                       </Text>
                     </Td>
-                    <Td borderColor={borderColor}> {/* Display Level */}
+                    <Td borderColor={borderColor}>
                       <Badge colorScheme="blue" variant="outline">
                         {getStudentLevel(student.points).level}
                       </Badge>

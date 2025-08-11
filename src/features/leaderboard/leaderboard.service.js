@@ -22,6 +22,7 @@ async function getLeaderboard() {
     order: [[{ model: Point }, 'value', 'DESC']],
   });
   return students.map((s, i) => ({
+    id: s.id, // Added student ID for unique key prop in frontend
     rank: i + 1,
     name: s.name,
     class: s.class,
