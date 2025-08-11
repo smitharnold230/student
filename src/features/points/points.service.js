@@ -79,7 +79,7 @@ async function calculateUserPoints(userId) {
     pointBreakdown.workshops = {
       count: workshopParticipations.length,
       points: workshopPoints,
-      events: workshopParticipations.map(p => p.Event.name)
+      events: workshopParticipations.map(p => p.Event?.name).filter(Boolean) // Added optional chaining and filter
     };
 
     // 2. Calculate hackathon participation points
@@ -97,7 +97,7 @@ async function calculateUserPoints(userId) {
     pointBreakdown.hackathons = {
       count: hackathonParticipations.length,
       points: hackathonPoints,
-      events: hackathonParticipations.map(p => p.Event.name)
+      events: hackathonParticipations.map(p => p.Event?.name).filter(Boolean) // Added optional chaining and filter
     };
 
     // 3. Calculate certification points
@@ -117,7 +117,7 @@ async function calculateUserPoints(userId) {
     pointBreakdown.certifications = {
       count: approvedCertifications.length,
       points: certificationPoints,
-      certifications: approvedCertifications.map(c => c.Event.name)
+      certifications: approvedCertifications.map(c => c.Event?.name).filter(Boolean) // Added optional chaining and filter
     };
 
     // 4. Calculate coding platform points
