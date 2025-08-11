@@ -71,23 +71,28 @@ socketService.initSocket(io);
 // Make io available throughout the app (though direct usage of socketService is preferred)
 app.set('io', io);
 
-// Sync Sequelize models and then start server
-sequelize.sync({ alter: true }).then(async () => {
-  console.log('Database synced successfully with alterations');
+// Connect to DB, run migrations, then sync models and start server
+sequelize.authenticate().then(async () => {
+  console.log('Database connection established.');
   
-  // Run database migrations
+  // Run database migrations first
   try {
     const Migration = require('./migrations/migration');
     const migration = new Migration();
-    await migration.runMigrations();
+    await migration.runMigrations(); // This will apply schema changes and data cleanup
   } catch (error) {
     console.error('Migration error:', error);
+    process.exit(1); // Exit if migrations fail
   }
+
+  // Then, sync models (alter: true) to ensure any new models/columns not covered by migrations are added
+  await sequelize.sync({ alter: true });
+  console.log('Database synced successfully with alterations');
   
   server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
 }).catch((err) => {
-  console.error('Failed to sync database:', err);
+  console.error('Failed to connect or sync database:', err);
   process.exit(1);
 });

@@ -143,6 +143,33 @@ class Migration {
             throw error;
           }
         }
+      },
+      {
+        name: '006_fix_submission_event_fkey_data_integrity',
+        up: async () => {
+          try {
+            console.log('Checking and fixing submission eventId data integrity...');
+            // Fetch all submissions with non-null eventId
+            const [submissions] = await sequelize.query(`SELECT id, "eventId" FROM submissions WHERE "eventId" IS NOT NULL`);
+            // Fetch all existing event IDs
+            const [events] = await sequelize.query(`SELECT id FROM events`);
+            const existingEventIds = new Set(events.map(e => e.id));
+
+            let fixedCount = 0;
+            for (const submission of submissions) {
+              // If eventId is present but not in the existing event IDs
+              if (submission.eventId && !existingEventIds.has(submission.eventId)) {
+                console.log(`Fixing submission ${submission.id}: eventId ${submission.eventId} does not exist in events table. Setting to NULL.`);
+                await sequelize.query(`UPDATE submissions SET "eventId" = NULL WHERE id = $1`, { bind: [submission.id] });
+                fixedCount++;
+              }
+            }
+            console.log(`Fixed ${fixedCount} submission eventId foreign key violations.`);
+          } catch (error) {
+            console.error('Error fixing submission eventId data integrity:', error);
+            throw error;
+          }
+        }
       }
     ];
   }
