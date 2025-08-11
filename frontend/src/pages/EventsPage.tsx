@@ -28,7 +28,7 @@ import { FiCalendar, FiPlus } from 'react-icons/fi';
 import { eventAPI, notificationAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import { AxiosProgressEvent } from 'axios';
-import { Event, FormattedEventData } from '../types/event';
+import { Event, CreateEventData, UpdateEventData } from '../types/event'; // Corrected import
 import EventCard from '../components/events/EventCard';
 import CreateEventModal from '../components/events/CreateEventModal';
 import EventDetailsModal from '../components/events/EventDetailsModal';
@@ -57,7 +57,7 @@ const EventsPage: React.FC = () => {
   const events: Event[] = eventsResponse?.data || [];
 
   const createEventMutation = useMutation({
-    mutationFn: (data: FormattedEventData) => eventAPI.createEvent(data),
+    mutationFn: (data: CreateEventData) => eventAPI.createEvent(data), // Using CreateEventData
     onSuccess: () => {
       toast({
         title: 'Event created',
@@ -102,7 +102,7 @@ const EventsPage: React.FC = () => {
   });
 
   const updateEventMutation = useMutation({
-    mutationFn: ({ eventId, data }: { eventId: string; data: Partial<FormattedEventData> }) =>
+    mutationFn: ({ eventId, data }: { eventId: string; data: Partial<UpdateEventData> }) => // Using UpdateEventData
       eventAPI.updateEvent(eventId, data),
     onSuccess: () => {
       toast({

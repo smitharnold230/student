@@ -19,20 +19,20 @@ import {
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Event, UpdateEventData } from '../../types/event'; // Import UpdateEventData
+import { Event, UpdateEventData } from '../../types/event'; // Corrected import
 import { UseMutationResult } from '@tanstack/react-query';
 
 interface EditEventModalProps {
   isOpen: boolean;
   onClose: () => void;
   eventToEdit: Event | null;
-  onUpdateEvent: (eventId: string, data: Partial<UpdateEventData>) => void; // Use Partial<UpdateEventData>
-  updateEventMutation: UseMutationResult<any, Error, { eventId: string; data: Partial<UpdateEventData> }, unknown>; // Use Partial<UpdateEventData>
+  onUpdateEvent: (eventId: string, data: Partial<UpdateEventData>) => void; // Using Partial<UpdateEventData>
+  updateEventMutation: UseMutationResult<any, Error, { eventId: string; data: Partial<UpdateEventData> }, unknown>; // Using Partial<UpdateEventData>
 }
 
 const editEventSchema = z.object({
   name: z.string().min(1, 'Event name is required').optional(),
-  type: z.string().refine(val => val === 'WORKSHOP' || val === 'HACKATHON', { message: 'Event type is required' }).optional(),
+  type: z.enum(['WORKSHOP', 'HACKATHON'], { message: 'Event type is required' }).optional(),
   date: z.string().min(1, 'Date is required').optional(),
   organizer: z.string().min(1, 'Organizer is required').optional(),
   url: z.string().url('Invalid URL format').or(z.literal('')).optional(),
@@ -44,6 +44,14 @@ const editEventSchema = z.object({
 });
 
 type EditEventForm = z.infer<typeof editEventSchema>;
+
+// Helper to normalize values for comparison (empty string, null, undefined all treated as 'empty')
+const normalizeValue = <T>(val: T | null | undefined | ''): T | undefined => {
+  if (val === null || val === undefined || val === '') {
+    return undefined;
+  }
+  return val;
+};
 
 const EditEventModal: React.FC<EditEventModalProps> = ({
   isOpen,
@@ -81,40 +89,40 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
   const onSubmit = (data: EditEventForm) => {
     if (!eventToEdit) return;
 
-    // Helper to normalize values for comparison (empty string, null, undefined all treated as 'empty')
-    const normalizeValue = (val: any) => (val === null || val === undefined || val === '') ? undefined : val;
-
-    const formattedData: Partial<UpdateEventData> = { // Use Partial<UpdateEventData>
+    const formattedData: Partial<UpdateEventData> = {
       name: normalizeValue(data.name),
-      type: normalizeValue(data.type) as 'WORKSHOP' | 'HACKATHON' | undefined, // Ensure type is correct or undefined
-      date: data.date ? new Date(data.date).toISOString() : undefined,
+      type: data.type, // Directly use data.type, as Zod already ensures it's 'WORKSHOP' | 'HACKATHON' | undefined
+      date: data.date ? new Date(data.date).toISOString() : null, // Send null if empty string
       organizer: normalizeValue(data.organizer),
       url: normalizeValue(data.url),
       link: normalizeValue(data.link),
-      certificationDeadline: data.certificationDeadline ? new Date(data.certificationDeadline).toISOString() : undefined,
+      certificationDeadline: data.certificationDeadline ? new Date(data.certificationDeadline).toISOString() : null, // Send null if empty string
     };
 
-    const changes: Partial<UpdateEventData> = {}; // Use Partial<UpdateEventData>
+    const changes: Partial<UpdateEventData> = {};
     for (const key in formattedData) {
-      const typedKey = key as keyof UpdateEventData; // Use keyof UpdateEventData
+      const typedKey = key as keyof UpdateEventData;
 
-      const currentVal = normalizeValue(formattedData[typedKey]);
-      const originalVal = normalizeValue((eventToEdit as any)[typedKey]);
+      const currentVal = formattedData[typedKey];
+      const originalVal = (eventToEdit as any)[typedKey];
+
+      // Normalize original value for comparison
+      const normalizedOriginalVal = normalizeValue(originalVal);
 
       // Special handling for date and certificationDeadline to compare ISO strings
-      if ((typedKey === 'date' || typedKey === 'certificationDeadline') && (currentVal !== undefined || originalVal !== undefined)) {
+      if ((typedKey === 'date' || typedKey === 'certificationDeadline')) {
         const currentIso = currentVal ? new Date(currentVal as string).toISOString() : undefined;
-        const originalIso = originalVal ? new Date(originalVal as string).toISOString() : undefined;
+        const originalIso = normalizedOriginalVal ? new Date(normalizedOriginalVal as string).toISOString() : undefined;
         if (currentIso !== originalIso) {
-          changes[typedKey] = formattedData[typedKey];
+          changes[typedKey] = currentVal;
         }
-      } else if (currentVal !== originalVal) {
-        changes[typedKey] = formattedData[typedKey];
+      } else if (currentVal !== normalizedOriginalVal) {
+        changes[typedKey] = currentVal;
       }
     }
 
     if (Object.keys(changes).length === 0) {
-      onClose(); // Close if no changes
+      onClose();
       return;
     }
 
