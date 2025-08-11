@@ -33,10 +33,11 @@ import PointRulesDisplay from '../components/points/PointRulesDisplay';
 const AdminPointsView: React.FC<{ 
   statistics: PointStatistics | undefined; 
   onUpdateAllPoints: () => void;
+  isUpdatingAllPoints: boolean; // New prop for loading state
   users: UserWithPoints[];
   usersLoading: boolean;
   rules: PointRule[];
-}> = ({ statistics, onUpdateAllPoints, users, usersLoading, rules }) => {
+}> = ({ statistics, onUpdateAllPoints, isUpdatingAllPoints, users, usersLoading, rules }) => {
   const toast = useToast();
   const queryClient = useQueryClient();
 
@@ -177,7 +178,7 @@ const AdminPointsView: React.FC<{
           leftIcon={<FiRefreshCw />}
           colorScheme="brand"
           onClick={onUpdateAllPoints}
-          isLoading={false} // Add actual loading state if available
+          isLoading={isUpdatingAllPoints} // Use the new prop here
         >
           Update All Points
         </Button>
@@ -347,6 +348,7 @@ const PointsPage: React.FC = () => {
       <AdminPointsView
         statistics={statistics}
         onUpdateAllPoints={handleUpdateAllPoints}
+        isUpdatingAllPoints={updateAllPointsMutation.isPending} // Pass the loading state
         users={users}
         usersLoading={usersLoading}
         rules={rules}

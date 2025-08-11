@@ -75,7 +75,17 @@ const AdminLogsPage: React.FC = () => {
 
   const exportLogsMutation = useMutation({
     mutationFn: () => adminAPI.exportStudents(), // Corrected from exportLogs to exportStudents
-    onSuccess: () => {
+    onSuccess: (response) => {
+      // Create a blob URL and trigger download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'students_export.csv'); // Set desired filename
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
       toast({
         title: 'Logs exported',
         description: 'API logs have been exported successfully.',
@@ -201,7 +211,7 @@ const AdminLogsPage: React.FC = () => {
             leftIcon={<FiDownload />}
             colorScheme="brand"
             onClick={handleExport}
-            isLoading={exportLogsMutation.isPending}
+            isLoading={exportLogsMutation.isPending} // Use the mutation's loading state
           >
             Export Logs
           </Button>
