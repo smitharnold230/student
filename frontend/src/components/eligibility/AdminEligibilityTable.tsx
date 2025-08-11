@@ -19,6 +19,8 @@ import {
   Skeleton,
   Icon,
   Input,
+  InputGroup, // Added import
+  InputLeftElement, // Added import
 } from '@chakra-ui/react';
 import { FiSettings, FiSearch } from 'react-icons/fi';
 
@@ -70,17 +72,20 @@ const AdminEligibilityTable: React.FC<AdminEligibilityTableProps> = ({
           <HStack justify="space-between">
             <Heading size="md" color="white">Student Eligibility</Heading>
             <HStack>
-              <Input
-                placeholder="Search students by name or email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                bg="gray.700"
-                borderColor="gray.600"
-                color="white"
-                _placeholder={{ color: 'gray.400' }}
-                width="250px"
-                leftElement={<Icon as={FiSearch} color="gray.400" ml={2} />}
-              />
+              <InputGroup width="250px"> {/* Wrap Input with InputGroup */}
+                <InputLeftElement pointerEvents="none"> {/* Use InputLeftElement for the icon */}
+                  <Icon as={FiSearch} color="gray.400" />
+                </InputLeftElement>
+                <Input
+                  placeholder="Search students by name or email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  bg="gray.700"
+                  borderColor="gray.600"
+                  color="white"
+                  _placeholder={{ color: 'gray.400' }}
+                />
+              </InputGroup>
               <Button
                 leftIcon={<FiSettings />}
                 colorScheme="blue"

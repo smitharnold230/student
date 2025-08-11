@@ -17,6 +17,7 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
+  Box, // Added missing import
 } from '@chakra-ui/react';
 import { UseMutationResult } from '@tanstack/react-query';
 

@@ -18,6 +18,7 @@ import { useAuthStore } from '../store/authStore';
 // Import new modular components
 import EligibilityStudentView from '../components/eligibility/EligibilityStudentView';
 import EligibilityAdminView from '../components/eligibility/EligibilityAdminView';
+import { FiCheckCircle, FiXCircle } from 'react-icons/fi'; // Import actual icon components
 
 interface EligibilityData {
   eligible: boolean;
@@ -51,7 +52,7 @@ const EligibilityPage: React.FC = () => {
   };
 
   const getEligibilityIcon = (eligible: boolean) => {
-    return eligible ? 'FiCheckCircle' : 'FiXCircle'; // Return string name for Icon component
+    return eligible ? FiCheckCircle : FiXCircle; // Return actual icon components
   };
 
   const getBatchColor = (batch: string) => {
