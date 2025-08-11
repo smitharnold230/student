@@ -40,6 +40,7 @@ import { codingStatsAPI } from '../services/api';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useAuthStore } from '../store/authStore'; // Import useAuthStore
 
 interface CodingStat {
   id: string;
@@ -63,6 +64,7 @@ const CodingStatsPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [showManualCount, setShowManualCount] = useState(false);
+  const { user } = useAuthStore(); // Get user from auth store
   
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
@@ -223,13 +225,15 @@ const CodingStatsPage: React.FC = () => {
           </Text>
         </Box>
         
-        <Button
-          leftIcon={<FiPlus />}
-          colorScheme="brand"
-          onClick={onOpen}
-        >
-          Add Stats
-        </Button>
+        {user?.role === 'STUDENT' && ( // Only show for students
+          <Button
+            leftIcon={<FiPlus />}
+            colorScheme="brand"
+            onClick={onOpen}
+          >
+            Add Stats
+          </Button>
+        )}
       </HStack>
 
       {/* Summary Stats */}

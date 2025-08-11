@@ -340,15 +340,17 @@ const EventsPage: React.FC = () => {
                       >
                         View
                       </Button>
-                      <Button
-                        colorScheme="green"
-                        size="sm"
-                        flex={1}
-                        onClick={() => handleAcceptEvent(event.id)}
-                        isLoading={acceptEventMutation.isPending}
-                      >
-                        Accept
-                      </Button>
+                      {user?.role === 'STUDENT' && (
+                        <Button
+                          colorScheme="green"
+                          size="sm"
+                          flex={1}
+                          onClick={() => handleAcceptEvent(event.id)}
+                          isLoading={acceptEventMutation.isPending}
+                        >
+                          Accept
+                        </Button>
+                      )}
                     </HStack>
                   </VStack>
                 </VStack>
@@ -556,18 +558,20 @@ const EventsPage: React.FC = () => {
             <Button variant="ghost" mr={3} onClick={onDetailsClose}>
               Close
             </Button>
-            <Button
-              colorScheme="green"
-              onClick={() => {
-                if (selectedEvent) {
-                  handleAcceptEvent(selectedEvent.id);
-                  onDetailsClose();
-                }
-              }}
-              isLoading={acceptEventMutation.isPending}
-            >
-              Accept Event
-            </Button>
+            {user?.role === 'STUDENT' && (
+              <Button
+                colorScheme="green"
+                onClick={() => {
+                  if (selectedEvent) {
+                    handleAcceptEvent(selectedEvent.id);
+                    onDetailsClose();
+                  }
+                }}
+                isLoading={acceptEventMutation.isPending}
+              >
+                Accept Event
+              </Button>
+            )}
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -575,4 +579,4 @@ const EventsPage: React.FC = () => {
   );
 };
 
-export default EventsPage; 
+export default EventsPage;
