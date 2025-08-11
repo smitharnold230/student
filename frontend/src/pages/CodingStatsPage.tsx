@@ -206,7 +206,7 @@ const CodingStatsPage: React.FC = () => {
   };
 
   const handleAddModalOpen = () => {
-    let defaultPlatform: 'LEETCODE' | 'HACKERRANK' | '' = '';
+    let defaultPlatform: 'LEETCODE' | 'HACKERRANK' | undefined = undefined; // Initialize as undefined
     if (!hasLeetCode) {
       defaultPlatform = 'LEETCODE';
     } else if (!hasHackerRank) {
@@ -214,7 +214,7 @@ const CodingStatsPage: React.FC = () => {
     }
 
     reset({
-      platform: defaultPlatform,
+      platform: defaultPlatform, // Now can be 'LEETCODE', 'HACKERRANK', or undefined
       username: '',
       manualCount: undefined,
     });
