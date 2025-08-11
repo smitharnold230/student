@@ -89,36 +89,46 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
   const onSubmit = (data: EditEventForm) => {
     if (!eventToEdit) return;
 
-    const formattedData: Partial<UpdateEventData> = {
-      name: normalizeValue(data.name),
-      type: data.type, // Directly use data.type, as Zod already ensures it's 'WORKSHOP' | 'HACKATHON' | undefined
-      date: data.date ? new Date(data.date).toISOString() : null, // Send null if empty string
-      organizer: normalizeValue(data.organizer),
-      url: normalizeValue(data.url),
-      link: normalizeValue(data.link),
-      certificationDeadline: data.certificationDeadline ? new Date(data.certificationDeadline).toISOString() : null, // Send null if empty string
-    };
-
     const changes: Partial<UpdateEventData> = {};
-    for (const key in formattedData) {
-      const typedKey = key as keyof UpdateEventData;
 
-      const currentVal = formattedData[typedKey];
-      const originalVal = (eventToEdit as any)[typedKey];
+    // Name
+    if (normalizeValue(data.name) !== normalizeValue(eventToEdit.name)) {
+      changes.name = normalizeValue(data.name);
+    }
 
-      // Normalize original value for comparison
-      const normalizedOriginalVal = normalizeValue(originalVal);
+    // Type
+    // Direct comparison for enum type
+    if (data.type !== eventToEdit.type) {
+      changes.type = data.type;
+    }
 
-      // Special handling for date and certificationDeadline to compare ISO strings
-      if ((typedKey === 'date' || typedKey === 'certificationDeadline')) {
-        const currentIso = currentVal ? new Date(currentVal as string).toISOString() : undefined;
-        const originalIso = normalizedOriginalVal ? new Date(normalizedOriginalVal as string).toISOString() : undefined;
-        if (currentIso !== originalIso) {
-          changes[typedKey] = currentVal as UpdateEventData[typeof typedKey]; // Add type assertion here
-        }
-      } else if (currentVal !== normalizedOriginalVal) {
-        changes[typedKey] = currentVal as UpdateEventData[typeof typedKey]; // Add type assertion here
-      }
+    // Date
+    const newDateISO = data.date ? new Date(data.date).toISOString() : null;
+    const originalDateISO = eventToEdit.date ? new Date(eventToEdit.date).toISOString() : null;
+    if (newDateISO !== originalDateISO) {
+      changes.date = newDateISO;
+    }
+
+    // Organizer
+    if (normalizeValue(data.organizer) !== normalizeValue(eventToEdit.organizer)) {
+      changes.organizer = normalizeValue(data.organizer);
+    }
+
+    // URL
+    if (normalizeValue(data.url) !== normalizeValue(eventToEdit.url)) {
+      changes.url = normalizeValue(data.url);
+    }
+
+    // Link
+    if (normalizeValue(data.link) !== normalizeValue(eventToEdit.link)) {
+      changes.link = normalizeValue(data.link);
+    }
+
+    // Certification Deadline
+    const newCertDeadlineISO = data.certificationDeadline ? new Date(data.certificationDeadline).toISOString() : null;
+    const originalCertDeadlineISO = eventToEdit.certificationDeadline ? new Date(eventToEdit.certificationDeadline).toISOString() : null;
+    if (newCertDeadlineISO !== originalCertDeadlineISO) {
+      changes.certificationDeadline = newCertDeadlineISO;
     }
 
     if (Object.keys(changes).length === 0) {
