@@ -2,6 +2,7 @@ import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 import { AxiosProgressEvent } from 'axios';
 import { Profile } from '../types/profile'; // Import Profile type
+import { FormattedEventData } from '../types/event'; // Import FormattedEventData
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
 
@@ -71,11 +72,13 @@ export const profileAPI = {
 export const eventAPI = {
   getEvents: () => api.get('/event'),
   participate: (eventId: string) => api.post('/event/participate', { eventId }),
-  createEvent: (data: any) => {
+  createEvent: (data: FormattedEventData) => { // Use FormattedEventData
     return api.post('/event', data);
   },
   acceptEvent: (eventId: string) => api.post('/event/accept', { eventId }),
   getEventDetails: (eventId: string) => api.get(`/event/${eventId}`),
+  updateEvent: (eventId: string, data: Partial<FormattedEventData>) => api.put(`/event/${eventId}`, data), // New: Update event
+  deleteEvent: (eventId: string) => api.delete(`/event/${eventId}`), // New: Delete event
 };
 
 export const codingStatsAPI = {

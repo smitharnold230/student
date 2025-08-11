@@ -27,10 +27,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FiCalendar, FiPlus } from 'react-icons/fi';
 import { eventAPI, notificationAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
+import { AxiosProgressEvent } from 'axios';
 import { Event, FormattedEventData } from '../types/event';
 import EventCard from '../components/events/EventCard';
 import CreateEventModal from '../components/events/CreateEventModal';
 import EventDetailsModal from '../components/events/EventDetailsModal';
+import EditEventModal from '../components/events/EditEventModal'; // Import new component
 
 const EventsPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -39,7 +41,10 @@ const EventsPage: React.FC = () => {
   
   const { isOpen: isCreateModalOpen, onOpen: onCreateModalOpen, onClose: onCreateModalClose } = useDisclosure();
   const { isOpen: isDetailsModalOpen, onOpen: onDetailsModalOpen, onClose: onDetailsModalClose } = useDisclosure();
+  const { isOpen: isEditModalOpen, onOpen: onEditModalOpen, onClose: onEditModalClose } = useDisclosure(); // New disclosure for edit modal
+  
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [eventToEdit, setEventToEdit] = useState<Event | null>(null); // New state for event being edited
   
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
@@ -96,6 +101,51 @@ const EventsPage: React.FC = () => {
     },
   });
 
+  const updateEventMutation = useMutation({
+    mutationFn: ({ eventId, data }: { eventId: string; data: Partial<FormattedEventData> }) =>
+      eventAPI.updateEvent(eventId, data),
+    onSuccess: () => {
+      toast({
+        title: 'Event updated',
+        description: 'The event has been updated successfully.',
+        status: 'success',
+        duration: 3000,
+      });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      onEditModalClose();
+      setEventToEdit(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Update failed',
+        description: error.response?.data?.error || 'Failed to update event',
+        status: 'error',
+        duration: 5000,
+      });
+    },
+  });
+
+  const deleteEventMutation = useMutation({
+    mutationFn: (eventId: string) => eventAPI.deleteEvent(eventId),
+    onSuccess: () => {
+      toast({
+        title: 'Event deleted',
+        description: 'The event has been deleted successfully.',
+        status: 'success',
+        duration: 3000,
+      });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Deletion failed',
+        description: error.response?.data?.error || 'Failed to delete event',
+        status: 'error',
+        duration: 5000,
+      });
+    },
+  });
+
   const handleViewEvent = (event: Event) => {
     setSelectedEvent(event);
     onDetailsModalOpen();
@@ -103,6 +153,17 @@ const EventsPage: React.FC = () => {
 
   const handleAcceptEvent = (eventId: string) => {
     acceptEventMutation.mutate(eventId);
+  };
+
+  const handleEditEvent = (event: Event) => {
+    setEventToEdit(event);
+    onEditModalOpen();
+  };
+
+  const handleDeleteEvent = (eventId: string) => {
+    if (window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+      deleteEventMutation.mutate(eventId);
+    }
   };
 
   if (isLoading) {
@@ -161,6 +222,9 @@ const EventsPage: React.FC = () => {
               onView={handleViewEvent}
               onAccept={handleAcceptEvent}
               acceptMutation={acceptEventMutation}
+              onEdit={handleEditEvent} // Pass edit handler
+              onDelete={handleDeleteEvent} // Pass delete handler
+              deleteMutation={deleteEventMutation} // Pass delete mutation
             />
           </GridItem>
         ))}
@@ -198,6 +262,18 @@ const EventsPage: React.FC = () => {
         userRole={user?.role || null}
         onAccept={handleAcceptEvent}
         acceptMutation={acceptEventMutation}
+        onEdit={handleEditEvent} // Pass edit handler
+        onDelete={handleDeleteEvent} // Pass delete handler
+        deleteMutation={deleteEventMutation} // Pass delete mutation
+      />
+
+      {/* New Edit Event Modal */}
+      <EditEventModal
+        isOpen={isEditModalOpen}
+        onClose={onEditModalClose}
+        eventToEdit={eventToEdit}
+        onUpdateEvent={(eventId, data) => updateEventMutation.mutate({ eventId, data })}
+        updateEventMutation={updateEventMutation}
       />
     </VStack>
   );

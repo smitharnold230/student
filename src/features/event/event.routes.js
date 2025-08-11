@@ -1,7 +1,17 @@
 const express = require('express');
 const { authenticateToken, requireRole } = require('../../middleware/auth');
 const { validate } = require('../../middleware/validate');
-const { createEvent, getEvents, participateInEvent, acceptEvent, getEventDetails, setCertificationDeadline, getCertificationDeadline } = require('./event.controller');
+const { 
+  createEvent, 
+  getEvents, 
+  participateInEvent, 
+  acceptEvent, 
+  getEventDetails, 
+  setCertificationDeadline, 
+  getCertificationDeadline,
+  updateEvent, // Import new controller function
+  deleteEvent // Import new controller function
+} = require('./event.controller');
 
 const router = express.Router();
 
@@ -15,4 +25,8 @@ router.post('/set-deadline', authenticateToken, requireRole('ADMIN'), setCertifi
 // Admin: Get certification deadline for event
 router.get('/deadline/:eventId', authenticateToken, requireRole('ADMIN'), getCertificationDeadline);
 
-module.exports = router; 
+// Admin: Update and Delete Event
+router.put('/:eventId', authenticateToken, requireRole('ADMIN'), validate('event.update'), updateEvent);
+router.delete('/:eventId', authenticateToken, requireRole('ADMIN'), validate('event.delete'), deleteEvent);
+
+module.exports = router;

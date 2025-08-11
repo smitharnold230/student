@@ -17,7 +17,7 @@ import {
   Icon,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { FiCalendar, FiExternalLink, FiUsers } from 'react-icons/fi';
+import { FiCalendar, FiExternalLink, FiUsers, FiEdit, FiTrash2 } from 'react-icons/fi';
 import { Event } from '../../types/event';
 import { UseMutationResult } from '@tanstack/react-query';
 
@@ -28,6 +28,9 @@ interface EventDetailsModalProps {
   userRole: string | null;
   onAccept: (eventId: string) => void;
   acceptMutation: UseMutationResult<any, Error, string, unknown>;
+  onEdit: (event: Event) => void; // New prop for edit
+  onDelete: (eventId: string) => void; // New prop for delete
+  deleteMutation: UseMutationResult<any, Error, string, unknown>; // New prop for delete mutation
 }
 
 const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
@@ -37,6 +40,9 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
   userRole,
   onAccept,
   acceptMutation,
+  onEdit,
+  onDelete,
+  deleteMutation,
 }) => {
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
@@ -126,19 +132,50 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
           <Button variant="ghost" mr={3} onClick={onClose}>
             Close
           </Button>
-          {userRole === 'STUDENT' && (
-            <Button
-              colorScheme="green"
-              onClick={() => {
-                if (selectedEvent) {
-                  onAccept(selectedEvent.id);
-                  onClose();
-                }
-              }}
-              isLoading={acceptMutation.isPending}
-            >
-              Accept Event
-            </Button>
+          {selectedEvent && userRole === 'STUDENT' ? (
+            selectedEvent.isParticipated ? (
+              <Button colorScheme="green" isDisabled>
+                Accepted
+              </Button>
+            ) : (
+              <Button
+                colorScheme="green"
+                onClick={() => {
+                  if (selectedEvent) {
+                    onAccept(selectedEvent.id);
+                    onClose();
+                  }
+                }}
+                isLoading={acceptMutation.isPending}
+              >
+                Accept Event
+              </Button>
+            )
+          ) : userRole === 'ADMIN' && selectedEvent && (
+            <>
+              <Button
+                colorScheme="blue"
+                mr={3}
+                leftIcon={<FiEdit />}
+                onClick={() => {
+                  onEdit(selectedEvent);
+                  onClose(); // Close details modal when opening edit modal
+                }}
+              >
+                Edit
+              </Button>
+              <Button
+                colorScheme="red"
+                leftIcon={<FiTrash2 />}
+                onClick={() => {
+                  onDelete(selectedEvent.id);
+                  onClose(); // Close details modal after triggering delete
+                }}
+                isLoading={deleteMutation.isPending}
+              >
+                Delete
+              </Button>
+            </>
           )}
         </ModalFooter>
       </ModalContent>

@@ -3,6 +3,7 @@ const Profile = require('../../db/Profile');
 const EventParticipation = require('../../db/EventParticipation');
 const Notification = require('../../db/Notification');
 const pointsService = require('../points/points.service');
+const Submission = require('../../db/Submission'); // Import Submission model
 
 async function createEvent(data) {
   try {
@@ -153,4 +154,49 @@ async function getCertificationDeadline(eventId) {
   return { eventId, certificationDeadline: event.certificationDeadline };
 }
 
-module.exports = { createEvent, getEvents, participateInEvent, acceptEvent, getEventDetails, setCertificationDeadline, getCertificationDeadline };
+async function updateEvent(eventId, data) {
+  const event = await Event.findByPk(eventId);
+  if (!event) {
+    throw new Error('Event not found');
+  }
+
+  const updatedData = { ...data };
+  if (updatedData.date) {
+    updatedData.date = new Date(updatedData.date);
+  }
+  if (updatedData.certificationDeadline) {
+    updatedData.certificationDeadline = new Date(updatedData.certificationDeadline);
+  } else if (updatedData.certificationDeadline === '') {
+    updatedData.certificationDeadline = null; // Explicitly set to null if empty string
+  }
+
+  await event.update(updatedData);
+  return event;
+}
+
+async function deleteEvent(eventId) {
+  const event = await Event.findByPk(eventId);
+  if (!event) {
+    throw new Error('Event not found');
+  }
+
+  // Delete associated records first for data integrity
+  await EventParticipation.destroy({ where: { eventId } });
+  await Submission.destroy({ where: { eventId } });
+  await Notification.destroy({ where: { eventId } }); // Delete notifications related to this event
+
+  await event.destroy();
+  return { message: 'Event deleted successfully' };
+}
+
+module.exports = { 
+  createEvent, 
+  getEvents, 
+  participateInEvent, 
+  acceptEvent, 
+  getEventDetails, 
+  setCertificationDeadline, 
+  getCertificationDeadline,
+  updateEvent, // Export new function
+  deleteEvent // Export new function
+};

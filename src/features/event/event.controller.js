@@ -71,4 +71,34 @@ async function getCertificationDeadline(req, res, next) {
   }
 }
 
-module.exports = { createEvent, getEvents, participateInEvent, acceptEvent, getEventDetails, setCertificationDeadline, getCertificationDeadline };
+async function updateEvent(req, res, next) {
+  try {
+    const { eventId } = req.params;
+    const updatedEvent = await eventService.updateEvent(eventId, req.body);
+    res.json({ message: 'Event updated successfully', event: updatedEvent });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function deleteEvent(req, res, next) {
+  try {
+    const { eventId } = req.params;
+    const result = await eventService.deleteEvent(eventId);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { 
+  createEvent, 
+  getEvents, 
+  participateInEvent, 
+  acceptEvent, 
+  getEventDetails, 
+  setCertificationDeadline, 
+  getCertificationDeadline,
+  updateEvent, // Export new function
+  deleteEvent // Export new function
+};

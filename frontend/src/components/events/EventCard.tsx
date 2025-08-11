@@ -12,7 +12,7 @@ import {
   useColorModeValue,
   Icon,
 } from '@chakra-ui/react';
-import { FiCalendar, FiExternalLink, FiUsers } from 'react-icons/fi';
+import { FiCalendar, FiExternalLink, FiUsers, FiEdit, FiTrash2 } from 'react-icons/fi';
 import { Event } from '../../types/event';
 import { UseMutationResult } from '@tanstack/react-query';
 
@@ -22,6 +22,9 @@ interface EventCardProps {
   onView: (event: Event) => void;
   onAccept: (eventId: string) => void;
   acceptMutation: UseMutationResult<any, Error, string, unknown>;
+  onEdit: (event: Event) => void; // New prop for edit
+  onDelete: (eventId: string) => void; // New prop for delete
+  deleteMutation: UseMutationResult<any, Error, string, unknown>; // New prop for delete mutation
 }
 
 const EventCard: React.FC<EventCardProps> = ({
@@ -30,6 +33,9 @@ const EventCard: React.FC<EventCardProps> = ({
   onView,
   onAccept,
   acceptMutation,
+  onEdit,
+  onDelete,
+  deleteMutation,
 }) => {
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
@@ -104,16 +110,49 @@ const EventCard: React.FC<EventCardProps> = ({
               >
                 View
               </Button>
-              {userRole === 'STUDENT' && (
-                <Button
-                  colorScheme="green"
-                  size="sm"
-                  flex={1}
-                  onClick={() => onAccept(event.id)}
-                  isLoading={acceptMutation.isPending}
-                >
-                  Accept
-                </Button>
+              {userRole === 'STUDENT' ? (
+                event.isParticipated ? (
+                  <Button
+                    colorScheme="green"
+                    size="sm"
+                    flex={1}
+                    isDisabled
+                  >
+                    Accepted
+                  </Button>
+                ) : (
+                  <Button
+                    colorScheme="green"
+                    size="sm"
+                    flex={1}
+                    onClick={() => onAccept(event.id)}
+                    isLoading={acceptMutation.isPending}
+                  >
+                    Accept
+                  </Button>
+                )
+              ) : userRole === 'ADMIN' && (
+                <>
+                  <Button
+                    colorScheme="blue"
+                    size="sm"
+                    flex={1}
+                    leftIcon={<FiEdit />}
+                    onClick={() => onEdit(event)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    colorScheme="red"
+                    size="sm"
+                    flex={1}
+                    leftIcon={<FiTrash2 />}
+                    onClick={() => onDelete(event.id)}
+                    isLoading={deleteMutation.isPending}
+                  >
+                    Delete
+                  </Button>
+                </>
               )}
             </HStack>
           </VStack>
