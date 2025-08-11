@@ -61,6 +61,28 @@ const ProfilePage: React.FC = () => {
     },
   });
 
+  const updateProfileMutation = useMutation({
+    mutationFn: (data: Partial<Profile>) => profileAPI.updateProfile(data),
+    onSuccess: () => {
+      toast({
+        title: 'Profile updated',
+        description: 'Your profile has been updated successfully.',
+        status: 'success',
+        duration: 3000,
+      });
+      setIsEditModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Update failed',
+        description: error.response?.data?.error || 'Failed to update profile',
+        status: 'error',
+        duration: 5000,
+      });
+    },
+  });
+
   const uploadPhotoMutation = useMutation({
     mutationFn: (file: File) => profileAPI.uploadPhoto(file, (progressEvent: AxiosProgressEvent) => {
       if (progressEvent.total) {
@@ -133,8 +155,9 @@ const ProfilePage: React.FC = () => {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         profile={profile}
-        user={user}
+        userRole={user?.role || null}
         editRequestMutation={editRequestMutation}
+        updateProfileMutation={updateProfileMutation}
       />
 
       <UploadPhotoModal

@@ -20,6 +20,16 @@ async function requestProfileEdit(req, res, next) {
   }
 }
 
+async function updateProfile(req, res, next) {
+  try {
+    const updatedData = req.body;
+    await profileService.updateProfileByUserId(req.user.userId, updatedData);
+    res.json({ message: 'Profile updated successfully' });
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function adminApproveProfileEdit(req, res, next) {
   try {
     const { ticketId } = req.params;
@@ -80,6 +90,7 @@ async function uploadProfilePhoto(req, res, next) {
 module.exports = { 
   getProfile, 
   requestProfileEdit, 
+  updateProfile, // Added new controller
   adminApproveProfileEdit,
   getPendingProfileRequests,
   getAllStudents,

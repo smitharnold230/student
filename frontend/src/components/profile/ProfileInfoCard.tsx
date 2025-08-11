@@ -5,7 +5,12 @@ import {
   HStack,
   Text,
   Heading,
-  Card,
+  Card<think>**Implementing Direct Edits**
+
+I'm now integrating the role-based logic. The plan is to change the button text based on user roles and then refactor `onSubmit` in `EditProfileModal` to differentiate student requests from admin updates. I'm focusing on ensuring the frontend can handle both scenarios, with proper mutation calls, starting with the button changes. I'm currently defining the backend routes.
+
+
+</think>,
   CardBody,
   Button,
   Badge,
@@ -73,7 +78,7 @@ const ProfileInfoCard: React.FC<ProfileInfoCardProps> = ({
                 Upload Photo
               </Button>
               <Button colorScheme="brand" size="sm" onClick={onOpenEditModal}>
-                Request Edit
+                {user?.role === 'ADMIN' ? 'Edit Profile' : 'Request Edit'}
               </Button>
             </HStack>
           </HStack>

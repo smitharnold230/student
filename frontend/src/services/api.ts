@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 import { AxiosProgressEvent } from 'axios';
+import { Profile } from '../types/profile'; // Import Profile type
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
 
@@ -50,6 +51,7 @@ export const authAPI = {
 export const profileAPI = {
   getProfile: () => api.get('/profile'),
   requestEdit: (data: any) => api.post('/profile/edit-request', data),
+  updateProfile: (data: Partial<Profile>) => api.put('/profile', data), // New: Direct update for admin
   uploadPhoto: (file: File, onUploadProgress?: (progressEvent: AxiosProgressEvent) => void) => {
     const formData = new FormData();
     formData.append('profilePhoto', file);
