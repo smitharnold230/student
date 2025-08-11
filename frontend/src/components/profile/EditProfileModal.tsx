@@ -44,7 +44,7 @@ type EditRequestForm = z.infer<typeof editRequestSchema>;
 interface EditProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  profile: Profile;
+  profile: Profile | undefined; // Allow profile to be undefined
   user: User | null;
   editRequestMutation: UseMutationResult<any, Error, Partial<EditRequestForm>, unknown>;
 }

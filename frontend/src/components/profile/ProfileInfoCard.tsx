@@ -17,10 +17,10 @@ import {
 } from '@chakra-ui/react';
 import { FiUpload } from 'react-icons/fi';
 import { Profile } from '../../types/profile';
-import { User } from '../../store/authStore'; // Assuming User type is available or defined here
+import { User } from '../../store/authStore';
 
 interface ProfileInfoCardProps {
-  profile: Profile;
+  profile: Profile | undefined; // Allow profile to be undefined
   user: User | null;
   onOpenEditModal: () => void;
   onOpenPhotoModal: () => void;
