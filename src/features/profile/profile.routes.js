@@ -7,7 +7,7 @@ const upload = require('../../middleware/upload');
 const router = express.Router();
 
 router.get('/', authenticateToken, requireRole(['STUDENT', 'ADMIN']), getProfile);
-router.post('/edit-request', authenticateToken, requireRole('STUDENT'), validate('profile.editRequest'), requestProfileEdit);
+router.post('/edit-request', authenticateToken, requireRole(['STUDENT', 'ADMIN']), validate('profile.editRequest'), requestProfileEdit);
 router.post('/upload-photo', authenticateToken, requireRole(['STUDENT', 'ADMIN']), upload.single('profilePhoto'), validateFileUpload('profilePhoto', 5 * 1024 * 1024, ['image/jpeg', 'image/png', 'image/jpg']), uploadProfilePhoto);
 
 router.get('/admin/pending', authenticateToken, requireRole('ADMIN'), getPendingProfileRequests);
