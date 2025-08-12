@@ -70,3 +70,32 @@ export interface PointRule {
   value: number;
   description: string;
 }
+
+// New interfaces for specific API responses
+export interface ActivityPointsResult {
+  pointsAdded: number;
+  description: string;
+  activityType: string;
+}
+
+export interface UserPointUpdateResult {
+  userId: string;
+  success: boolean;
+  oldPoints: number;
+  newPoints: number;
+  pointsChange: number;
+  error?: string; // Optional error message if update failed for a specific user
+}
+
+export interface UpdateAllPointsResponse {
+  message: string;
+  data: UserPointUpdateResult[];
+}
+
+export interface ManualPointUpdateResponse {
+  data: UserPointUpdateResult[];
+}
+
+export interface ResetPointsResponse {
+  data: UserPointUpdateResult[];
+}
