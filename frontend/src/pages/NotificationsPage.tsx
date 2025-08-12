@@ -20,10 +20,12 @@ import { FiBell, FiCheck, FiAlertCircle, FiInfo, FiClock } from 'react-icons/fi'
 import { notificationAPI } from '../services/api';
 import { useNotifications } from '../hooks/useNotifications';
 import { Notification } from '../types/notification';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const NotificationsPage: React.FC = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate(); // Initialize useNavigate
   
   // Initialize real-time notifications
   useNotifications();
@@ -227,7 +229,7 @@ const NotificationsPage: React.FC = () => {
                         size="sm"
                         colorScheme="brand"
                         variant="outline"
-                        onClick={() => window.location.href = `/events/${notification.eventId}`}
+                        onClick={() => navigate(`/events/${notification.eventId}`)} // Changed to navigate
                       >
                         View Event Details
                       </Button>
