@@ -1,15 +1,17 @@
 const Profile = require('../../db/Profile');
 const Point = require('../../db/Point');
-const User = require('../../db/User'); // Import User model
+const User = require('../../db/User');
 const ApiLog = require('../../db/ApiLog');
 const PointRule = require('../../db/PointRule');
+const Event = require('../../db/Event'); // Added top-level import
+const Submission = require('../../db/Submission'); // Added top-level import
 const pointsService = require('../points/points.service');
-const userService = require('../user/user.service'); // Import userService for user creation
-const { bulkSignupSchema } = require('../user/user.validation'); // Import new bulkSignupSchema for validation
+const userService = require('../user/user.service');
+const { bulkSignupSchema } = require('../user/user.validation');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const path = require('path');
 const fs = require('fs');
-const xlsx = require('xlsx'); // Import xlsx library
+const xlsx = require('xlsx');
 
 async function getApiLogs({ userId, endpoint, method, limit = 100 } = {}) {
   const where = {};
@@ -31,8 +33,8 @@ async function updatePointRule(key, value, description) {
 async function getSystemStats() {
   try {
     const totalStudents = await Profile.count();
-    const totalEvents = await require('../../db/Event').count();
-    const pendingCertifications = await require('../../db/Submission').count({ where: { status: 'PENDING' } });
+    const totalEvents = await Event.count(); // Using top-level imported Event
+    const pendingCertifications = await Submission.count({ where: { status: 'PENDING' } }); // Using top-level imported Submission
     
     const pointStats = await pointsService.getPointStatistics();
     
@@ -61,14 +63,14 @@ async function exportStudentsCsv() {
   const students = await Profile.findAll({
     include: [
       { model: Point, attributes: ['value'] },
-      { model: User, attributes: ['email'] } // Include User to get email
+      { model: User, attributes: ['email'] }
     ],
   });
   
   const records = students.map(s => ({
     id: s.id,
     name: s.name,
-    email: s.User ? s.User.email : 'N/A', // Get email from User model
+    email: s.User ? s.User.email : 'N/A',
     degree: s.degree,
     class: s.class,
     status: s.status,

@@ -2,8 +2,8 @@ const Event = require('../../db/Event');
 const Profile = require('../../db/Profile');
 const EventParticipation = require('../../db/EventParticipation');
 const Notification = require('../../db/Notification');
-const pointsService = require('../points/points.service');
-const Submission = require('../../db/Submission'); // Import Submission model
+const Submission = require('../../db/Submission');
+const pointsService = require('../points/points.service'); // Added top-level import
 
 async function createEvent(data) {
   try {
@@ -197,6 +197,6 @@ module.exports = {
   getEventDetails, 
   setCertificationDeadline, 
   getCertificationDeadline,
-  updateEvent, // Export new function
-  deleteEvent // Export new function
+  updateEvent,
+  deleteEvent
 };

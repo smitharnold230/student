@@ -1,7 +1,7 @@
 const Profile = require('../../db/Profile');
-const Point = require('../../db/Point'); // Corrected path
-const pointsService = require('../points/points.service');
-const User = require('../../db/User'); // Import User model
+const Point = require('../../db/Point');
+const User = require('../../db/User'); // Added top-level import
+const pointsService = require('../points/points.service'); // Added top-level import
 
 async function getLeaderboard() {
   try {

@@ -1,7 +1,7 @@
 const CodingStat = require('../../db/CodingStat');
 const Profile = require('../../db/Profile');
 const axios = require('axios');
-const pointsService = require('../points/points.service');
+const pointsService = require('../points/points.service'); // Added top-level import
 
 function extractLeetCodeUsername(url) {
   const match = url.match(/leetcode\.com\/(u\/)?([\w-]+)\/?/);

@@ -1,11 +1,12 @@
 const Profile = require('../../db/Profile');
 const Submission = require('../../db/Submission');
 const Event = require('../../db/Event');
+const User = require('../../db/User'); // Added for Profile.User include
 const pointsService = require('../points/points.service');
+const profileService = require('../profile/profile.service'); // Added top-level import
 
 async function uploadCertification(userId, eventId, fileUrl) {
   try {
-    const profileService = require('../profile/profile.service');
     const profile = await profileService.getProfileByUserId(userId);
     
     const submission = await Submission.create({
@@ -30,7 +31,7 @@ async function getPendingCertifications() {
         model: Profile,
         attributes: ['name', 'class', 'batch', 'userId'],
         include: [{
-          model: require('../../db/User'), // Include User to get email
+          model: User, // Use the imported User model
           attributes: ['email']
         }]
       }, {
