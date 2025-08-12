@@ -46,7 +46,8 @@ async function getPointRules() {
 }
 
 /**
- * Calculate points for a specific user based on their activities
+ * Calculate points for a specific user based on their activities,
+ * returning activity-based points and current manual adjustment separately.
  */
 async function calculateUserPoints(userId) {
   try {
@@ -61,7 +62,7 @@ async function calculateUserPoints(userId) {
       return acc;
     }, {});
 
-    let totalPoints = 0;
+    let activityBasedPoints = 0;
     const pointBreakdown = {};
 
     // 1. Calculate workshop participation points
@@ -75,11 +76,11 @@ async function calculateUserPoints(userId) {
     });
 
     const workshopPoints = workshopParticipations.length * (rulesMap.WORKSHOP_PARTICIPATION || 50);
-    totalPoints += workshopPoints;
+    activityBasedPoints += workshopPoints;
     pointBreakdown.workshops = {
       count: workshopParticipations.length,
       points: workshopPoints,
-      events: workshopParticipations.map(p => p.Event?.name).filter(Boolean) // Added optional chaining and filter
+      events: workshopParticipations.map(p => p.Event?.name).filter(Boolean)
     };
 
     // 2. Calculate hackathon participation points
@@ -93,11 +94,11 @@ async function calculateUserPoints(userId) {
     });
 
     const hackathonPoints = hackathonParticipations.length * (rulesMap.HACKATHON_PARTICIPATION || 100);
-    totalPoints += hackathonPoints;
+    activityBasedPoints += hackathonPoints;
     pointBreakdown.hackathons = {
       count: hackathonParticipations.length,
       points: hackathonPoints,
-      events: hackathonParticipations.map(p => p.Event?.name).filter(Boolean) // Added optional chaining and filter
+      events: hackathonParticipations.map(p => p.Event?.name).filter(Boolean)
     };
 
     // 3. Calculate certification points
@@ -113,11 +114,11 @@ async function calculateUserPoints(userId) {
     });
 
     const certificationPoints = approvedCertifications.length * (rulesMap.CERTIFICATION_APPROVED || 75);
-    totalPoints += certificationPoints;
+    activityBasedPoints += certificationPoints;
     pointBreakdown.certifications = {
       count: approvedCertifications.length,
       points: certificationPoints,
-      certifications: approvedCertifications.map(c => c.Event?.name).filter(Boolean) // Added optional chaining and filter
+      certifications: approvedCertifications.map(c => c.Event?.name).filter(Boolean)
     };
 
     // 4. Calculate coding platform points
@@ -158,7 +159,7 @@ async function calculateUserPoints(userId) {
       codingPoints += platformPoints;
     }
 
-    totalPoints += codingPoints;
+    activityBasedPoints += codingPoints;
     pointBreakdown.coding = {
       totalPoints: codingPoints,
       breakdown: codingBreakdown
@@ -186,7 +187,7 @@ async function calculateUserPoints(userId) {
       bonusBreakdown.certificationStreak = streakBonus;
     }
 
-    totalPoints += bonusPoints;
+    activityBasedPoints += bonusPoints;
     pointBreakdown.bonuses = {
       totalPoints: bonusPoints,
       breakdown: bonusBreakdown
@@ -194,13 +195,15 @@ async function calculateUserPoints(userId) {
 
     const currentPointRecord = await Point.findOne({ where: { profileId: profile.id } });
     const manualAdjustment = currentPointRecord?.manualAdjustment || 0;
-    totalPoints += manualAdjustment;
+    
+    const totalPoints = activityBasedPoints + manualAdjustment;
 
     return {
-      totalPoints,
+      totalPoints, // Total points including manual adjustment
+      activityBasedPoints, // Points from activities only
       breakdown: pointBreakdown,
       profileId: profile.id,
-      manualAdjustment
+      manualAdjustment // Current manual adjustment from DB
     };
   } catch (error) {
     console.error('Error calculating user points:', error);
@@ -209,25 +212,26 @@ async function calculateUserPoints(userId) {
 }
 
 /**
- * Update points for a specific user
+ * Update points for a specific user based on activities.
+ * This function should preserve manual adjustments.
  */
 async function updateUserPoints(userId) {
   try {
-    const pointCalculation = await calculateUserPoints(userId);
-
-    const currentPointRecord = await Point.findOne({ where: { profileId: pointCalculation.profileId } });
-    const currentManualAdjustment = currentPointRecord?.manualAdjustment || 0;
+    const { profileId, activityBasedPoints, manualAdjustment } = await calculateUserPoints(userId);
+    const newTotalPoints = activityBasedPoints + manualAdjustment;
 
     const [pointRecord, created] = await Point.upsert({
-      profileId: pointCalculation.profileId,
-      value: pointCalculation.totalPoints,
-      manualAdjustment: currentManualAdjustment,
+      profileId: profileId,
+      value: newTotalPoints,
+      manualAdjustment: manualAdjustment, // Preserve existing manual adjustment
     }, {
-      where: { profileId: pointCalculation.profileId }
+      where: { profileId: profileId }
     });
 
     return {
-      ...pointCalculation,
+      totalPoints: newTotalPoints,
+      activityBasedPoints,
+      manualAdjustment,
       pointRecord
     };
   } catch (error) {
@@ -344,6 +348,8 @@ async function addPointsForActivity(userId, activityType, activityData = {}) {
         throw new Error(`Unknown activity type: ${activityType}`);
     }
 
+    // After adding points for an activity, recalculate and update the user's total points
+    // This will fetch the current manual adjustment and add it to the new activity-based points.
     await updateUserPoints(userId);
 
     return {
@@ -386,7 +392,8 @@ async function getAllUsersWithPoints() {
       manualAdjustment: profile.Point?.manualAdjustment || 0,
       profileId: profile.id
     }));
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error getting all users with points:', error);
     throw error;
   }
@@ -408,32 +415,34 @@ async function updateUserPointsManually(userIds, pointsToAdd, reason, adminId) {
       }
 
       const currentPointRecord = await Point.findOne({ where: { profileId: profile.id } });
-      const currentManualAdjustment = currentPointRecord?.manualAdjustment || 0;
+      const oldManualAdjustment = currentPointRecord?.manualAdjustment || 0;
       
-      const newManualAdjustment = currentManualAdjustment + pointsToAdd;
+      const newManualAdjustment = oldManualAdjustment + pointsToAdd;
       
-      const calculatedPoints = await calculateUserPoints(userId);
-      const basePoints = calculatedPoints.totalPoints - currentManualAdjustment;
-      const newTotalPoints = basePoints + newManualAdjustment;
+      // Recalculate activity-based points
+      const { activityBasedPoints } = await calculateUserPoints(userId);
+      const newTotalPoints = activityBasedPoints + newManualAdjustment;
 
       await Point.upsert({
         profileId: profile.id,
         value: newTotalPoints,
-        manualAdjustment: newManualAdjustment,
+        manualAdjustment: newManualAdjustment, // Update manual adjustment
+      }, {
+        where: { profileId: profile.id }
       });
 
       await Notification.create({
         userId,
         title: 'Points Updated',
         message: `Your points have been ${pointsToAdd >= 0 ? 'increased' : 'decreased'} by ${Math.abs(pointsToAdd)}. Reason: ${reason}`,
-        type: 'INFO', // Changed to INFO as per Notification model
+        type: 'INFO',
         read: false
       });
 
       results.push({
         userId,
         success: true,
-        oldPoints: calculatedPoints.totalPoints,
+        oldPoints: currentPointRecord?.value || 0, // Use old total value for comparison
         newPoints: newTotalPoints,
         pointsChange: pointsToAdd
       });
@@ -461,20 +470,20 @@ async function resetUserPoints(userIds, reason, adminId) {
         continue;
       }
 
-      const calculatedPoints = await calculateUserPoints(userId);
-      const oldPoints = calculatedPoints.totalPoints;
+      const currentPointRecord = await Point.findOne({ where: { profileId: profile.id } });
+      const oldPoints = currentPointRecord?.value || 0; // Get current total points before reset
 
       await Point.upsert({
         profileId: profile.id,
-        value: 0,
-        manualAdjustment: 0,
+        value: 0, // Reset total points to 0
+        manualAdjustment: 0, // Reset manual adjustment to 0
       });
 
       await Notification.create({
         userId,
         title: 'Points Reset',
         message: `Your points have been reset to 0. Reason: ${reason}`,
-        type: 'INFO', // Changed to INFO as per Notification model
+        type: 'INFO',
         read: false
       });
 
