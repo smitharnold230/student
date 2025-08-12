@@ -136,7 +136,7 @@ const AdminProfileRequestsPage: React.FC = () => {
     approveRequestMutation.mutate({
       ticketId: selectedRequest.id,
       status: 'APPROVED',
-      adminNote: currentAdminNote.trim() || undefined,
+      adminNote: (currentAdminNote ?? '').trim() || undefined, // Fix: Ensure currentAdminNote is a string
     });
   };
 
@@ -146,7 +146,7 @@ const AdminProfileRequestsPage: React.FC = () => {
     approveRequestMutation.mutate({
       ticketId: selectedRequest.id,
       status: 'REJECTED',
-      adminNote: currentAdminNote.trim() || undefined,
+      adminNote: (currentAdminNote ?? '').trim() || undefined, // Fix: Ensure currentAdminNote is a string
     });
   };
 
