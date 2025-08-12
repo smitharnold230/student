@@ -66,7 +66,8 @@ const ResetPointsModal: React.FC<ResetPointsModalProps> = ({
   }, [isOpen, initialReason, reset]);
 
   const onSubmit = (data: ResetPointsForm) => {
-    handleResetPoints(data.reason);
+    // Explicitly trim the reason before passing, although Zod schema also has .trim()
+    handleResetPoints(data.reason.trim());
   };
 
   const handleClose = () => {
@@ -94,6 +95,7 @@ const ResetPointsModal: React.FC<ResetPointsModalProps> = ({
                 color="white"
                 _placeholder={{ color: 'gray.400' }}
                 {...register('reason')}
+                required // Add HTML5 required attribute for immediate feedback
               />
               <FormErrorMessage>{errors.reason?.message}</FormErrorMessage>
             </FormControl>

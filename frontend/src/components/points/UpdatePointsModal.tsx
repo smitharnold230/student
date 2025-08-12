@@ -73,7 +73,12 @@ const UpdatePointsModal: React.FC<UpdatePointsModalProps> = ({
   }, [isOpen, initialPointsToAdd, initialReason, reset]);
 
   const onSubmit = (data: UpdatePointsForm) => {
-    handleUpdatePoints(data);
+    // Explicitly trim the reason before passing, although Zod schema also has .trim()
+    const trimmedData = {
+      ...data,
+      reason: data.reason.trim(),
+    };
+    handleUpdatePoints(trimmedData);
   };
 
   const handleClose = () => {
@@ -111,6 +116,7 @@ const UpdatePointsModal: React.FC<UpdatePointsModalProps> = ({
                 color="white"
                 _placeholder={{ color: 'gray.400' }}
                 {...register('reason')}
+                required // Add HTML5 required attribute for immediate feedback
               />
               <FormErrorMessage>{errors.reason?.message}</FormErrorMessage>
             </FormControl>
