@@ -44,7 +44,6 @@ const AdminPointsView: React.FC<{
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const { isOpen: isUpdateModalOpen, onOpen: onUpdateModalOpen, onClose: onUpdateModalClose } = useDisclosure();
   const { isOpen: isResetModalOpen, onOpen: onResetModalOpen, onClose: onResetModalClose } = useDisclosure();
-  const [resetForm, setResetForm] = useState({ reason: '' }); // Keep for ResetPointsModal
   const [searchTerm, setSearchTerm] = useState<string>(''); // New state for search term
 
   const updateUsersMutation = useMutation({
@@ -84,7 +83,6 @@ const AdminPointsView: React.FC<{
         duration: 3000,
       });
       onResetModalClose();
-      setResetForm({ reason: '' });
       setSelectedUsers([]);
       queryClient.invalidateQueries({ queryKey: ['allUsers'] });
       queryClient.invalidateQueries({ queryKey: ['pointStatistics'] });
@@ -210,10 +208,9 @@ const AdminPointsView: React.FC<{
         isOpen={isResetModalOpen}
         onClose={onResetModalClose}
         selectedUsersCount={selectedUsers.length}
-        resetForm={resetForm}
-        setResetForm={setResetForm}
         handleResetPoints={handleResetPoints}
         isResetting={resetUsersMutation.isPending}
+        initialReason={''} // Pass initial value
       />
     </VStack>
   );

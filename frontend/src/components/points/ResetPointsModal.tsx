@@ -24,10 +24,9 @@ interface ResetPointsModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedUsersCount: number;
-  resetForm: { reason: string }; // Keep this for initial value, but form will manage state
-  setResetForm: React.Dispatch<React.SetStateAction<{ reason: string }>>; // Keep for external state sync
   handleResetPoints: (reason: string) => void; // Modified to pass reason directly
   isResetting: boolean;
+  initialReason: string; // New prop to pass initial value
 }
 
 const resetPointsSchema = z.object({
@@ -40,10 +39,9 @@ const ResetPointsModal: React.FC<ResetPointsModalProps> = ({
   isOpen,
   onClose,
   selectedUsersCount,
-  resetForm, // Used for initial value
-  setResetForm, // Used for external state sync on close
   handleResetPoints,
   isResetting,
+  initialReason,
 }) => {
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
@@ -53,7 +51,6 @@ const ResetPointsModal: React.FC<ResetPointsModalProps> = ({
     handleSubmit,
     formState: { errors },
     reset,
-    setValue,
   } = useForm<ResetPointsForm>({
     resolver: zodResolver(resetPointsSchema),
     defaultValues: {
@@ -61,12 +58,12 @@ const ResetPointsModal: React.FC<ResetPointsModalProps> = ({
     },
   });
 
-  // Sync external state to form on open
+  // Sync initial reason to form on open
   useEffect(() => {
     if (isOpen) {
-      reset({ reason: resetForm.reason });
+      reset({ reason: initialReason });
     }
-  }, [isOpen, resetForm.reason, reset]);
+  }, [isOpen, initialReason, reset]);
 
   const onSubmit = (data: ResetPointsForm) => {
     handleResetPoints(data.reason);
@@ -74,7 +71,6 @@ const ResetPointsModal: React.FC<ResetPointsModalProps> = ({
 
   const handleClose = () => {
     reset(); // Reset form fields
-    setResetForm({ reason: '' }); // Clear external state
     onClose();
   };
 
