@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   Box,
   VStack,
-  HStack,
   Text,
   Heading,
   useToast,
@@ -12,11 +11,8 @@ import {
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { adminAPI } from '../services/api';
 
-// Import new modular components
-import AdminLogSummaryStats from '../components/admin/logs/AdminLogSummaryStats';
-import AdminLogFilters from '../components/admin/logs/AdminLogFilters';
-import AdminLogTable from '../components/admin/logs/AdminLogTable';
-import AdminLogDetailModal from '../components/admin/logs/AdminLogDetailModal';
+// Import new modular component
+import AdminLogsContent from '../components/admin/logs/AdminLogsContent';
 
 interface ApiLog {
   id: string;
@@ -50,7 +46,6 @@ const AdminLogsPage: React.FC = () => {
     queryKey: ['adminLogs', filters],
     queryFn: async () => {
       const response = await adminAPI.getLogs(filters);
-      // No longer adding dummy data; backend will provide it
       return response.data;
     },
   });
@@ -58,12 +53,12 @@ const AdminLogsPage: React.FC = () => {
   const logs: ApiLog[] = logsResponse || [];
 
   const exportLogsMutation = useMutation({
-    mutationFn: () => adminAPI.exportLogs(), // Changed to exportLogs()
+    mutationFn: () => adminAPI.exportLogs(),
     onSuccess: (response) => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'api_logs_export.csv'); // Changed filename
+      link.setAttribute('download', 'api_logs_export.csv');
       document.body.appendChild(link);
       link.click();
       link.parentNode?.removeChild(link);
@@ -104,50 +99,6 @@ const AdminLogsPage: React.FC = () => {
     refetch();
   };
 
-  const getStatusCodeColor = (statusCode: number) => {
-    if (statusCode >= 200 && statusCode < 300) return 'green';
-    if (statusCode >= 400 && statusCode < 500) return 'yellow';
-    if (statusCode >= 500) return 'red';
-    return 'gray';
-  };
-
-  const getMethodColor = (method: string) => {
-    switch (method.toUpperCase()) {
-      case 'GET':
-        return 'blue';
-      case 'POST':
-        return 'green';
-      case 'PUT':
-        return 'orange';
-      case 'DELETE':
-        return 'red';
-      default:
-        return 'gray';
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
-  };
-
-  const formatResponseTime = (time: number) => {
-    return `${time}ms`;
-  };
-
-  const totalRequests = logs.length;
-  const successfulRequests = logs.filter(log => log.statusCode >= 200 && log.statusCode < 300).length;
-  const errorRequests = logs.filter(log => log.statusCode >= 400).length;
-  const averageResponseTime = logs.length > 0 
-    ? Math.round(logs.reduce((sum, log) => sum + log.responseTime, 0) / logs.length)
-    : 0;
-
   if (isLoading) {
     return (
       <VStack spacing={6} align="stretch">
@@ -168,62 +119,19 @@ const AdminLogsPage: React.FC = () => {
   }
 
   return (
-    <VStack spacing={6} align="stretch">
-      <HStack justify="space-between">
-        <Box>
-          <Heading size="lg" color="white" mb={2}>
-            API Logs
-          </Heading>
-          <Text color="gray.400">
-            Monitor system API requests and responses
-          </Text>
-        </Box>
-      </HStack>
-
-      <AdminLogSummaryStats
-        totalRequests={totalRequests}
-        successfulRequests={successfulRequests}
-        errorRequests={errorRequests}
-        averageResponseTime={averageResponseTime}
-        cardBg={cardBg}
-        borderColor={borderColor}
-        formatResponseTime={formatResponseTime}
-      />
-
-      <AdminLogFilters
-        filters={filters}
-        setFilters={setFilters}
-        handleRefresh={handleRefresh}
-        isLoading={isLoading}
-        handleExport={handleExport}
-        isExporting={exportLogsMutation.isPending}
-        cardBg={cardBg}
-        borderColor={borderColor}
-      />
-
-      <AdminLogTable
-        logs={logs}
-        handleViewLog={handleViewLog}
-        getStatusCodeColor={getStatusCodeColor}
-        getMethodColor={getMethodColor}
-        formatDate={formatDate}
-        formatResponseTime={formatResponseTime}
-        cardBg={cardBg}
-        borderColor={borderColor}
-      />
-
-      <AdminLogDetailModal
-        isOpen={isDetailModalOpen}
-        onClose={handleCloseDetailModal}
-        selectedLog={selectedLog}
-        cardBg={cardBg}
-        borderColor={borderColor}
-        getStatusCodeColor={getStatusCodeColor}
-        getMethodColor={getMethodColor}
-        formatDate={formatDate}
-        formatResponseTime={formatResponseTime}
-      />
-    </VStack>
+    <AdminLogsContent
+      logs={logs}
+      filters={filters}
+      setFilters={setFilters}
+      handleRefresh={handleRefresh}
+      isLoading={isLoading}
+      handleExport={handleExport}
+      isExporting={exportLogsMutation.isPending}
+      handleViewLog={handleViewLog}
+      isDetailModalOpen={isDetailModalOpen}
+      selectedLog={selectedLog}
+      handleCloseDetailModal={handleCloseDetailModal}
+    />
   );
 };
 
