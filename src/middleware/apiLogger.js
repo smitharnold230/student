@@ -11,18 +11,26 @@ async function apiLogger(req, res, next) {
   res.on('finish', async () => {
     const end = Date.now();
     const responseTime = end - start;
+
+    // Create a copy of the request body and redact sensitive fields
+    const requestBodyToLog = { ...req.body };
+    if (requestBodyToLog.password) {
+      requestBodyToLog.password = '[REDACTED]'; // Mask the password
+    }
+    // Add other sensitive fields here if necessary, e.g., if (requestBodyToLog.token) { requestBodyToLog.token = '[REDACTED]'; }
+
     try {
       await ApiLog.create({
         userId: req.user ? req.user.userId : null,
         method: req.method,
         endpoint: req.originalUrl,
         status: res.statusCode,
-        requestBody: req.body,
+        requestBody: requestBodyToLog, // Use the redacted body
         responseBody: tryParseJson(responseBody),
         timestamp: new Date(),
-        responseTime: responseTime, // Capture actual response time
-        ipAddress: req.ip || req.connection.remoteAddress, // Capture IP address
-        userAgent: req.headers['user-agent'], // Capture user agent
+        responseTime: responseTime,
+        ipAddress: req.ip || req.connection.remoteAddress,
+        userAgent: req.headers['user-agent'],
       });
     } catch (err) {
       // fail silently
