@@ -22,7 +22,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 // Define the Zod schema for the form
 const updatePointsSchema = z.object({
   pointsToAdd: z.number().int('Points must be an integer').min(-1000, 'Points adjustment too large').max(1000, 'Points adjustment too large'),
-  reason: z.string().min(1, 'Reason is required').max(200, 'Reason too long'),
+  reason: z.string().trim().min(1, 'Reason is required').max(200, 'Reason too long'), // Added .trim()
 });
 
 type UpdatePointsForm = z.infer<typeof updatePointsSchema>;
