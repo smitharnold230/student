@@ -125,26 +125,27 @@ async function updateUserPointsManually(req, res, next) {
   try {
     const { userIds, pointsToAdd, reason } = req.body;
     
-    if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'User IDs array is required'
-      });
-    }
+    // These checks are now handled by the validate middleware
+    // if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     error: 'User IDs array is required'
+    //   });
+    // }
 
-    if (typeof pointsToAdd !== 'number') {
-      return res.status(400).json({
-        success: false,
-        error: 'Points to add must be a number'
-      });
-    }
+    // if (typeof pointsToAdd !== 'number') {
+    //   return res.status(400).json({
+    //     success: false,
+    //     error: 'Points to add must be a number'
+    //   });
+    // }
 
-    if (!reason || reason.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        error: 'Reason is required'
-      });
-    }
+    // if (!reason || reason.trim() === '') {
+    //   return res.status(400).json({
+    //     success: false,
+    //     error: 'Reason is required'
+    //   });
+    // }
 
     const results = await pointsService.updateUserPointsManually(
       userIds, 
@@ -169,19 +170,20 @@ async function resetUserPoints(req, res, next) {
   try {
     const { userIds, reason } = req.body;
     
-    if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'User IDs array is required'
-      });
-    }
+    // These checks are now handled by the validate middleware
+    // if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     error: 'User IDs array is required'
+    //   });
+    // }
 
-    if (!reason || reason.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        error: 'Reason is required'
-      });
-    }
+    // if (!reason || reason.trim() === '') {
+    //   return res.status(400).json({
+    //     success: false,
+    //     error: 'Reason is required'
+    //   });
+    // }
 
     const results = await pointsService.resetUserPoints(
       userIds, 
@@ -208,4 +210,4 @@ module.exports = {
   getAllUsersWithPoints,
   updateUserPointsManually,
   resetUserPoints
-}; 
+};
