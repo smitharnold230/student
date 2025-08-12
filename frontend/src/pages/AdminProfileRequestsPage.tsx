@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   VStack,
@@ -35,10 +35,14 @@ import {
   StatLabel,
   StatNumber,
   StatHelpText,
+  FormErrorMessage,
 } from '@chakra-ui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FiUsers, FiCheck, FiX, FiEye, FiClock, FiUser } from 'react-icons/fi';
 import { profileAPI } from '../services/api';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 interface ProfileEditRequest {
   id: string;
@@ -59,16 +63,35 @@ interface ProfileEditRequest {
   adminNote?: string;
 }
 
+// Define Zod schema for the admin note
+const adminNoteSchema = z.object({
+  adminNote: z.string().max(500, 'Note too long').optional(),
+});
+
+type AdminNoteForm = z.infer<typeof adminNoteSchema>;
+
 const AdminProfileRequestsPage: React.FC = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedRequest, setSelectedRequest] = useState<ProfileEditRequest | null>(null);
-  const [adminNote, setAdminNote] = useState('');
   const [actionStatus, setActionStatus] = useState<'APPROVED' | 'REJECTED' | null>(null);
   
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    reset,
+  } = useForm<AdminNoteForm>({
+    resolver: zodResolver(adminNoteSchema),
+    defaultValues: { adminNote: '' },
+  });
+
+  const currentAdminNote = watch('adminNote');
 
   const { data: requestsResponse, isLoading } = useQuery({
     queryKey: ['profileRequests'],
@@ -88,10 +111,7 @@ const AdminProfileRequestsPage: React.FC = () => {
         duration: 3000,
       });
       queryClient.invalidateQueries({ queryKey: ['profileRequests'] });
-      onClose();
-      setSelectedRequest(null);
-      setAdminNote('');
-      setActionStatus(null);
+      handleCloseModal(); // Use the new close handler
     },
     onError: (error: any) => {
       toast({
@@ -105,7 +125,7 @@ const AdminProfileRequestsPage: React.FC = () => {
 
   const handleViewRequest = (request: ProfileEditRequest) => {
     setSelectedRequest(request);
-    setAdminNote('');
+    reset({ adminNote: request.adminNote || '' }); // Reset form with existing note
     setActionStatus(null);
     onOpen();
   };
@@ -116,7 +136,7 @@ const AdminProfileRequestsPage: React.FC = () => {
     approveRequestMutation.mutate({
       ticketId: selectedRequest.id,
       status: 'APPROVED',
-      adminNote: adminNote.trim() || undefined,
+      adminNote: currentAdminNote.trim() || undefined,
     });
   };
 
@@ -126,8 +146,15 @@ const AdminProfileRequestsPage: React.FC = () => {
     approveRequestMutation.mutate({
       ticketId: selectedRequest.id,
       status: 'REJECTED',
-      adminNote: adminNote.trim() || undefined,
+      adminNote: currentAdminNote.trim() || undefined,
     });
+  };
+
+  const handleCloseModal = () => {
+    onClose();
+    setSelectedRequest(null);
+    reset({ adminNote: '' }); // Reset form on close
+    setActionStatus(null);
   };
 
   const getStatusColor = (status: string) => {
@@ -336,7 +363,7 @@ const AdminProfileRequestsPage: React.FC = () => {
       </Card>
 
       {/* Review Request Modal */}
-      <Modal isOpen={isOpen} onClose={onClose} size="xl">
+      <Modal isOpen={isOpen} onClose={handleCloseModal} size="xl">
         <ModalOverlay />
         <ModalContent bg={cardBg} border="1px solid" borderColor={borderColor}>
           <ModalHeader color="white">Review Profile Edit Request</ModalHeader>
@@ -406,18 +433,18 @@ const AdminProfileRequestsPage: React.FC = () => {
                 </Box>
 
                 {/* Admin Note */}
-                <FormControl>
+                <FormControl isInvalid={!!errors.adminNote}>
                   <FormLabel color="gray.300">Admin Note (Optional)</FormLabel>
                   <Textarea
                     placeholder="Add a note for the student..."
-                    value={adminNote}
-                    onChange={(e) => setAdminNote(e.target.value)}
+                    {...register('adminNote')}
                     bg="gray.700"
                     borderColor="gray.600"
                     color="white"
                     _placeholder={{ color: 'gray.400' }}
                     rows={3}
                   />
+                  <FormErrorMessage>{errors.adminNote?.message}</FormErrorMessage>
                 </FormControl>
 
                 {/* Request Info */}
@@ -438,7 +465,7 @@ const AdminProfileRequestsPage: React.FC = () => {
             )}
           </ModalBody>
           <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={onClose}>
+            <Button variant="ghost" mr={3} onClick={handleCloseModal}>
               Cancel
             </Button>
             {selectedRequest?.status === 'PENDING' && (
@@ -446,7 +473,7 @@ const AdminProfileRequestsPage: React.FC = () => {
                 <Button
                   colorScheme="red"
                   mr={3}
-                  onClick={handleReject}
+                  onClick={handleSubmit(handleReject)} // Use handleSubmit to trigger validation
                   isLoading={approveRequestMutation.isPending}
                   leftIcon={<FiX />}
                 >
@@ -454,7 +481,7 @@ const AdminProfileRequestsPage: React.FC = () => {
                 </Button>
                 <Button
                   colorScheme="green"
-                  onClick={handleApprove}
+                  onClick={handleSubmit(handleApprove)} // Use handleSubmit to trigger validation
                   isLoading={approveRequestMutation.isPending}
                   leftIcon={<FiCheck />}
                 >
@@ -469,4 +496,4 @@ const AdminProfileRequestsPage: React.FC = () => {
   );
 };
 
-export default AdminProfileRequestsPage; 
+export default AdminProfileRequestsPage;
