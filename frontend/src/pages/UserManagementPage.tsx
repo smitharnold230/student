@@ -86,11 +86,6 @@ const UserManagementPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isBulkUploadModalOpen, onOpen: onBulkUploadModalOpen, onClose: onBulkUploadModalClose } = useDisclosure();
-  const [createForm, setCreateForm] = useState<CreateUserForm>({
-    email: '',
-    password: '',
-    role: 'STUDENT'
-  });
   const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   const cardBg = useColorModeValue('gray.800', 'gray.900');
@@ -115,7 +110,7 @@ const UserManagementPage: React.FC = () => {
         duration: 3000,
       });
       onClose();
-      setCreateForm({ email: '', password: '', role: 'STUDENT' });
+      reset(); // Reset form fields after successful submission
       queryClient.invalidateQueries({ queryKey: ['users'] });
     },
     onError: (error: any) => {
@@ -176,7 +171,7 @@ const UserManagementPage: React.FC = () => {
     defaultValues: { email: '', password: '', role: 'STUDENT' },
   });
 
-  const handleCreateUser = (data: CreateUserForm) => {
+  const handleCreateUserSubmit = (data: CreateUserForm) => {
     createUserMutation.mutate(data);
   };
 
@@ -299,7 +294,7 @@ const UserManagementPage: React.FC = () => {
           <ModalHeader color="white">Add New User</ModalHeader>
           <ModalCloseButton color="gray.400" />
           <ModalBody>
-            <VStack spacing={4} as="form" onSubmit={handleSubmit(handleCreateUser)}>
+            <VStack spacing={4} as="form" id="create-user-form" onSubmit={handleSubmit(handleCreateUserSubmit)}>
               <FormControl isInvalid={!!errors.email} isRequired>
                 <FormLabel color="gray.300">Email</FormLabel>
                 <Input
@@ -348,9 +343,8 @@ const UserManagementPage: React.FC = () => {
             <Button
               colorScheme="green"
               type="submit"
-              form="form"
+              form="create-user-form" // Link button to form
               isLoading={createUserMutation.isPending}
-              onClick={handleSubmit(handleCreateUser)}
             >
               Create User
             </Button>
