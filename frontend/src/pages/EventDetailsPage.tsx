@@ -66,7 +66,7 @@ const EventDetailsPage: React.FC = () => {
   });
 
   const updateEventMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<UpdateEventData> }) =>
+    mutationFn: ({ eventId: id, data }: { eventId: string; data: Partial<UpdateEventData> }) => // Corrected 'id' to 'eventId'
       eventAPI.updateEvent(id, data),
     onSuccess: () => {
       toast({
@@ -302,7 +302,7 @@ const EventDetailsPage: React.FC = () => {
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           eventToEdit={event}
-          onUpdateEvent={(id, data) => updateEventMutation.mutate({ id, data })}
+          onUpdateEvent={(id, data) => updateEventMutation.mutate({ eventId: id, data })}
           updateEventMutation={updateEventMutation}
         />
       )}
