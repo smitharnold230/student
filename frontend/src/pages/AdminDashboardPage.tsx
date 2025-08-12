@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Box,
   VStack,
@@ -9,21 +8,15 @@ import {
   Skeleton,
 } from '@chakra-ui/react';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  FiCalendar, 
-  FiAward, 
-  FiUsers, 
-  FiDownload,
-  FiSettings, 
-} from 'react-icons/fi';
-import { adminAPI, eventAPI, profileAPI, pointsAPI } from '../services/api';
+import {
+  adminAPI,
+  eventAPI,
+  profileAPI,
+  pointsAPI
+} from '../services/api';
 
-// Import new modular components
-import AdminOverviewStats from '../components/admin/AdminOverviewStats';
-import AdminQuickActions from '../components/admin/AdminQuickActions';
-import AdminPointSystemOverview from '../components/admin/AdminPointSystemOverview';
-import AdminUserActivityOverview from '../components/admin/AdminUserActivityOverview';
-import AdminSystemHealthAndAlerts from '../components/admin/AdminSystemHealthAndAlerts';
+// Import the new modular component
+import AdminDashboardContent from '../components/admin/AdminDashboardContent';
 
 interface SystemStats {
   totalStudents: number;
@@ -68,7 +61,6 @@ interface UserWithPoints {
 }
 
 const AdminDashboardPage: React.FC = () => {
-  const navigate = useNavigate();
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
 
@@ -114,44 +106,6 @@ const AdminDashboardPage: React.FC = () => {
     topPerformers: [],
   };
 
-  const quickActions = [
-    {
-      label: 'Manage Events',
-      description: 'Create & edit events',
-      icon: FiCalendar,
-      color: 'blue',
-      onClick: () => navigate('/events'),
-    },
-    {
-      label: 'Verify Certifications',
-      description: 'Review submissions',
-      icon: FiAward,
-      color: 'purple',
-      onClick: () => navigate('/certifications'),
-    },
-    {
-      label: 'Profile Requests',
-      description: 'Review edit requests',
-      icon: FiUsers,
-      color: 'cyan',
-      onClick: () => navigate('/admin/profile-requests'),
-    },
-    {
-      label: 'Export Data',
-      description: 'Download reports',
-      icon: FiDownload,
-      color: 'green',
-      onClick: () => navigate('/admin/logs'),
-    },
-    {
-      label: 'System Settings',
-      description: 'Configure points & rules',
-      icon: FiSettings,
-      color: 'orange',
-      onClick: () => navigate('/admin/settings'),
-    },
-  ];
-
   const isLoading = eventsLoading || systemStatsLoading || profileRequestsLoading || pointStatsLoading;
 
   if (isLoading) {
@@ -162,7 +116,7 @@ const AdminDashboardPage: React.FC = () => {
             Admin Dashboard
           </Heading>
           <Text color="gray.400">
-            Monitor system activity and manage student development
+            Monitoring system activity and managing student development
           </Text>
         </Box>
         <Skeleton height="120px" />
@@ -175,50 +129,12 @@ const AdminDashboardPage: React.FC = () => {
   }
 
   return (
-    <VStack spacing={6} align="stretch">
-      <Box>
-        <Heading size="lg" color="white" mb={2}>
-          Admin Dashboard
-        </Heading>
-        <Text color="gray.400">
-          Monitor system activity and manage student development
-        </Text>
-      </Box>
-
-      <AdminOverviewStats 
-        systemStats={systemStats} 
-        cardBg={cardBg} 
-        borderColor={borderColor} 
-      />
-
-      <AdminQuickActions 
-        quickActions={quickActions} 
-        cardBg={cardBg} 
-        borderColor={borderColor} 
-      />
-
-      <AdminPointSystemOverview 
-        pointStats={pointStats} 
-        cardBg={cardBg} 
-        borderColor={borderColor} 
-      />
-
-      <AdminUserActivityOverview 
-        pointStats={pointStats} 
-        profileRequests={profileRequests} 
-        events={events} 
-        systemStats={systemStats}
-        cardBg={cardBg} 
-        borderColor={borderColor} 
-      />
-
-      <AdminSystemHealthAndAlerts 
-        systemStats={systemStats} 
-        profileRequests={profileRequests} 
-        cardBg={cardBg} 
-        borderColor={borderColor} 
-      />
-    </VStack>
+    <AdminDashboardContent
+      systemStats={systemStats}
+      events={events}
+      profileRequests={profileRequests}
+      pointStats={pointStats}
+    />
   );
 };
 
