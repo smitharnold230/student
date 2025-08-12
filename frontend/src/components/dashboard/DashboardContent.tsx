@@ -74,7 +74,7 @@ interface User {
 interface DashboardContentProps {
   user: User | null;
   myRank: MyRank;
-  profile: Profile;
+  profile: Profile | undefined;
   events: Event[];
   codingStats: CodingStat[];
   notifications: Notification[];

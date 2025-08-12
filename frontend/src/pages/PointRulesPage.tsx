@@ -62,8 +62,6 @@ interface PointRule {
   key: string;
   value: number;
   description: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 interface EditingRule {

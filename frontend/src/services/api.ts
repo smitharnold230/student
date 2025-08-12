@@ -206,3 +206,10 @@ export const pointsAPI = {
   resetUserPoints: (userIds: string[], reason: string): Promise<AxiosResponse<ResetPointsResponse>> =>
     api.post('/points/reset-users', { userIds, reason }),
 };
+
+export const eligibilityAPI = {
+  checkEligibility: (): Promise<AxiosResponse<any>> => api.get('/eligibility/check'),
+  assignBatch: (userId: string, batch: string, auto: boolean): Promise<AxiosResponse<any>> =>
+    api.post('/eligibility/assign', { userId, batch, auto }),
+  assignAllEligibleBatches: (): Promise<AxiosResponse<any>> => api.post('/eligibility/assign-all-eligible'),
+};

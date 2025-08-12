@@ -84,7 +84,7 @@ const DashboardPage: React.FC = () => {
   });
 
   const myRank: MyRank = myRankResponse?.data;
-  const profile: Profile = profileResponse?.data;
+  const profile: Profile | undefined = profileResponse?.data;
   const events: Event[] = eventsResponse?.data || [];
   const codingStats: CodingStat[] = codingStatsResponse?.data || [];
   const notifications: Notification[] = notificationsResponse?.data || [];
@@ -121,7 +121,7 @@ const DashboardPage: React.FC = () => {
     <DashboardContent
       user={user}
       myRank={myRank}
-      profile={profile}
+      profile={profile!}
       events={events}
       codingStats={codingStats}
       notifications={notifications}
