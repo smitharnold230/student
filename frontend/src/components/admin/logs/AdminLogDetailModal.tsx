@@ -54,6 +54,17 @@ const AdminLogDetailModal: React.FC<AdminLogDetailModalProps> = ({
   formatDate,
   formatResponseTime,
 }) => {
+  const formatJson = (jsonString: string | undefined) => {
+    if (!jsonString) return '';
+    try {
+      // Attempt to parse and then stringify with indentation
+      return JSON.stringify(JSON.parse(jsonString), null, 2);
+    } catch (e) {
+      // If parsing fails, return the original string
+      return jsonString;
+    }
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <ModalOverlay />
@@ -140,13 +151,14 @@ const AdminLogDetailModal: React.FC<AdminLogDetailModalProps> = ({
                     Request Body
                   </Text>
                   <Textarea
-                    value={selectedLog.requestBody}
+                    value={formatJson(selectedLog.requestBody)}
                     isReadOnly
                     bg="gray.700"
                     borderColor="gray.600"
                     color="white"
                     fontSize="xs"
-                    rows={4}
+                    rows={8} // Increased rows for better viewing of formatted JSON
+                    fontFamily="monospace" // Use monospace font for code
                   />
                 </Box>
               )}
@@ -157,13 +169,14 @@ const AdminLogDetailModal: React.FC<AdminLogDetailModalProps> = ({
                     Response Body
                   </Text>
                   <Textarea
-                    value={selectedLog.responseBody}
+                    value={formatJson(selectedLog.responseBody)}
                     isReadOnly
                     bg="gray.700"
                     borderColor="gray.600"
                     color="white"
                     fontSize="xs"
-                    rows={4}
+                    rows={8} // Increased rows for better viewing of formatted JSON
+                    fontFamily="monospace" // Use monospace font for code
                   />
                 </Box>
               )}
