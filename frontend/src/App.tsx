@@ -19,6 +19,7 @@ import PointsPage from './pages/PointsPage';
 import EligibilityPage from './pages/EligibilityPage';
 import PointRulesPage from './pages/PointRulesPage';
 import UserManagementPage from './pages/UserManagementPage';
+import EventDetailsPage from './pages/EventDetailsPage'; // Import the new EventDetailsPage
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles?: string[] }> = ({
   children,
@@ -62,6 +63,7 @@ function App() {
           <Route path="leaderboard" element={<LeaderboardPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="events" element={<EventsPage />} />
+          <Route path="events/:eventId" element={<EventDetailsPage />} /> {/* New route for individual event details */}
           <Route path="coding-stats" element={<CodingStatsPage />} />
           <Route path="certifications" element={<CertificationsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
