@@ -5,7 +5,7 @@ import {
   Text,
   Heading,
   useToast,
-  useColorModeValue,
+  useDisclosure,
   Skeleton,
 } from '@chakra-ui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -43,9 +43,6 @@ const UserManagementPage: React.FC = () => {
   const { isOpen: isCreateModalOpen, onOpen: onCreateModalOpen, onClose: onCreateModalClose } = useDisclosure();
   const { isOpen: isBulkUploadModalOpen, onOpen: onBulkUploadModalOpen, onClose: onBulkUploadModalClose } = useDisclosure();
   const [uploadProgress, setUploadProgress] = useState<number>(0);
-
-  const cardBg = useColorModeValue('gray.800', 'gray.900');
-  const borderColor = useColorModeValue('gray.700', 'gray.600');
 
   // Get all users
   const { data: usersResponse, isLoading: usersLoading } = useQuery({
