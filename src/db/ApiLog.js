@@ -17,9 +17,21 @@ const ApiLog = sequelize.define('ApiLog', {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
   },
+  responseTime: { // New field
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  ipAddress: { // New field
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  userAgent: { // New field
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
 }, {
   tableName: 'api_logs',
   timestamps: false,
 });
 
-module.exports = ApiLog; 
+module.exports = ApiLog;

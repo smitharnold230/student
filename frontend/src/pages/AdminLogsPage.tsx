@@ -50,13 +50,8 @@ const AdminLogsPage: React.FC = () => {
     queryKey: ['adminLogs', filters],
     queryFn: async () => {
       const response = await adminAPI.getLogs(filters);
-      // Add a dummy responseTime for demonstration if not present
-      return response.data.map((log: ApiLog) => ({
-        ...log,
-        responseTime: log.responseTime || Math.floor(Math.random() * (500 - 50 + 1)) + 50, // Random time between 50-500ms
-        ipAddress: log.ipAddress || '192.168.1.1', // Dummy IP
-        userAgent: log.userAgent || 'Mozilla/5.0 (Dummy)', // Dummy User Agent
-      }));
+      // No longer adding dummy data; backend will provide it
+      return response.data;
     },
   });
 

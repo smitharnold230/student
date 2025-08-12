@@ -9,6 +9,8 @@ async function apiLogger(req, res, next) {
     return oldSend.apply(this, arguments);
   };
   res.on('finish', async () => {
+    const end = Date.now();
+    const responseTime = end - start;
     try {
       await ApiLog.create({
         userId: req.user ? req.user.userId : null,
@@ -18,6 +20,9 @@ async function apiLogger(req, res, next) {
         requestBody: req.body,
         responseBody: tryParseJson(responseBody),
         timestamp: new Date(),
+        responseTime: responseTime, // Capture actual response time
+        ipAddress: req.ip || req.connection.remoteAddress, // Capture IP address
+        userAgent: req.headers['user-agent'], // Capture user agent
       });
     } catch (err) {
       // fail silently
@@ -35,4 +40,4 @@ function tryParseJson(body) {
   }
 }
 
-module.exports = apiLogger; 
+module.exports = apiLogger;

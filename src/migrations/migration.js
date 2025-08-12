@@ -194,6 +194,46 @@ class Migration {
             throw error;
           }
         }
+      },
+      {
+        name: '008_add_api_log_details',
+        up: async () => {
+          try {
+            console.log('Adding responseTime, ipAddress, userAgent columns to api_logs...');
+            const columns = await sequelize.query(`
+              SELECT column_name 
+              FROM information_schema.columns 
+              WHERE table_name = 'api_logs' AND column_name IN ('responseTime', 'ipAddress', 'userAgent')
+            `, { raw: true, type: sequelize.QueryTypes.SELECT });
+
+            const existingColumnNames = new Set(columns.map(c => c.column_name));
+
+            if (!existingColumnNames.has('responseTime')) {
+              await sequelize.query(`ALTER TABLE api_logs ADD COLUMN "responseTime" INTEGER`);
+              console.log('responseTime column added.');
+            } else {
+              console.log('responseTime column already exists.');
+            }
+
+            if (!existingColumnNames.has('ipAddress')) {
+              await sequelize.query(`ALTER TABLE api_logs ADD COLUMN "ipAddress" VARCHAR(255)`);
+              console.log('ipAddress column added.');
+            } else {
+              console.log('ipAddress column already exists.');
+            }
+
+            if (!existingColumnNames.has('userAgent')) {
+              await sequelize.query(`ALTER TABLE api_logs ADD COLUMN "userAgent" TEXT`);
+              console.log('userAgent column added.');
+            } else {
+              console.log('userAgent column already exists.');
+            }
+            console.log('api_logs columns check/add complete.');
+          } catch (error) {
+            console.error('Error adding api_logs detail columns:', error);
+            throw error;
+          }
+        }
       }
     ];
   }
