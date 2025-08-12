@@ -1,49 +1,8 @@
 const Profile = require('../../db/Profile');
-const Point = require('../../db/Point');
-const PointRule = require('../../db/PointRule');
-const Event = require('../../db/Event');
-const EventParticipation = require('../../db/EventParticipation');
-const CodingStat = require('../../db/CodingStat');
-const Submission = require('../../db/Submission');
-
-const DEFAULT_POINT_RULES = {
-  WORKSHOP_PARTICIPATION: { value: 50, description: 'Points for workshop participation' },
-  HACKATHON_PARTICIPATION: { value: 100, description: 'Points for hackathon participation' },
-  CERTIFICATION_APPROVED: { value: 75, description: 'Points for approved certification' },
-  LEETCODE_SUBMISSION: { value: 25, description: 'Points for LeetCode submission' },
-  HACKERRANK_SUBMISSION: { value: 25, description: 'Points for HackerRank submission' },
-  LEETCODE_PROBLEMS_BONUS: { value: 5, description: 'Bonus points per 50 LeetCode problems solved' },
-  HACKERRANK_PROBLEMS_BONUS: { value: 3, description: 'Bonus points per 50 HackerRank problems solved' },
-  FIRST_WORKSHOP_BONUS: { value: 25, description: 'Bonus for first workshop participation' },
-  FIRST_HACKATHON_BONUS: { value: 50, description: 'Bonus for first hackathon participation' },
-  CERTIFICATION_STREAK_BONUS: { value: 20, description: 'Bonus for consecutive approved certifications' },
-};
-
-/**
- * Get point rules from database or use defaults
- */
-async function getPointRules() {
-  try {
-    const rules = await PointRule.findAll();
-    if (rules.length === 0) {
-      const defaultRules = Object.entries(DEFAULT_POINT_RULES).map(([key, rule]) => ({
-        key,
-        value: rule.value,
-        description: rule.description,
-      }));
-      await PointRule.bulkCreate(defaultRules);
-      return defaultRules;
-    }
-    return rules;
-  } catch (error) {
-    console.error('Error getting point rules:', error);
-    return Object.entries(DEFAULT_POINT_RULES).map(([key, rule]) => ({
-      key,
-      value: rule.value,
-      description: rule.description,
-    }));
-  }
-}
+const { getPointRules } = require('./utils/pointRules');
+const { calculateActivityPoints } = require('./utils/activityCalculators');
+const { getPointRecord, upsertPoint, getAllUsersWithPointsAndProfile } = require('./utils/pointDb');
+const { sendPointUpdateNotification, sendPointResetNotification } = require('./utils/pointNotifications');
 
 /**
  * Calculate points for a specific user based on their activities,
@@ -56,144 +15,8 @@ async function calculateUserPoints(userId) {
       throw new Error('Profile not found');
     }
 
-    const pointRules = await getPointRules();
-    const rulesMap = pointRules.reduce((acc, rule) => {
-      acc[rule.key] = rule.value;
-      return acc;
-    }, {});
-
-    let activityBasedPoints = 0;
-    const pointBreakdown = {};
-
-    // 1. Calculate workshop participation points
-    const workshopParticipations = await EventParticipation.findAll({
-      include: [{
-        model: Event,
-        where: { type: 'WORKSHOP' },
-        attributes: ['id', 'name']
-      }],
-      where: { userId }
-    });
-
-    const workshopPoints = workshopParticipations.length * (rulesMap.WORKSHOP_PARTICIPATION || 50);
-    activityBasedPoints += workshopPoints;
-    pointBreakdown.workshops = {
-      count: workshopParticipations.length,
-      points: workshopPoints,
-      events: workshopParticipations.map(p => p.Event?.name).filter(Boolean)
-    };
-
-    // 2. Calculate hackathon participation points
-    const hackathonParticipations = await EventParticipation.findAll({
-      include: [{
-        model: Event,
-        where: { type: 'HACKATHON' },
-        attributes: ['id', 'name']
-      }],
-      where: { userId }
-    });
-
-    const hackathonPoints = hackathonParticipations.length * (rulesMap.HACKATHON_PARTICIPATION || 100);
-    activityBasedPoints += hackathonPoints;
-    pointBreakdown.hackathons = {
-      count: hackathonParticipations.length,
-      points: hackathonPoints,
-      events: hackathonParticipations.map(p => p.Event?.name).filter(Boolean)
-    };
-
-    // 3. Calculate certification points
-    const approvedCertifications = await Submission.findAll({
-      where: {
-        profileId: profile.id,
-        status: 'APPROVED'
-      },
-      include: [{
-        model: Event,
-        attributes: ['id', 'name']
-      }]
-    });
-
-    const certificationPoints = approvedCertifications.length * (rulesMap.CERTIFICATION_APPROVED || 75);
-    activityBasedPoints += certificationPoints;
-    pointBreakdown.certifications = {
-      count: approvedCertifications.length,
-      points: certificationPoints,
-      certifications: approvedCertifications.map(c => c.Event?.name).filter(Boolean)
-    };
-
-    // 4. Calculate coding platform points
-    const codingStats = await CodingStat.findAll({
-      where: { profileId: profile.id }
-    });
-
-    let codingPoints = 0;
-    const codingBreakdown = {};
-
-    for (const stat of codingStats) {
-      let platformPoints = 0;
-
-      if (stat.platform === 'LEETCODE') {
-        platformPoints += rulesMap.LEETCODE_SUBMISSION || 25;
-        const problemBonus = Math.floor(stat.problemsSolved / 50) * (rulesMap.LEETCODE_PROBLEMS_BONUS || 5);
-        platformPoints += problemBonus;
-
-        codingBreakdown.leetcode = {
-          problemsSolved: stat.problemsSolved,
-          basePoints: rulesMap.LEETCODE_SUBMISSION || 25,
-          bonusPoints: problemBonus,
-          totalPoints: platformPoints
-        };
-      } else if (stat.platform === 'HACKERRANK') {
-        platformPoints += rulesMap.HACKERRANK_SUBMISSION || 25;
-        const problemBonus = Math.floor(stat.problemsSolved / 50) * (rulesMap.HACKERRANK_PROBLEMS_BONUS || 3);
-        platformPoints += problemBonus;
-
-        codingBreakdown.hackerrank = {
-          problemsSolved: stat.problemsSolved,
-          basePoints: rulesMap.HACKERRANK_SUBMISSION || 25,
-          bonusPoints: problemBonus,
-          totalPoints: platformPoints
-        };
-      }
-
-      codingPoints += platformPoints;
-    }
-
-    activityBasedPoints += codingPoints;
-    pointBreakdown.coding = {
-      totalPoints: codingPoints,
-      breakdown: codingBreakdown
-    };
-
-    // 5. Calculate bonus points
-    let bonusPoints = 0;
-    const bonusBreakdown = {};
-
-    if (workshopParticipations.length === 1) {
-      const firstWorkshopBonus = rulesMap.FIRST_WORKSHOP_BONUS || 25;
-      bonusPoints += firstWorkshopBonus;
-      bonusBreakdown.firstWorkshop = firstWorkshopBonus;
-    }
-
-    if (hackathonParticipations.length === 1) {
-      const firstHackathonBonus = rulesMap.FIRST_HACKATHON_BONUS || 50;
-      bonusPoints += firstHackathonBonus;
-      bonusBreakdown.firstHackathon = firstHackathonBonus;
-    }
-
-    if (approvedCertifications.length >= 2) {
-      const streakBonus = rulesMap.CERTIFICATION_STREAK_BONUS || 20;
-      bonusPoints += streakBonus;
-      bonusBreakdown.certificationStreak = streakBonus;
-    }
-
-    activityBasedPoints += bonusPoints;
-    pointBreakdown.bonuses = {
-      totalPoints: bonusPoints,
-      breakdown: bonusBreakdown
-    };
-
-    const currentPointRecord = await Point.findOne({ where: { profileId: profile.id } });
+    const { activityBasedPoints, breakdown } = await calculateActivityPoints(profile.id, userId);
+    const currentPointRecord = await getPointRecord(profile.id);
     const manualAdjustment = currentPointRecord?.manualAdjustment || 0;
     
     const totalPoints = activityBasedPoints + manualAdjustment;
@@ -201,7 +24,7 @@ async function calculateUserPoints(userId) {
     return {
       totalPoints, // Total points including manual adjustment
       activityBasedPoints, // Points from activities only
-      breakdown: pointBreakdown,
+      breakdown,
       profileId: profile.id,
       manualAdjustment // Current manual adjustment from DB
     };
@@ -220,13 +43,7 @@ async function updateUserPoints(userId) {
     const { profileId, activityBasedPoints, manualAdjustment } = await calculateUserPoints(userId);
     const newTotalPoints = activityBasedPoints + manualAdjustment;
 
-    const [pointRecord, created] = await Point.upsert({
-      profileId: profileId,
-      value: newTotalPoints,
-      manualAdjustment: manualAdjustment, // Preserve existing manual adjustment
-    }, {
-      where: { profileId: profileId }
-    });
+    const pointRecord = await upsertPoint(profileId, newTotalPoints, manualAdjustment);
 
     return {
       totalPoints: newTotalPoints,
@@ -270,26 +87,21 @@ async function updateAllUserPoints() {
  */
 async function getPointStatistics() {
   try {
-    const allPoints = await Point.findAll({
-      include: [{
-        model: Profile,
-        attributes: ['id', 'name', 'class', 'batch']
-      }]
-    });
+    const allPoints = await getAllUsersWithPointsAndProfile(); // Reusing this function to get all users with points
 
     const totalUsers = allPoints.length;
-    const totalPoints = allPoints.reduce((sum, point) => sum + point.value, 0);
+    const totalPoints = allPoints.reduce((sum, user) => sum + user.points, 0);
     const averagePoints = totalUsers > 0 ? Math.round(totalPoints / totalUsers) : 0;
 
     const topPerformers = allPoints
-      .sort((a, b) => b.value - a.value)
+      .sort((a, b) => b.points - a.points)
       .slice(0, 10)
-      .map((point, index) => ({
+      .map((user, index) => ({
         rank: index + 1,
-        name: point.Profile.name,
-        class: point.Profile.class,
-        batch: point.Profile.batch,
-        points: point.value
+        name: user.name,
+        class: user.class,
+        batch: user.batch,
+        points: user.points
       }));
 
     return {
@@ -367,36 +179,7 @@ async function addPointsForActivity(userId, activityType, activityData = {}) {
  * Get all users with their points for admin management
  */
 async function getAllUsersWithPoints() {
-  try {
-    const profiles = await Profile.findAll({
-      include: [
-        {
-          model: Point,
-          attributes: ['value', 'manualAdjustment']
-        },
-        {
-          model: require('../../db/User'),
-          attributes: ['id', 'email', 'role']
-        }
-      ],
-      attributes: ['id', 'name', 'class', 'batch', 'userId']
-    });
-
-    return profiles.map(profile => ({
-      id: profile.userId,
-      name: profile.name,
-      email: profile.User.email,
-      class: profile.class,
-      batch: profile.batch,
-      points: profile.Point?.value || 0,
-      manualAdjustment: profile.Point?.manualAdjustment || 0,
-      profileId: profile.id
-    }));
-  }
-  catch (error) {
-    console.error('Error getting all users with points:', error);
-    throw error;
-  }
+  return getAllUsersWithPointsAndProfile();
 }
 
 /**
@@ -405,7 +188,6 @@ async function getAllUsersWithPoints() {
 async function updateUserPointsManually(userIds, pointsToAdd, reason, adminId) {
   try {
     const results = [];
-    const Notification = require('../../db/Notification');
 
     for (const userId of userIds) {
       const profile = await Profile.findOne({ where: { userId } });
@@ -414,30 +196,18 @@ async function updateUserPointsManually(userIds, pointsToAdd, reason, adminId) {
         continue;
       }
 
-      const currentPointRecord = await Point.findOne({ where: { profileId: profile.id } });
+      const currentPointRecord = await getPointRecord(profile.id);
       const oldManualAdjustment = currentPointRecord?.manualAdjustment || 0;
       
       const newManualAdjustment = oldManualAdjustment + pointsToAdd;
       
       // Recalculate activity-based points
-      const { activityBasedPoints } = await calculateUserPoints(userId);
+      const { activityBasedPoints } = await calculateActivityPoints(profile.id, userId);
       const newTotalPoints = activityBasedPoints + newManualAdjustment;
 
-      await Point.upsert({
-        profileId: profile.id,
-        value: newTotalPoints,
-        manualAdjustment: newManualAdjustment, // Update manual adjustment
-      }, {
-        where: { profileId: profile.id }
-      });
+      await upsertPoint(profile.id, newTotalPoints, newManualAdjustment);
 
-      await Notification.create({
-        userId,
-        title: 'Points Updated',
-        message: `Your points have been ${pointsToAdd >= 0 ? 'increased' : 'decreased'} by ${Math.abs(pointsToAdd)}. Reason: ${reason}`,
-        type: 'INFO',
-        read: false
-      });
+      await sendPointUpdateNotification(userId, pointsToAdd, reason);
 
       results.push({
         userId,
@@ -461,7 +231,6 @@ async function updateUserPointsManually(userIds, pointsToAdd, reason, adminId) {
 async function resetUserPoints(userIds, reason, adminId) {
   try {
     const results = [];
-    const Notification = require('../../db/Notification');
 
     for (const userId of userIds) {
       const profile = await Profile.findOne({ where: { userId } });
@@ -470,22 +239,12 @@ async function resetUserPoints(userIds, reason, adminId) {
         continue;
       }
 
-      const currentPointRecord = await Point.findOne({ where: { profileId: profile.id } });
+      const currentPointRecord = await getPointRecord(profile.id);
       const oldPoints = currentPointRecord?.value || 0; // Get current total points before reset
 
-      await Point.upsert({
-        profileId: profile.id,
-        value: 0, // Reset total points to 0
-        manualAdjustment: 0, // Reset manual adjustment to 0
-      });
+      await upsertPoint(profile.id, 0, 0); // Reset total points and manual adjustment to 0
 
-      await Notification.create({
-        userId,
-        title: 'Points Reset',
-        message: `Your points have been reset to 0. Reason: ${reason}`,
-        type: 'INFO',
-        read: false
-      });
+      await sendPointResetNotification(userId, reason);
 
       results.push({
         userId,
@@ -509,7 +268,7 @@ module.exports = {
   updateAllUserPoints,
   getPointStatistics,
   addPointsForActivity,
-  getPointRules,
+  getPointRules, // Still export this for the controller
   getAllUsersWithPoints,
   updateUserPointsManually,
   resetUserPoints,
