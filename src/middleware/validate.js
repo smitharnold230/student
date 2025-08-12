@@ -79,9 +79,6 @@ const validationSchemas = {
     hackerrank: z.object({
       url: z.string().url('Invalid HackerRank URL').regex(/hackerrank\.com/, 'Must be a HackerRank URL'),
       manualCount: z.number().int().min(0, 'Problems solved must be non-negative').optional()
-    }),
-    delete: z.object({ // New schema for deleting a coding stat
-      platform: z.enum(['LEETCODE', 'HACKERRANK'], { message: 'Platform must be LEETCODE or HACKERRANK' })
     })
   },
 
@@ -89,11 +86,11 @@ const validationSchemas = {
     updateUsers: z.object({
       userIds: z.array(z.string().uuid('Invalid user ID format')).min(1, 'At least one user ID is required'),
       pointsToAdd: z.number().int('Points must be an integer').min(-1000, 'Points adjustment too large').max(1000, 'Points adjustment too large'),
-      reason: z.string().min(1, 'Reason is required').max(200, 'Reason too long')
+      reason: z.string().trim().min(1, 'Reason is required').max(200, 'Reason too long')
     }),
     resetUsers: z.object({
       userIds: z.array(z.string().uuid('Invalid user ID format')).min(1, 'At least one user ID is required'),
-      reason: z.string().min(1, 'Reason is required').max(200, 'Reason too long')
+      reason: z.string().trim().min(1, 'Reason is required').max(200, 'Reason too long')
     }),
     addActivity: z.object({
       activityType: z.string().min(1, 'Activity type is required'),

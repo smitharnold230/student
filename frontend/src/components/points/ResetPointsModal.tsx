@@ -30,7 +30,7 @@ interface ResetPointsModalProps {
 }
 
 const resetPointsSchema = z.object({
-  reason: z.string().min(1, 'Reason is required').max(200, 'Reason too long'),
+  reason: z.string().trim().min(1, 'Reason is required').max(200, 'Reason too long'),
 });
 
 type ResetPointsForm = z.infer<typeof resetPointsSchema>;
