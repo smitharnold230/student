@@ -122,6 +122,7 @@ export const notificationAPI = {
 export const adminAPI = {
   getLogs: (params?: any) => api.get('/admin/logs', { params }),
   exportStudents: () => api.get('/admin/export-students', { responseType: 'blob' }), // <--- ADDED responseType: 'blob'
+  exportLogs: () => api.get('/admin/export-logs', { responseType: 'blob' }), // New: Export API logs
   getSystemStats: () => api.get('/admin/stats'),
   getPointRules: () => api.get('/admin/point-rules'),
   updatePointRule: (key: string, value: number, description: string) =>

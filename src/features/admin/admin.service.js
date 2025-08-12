@@ -98,6 +98,52 @@ async function exportStudentsCsv() {
   return filePath;
 }
 
+async function exportApiLogsCsv() {
+  const logs = await ApiLog.findAll({
+    order: [['timestamp', 'DESC']],
+    include: [{
+      model: User,
+      attributes: ['email']
+    }]
+  });
+
+  const records = logs.map(log => ({
+    id: log.id,
+    method: log.method,
+    endpoint: log.endpoint,
+    statusCode: log.status,
+    responseTime: log.responseTime,
+    timestamp: log.timestamp.toISOString(),
+    userId: log.userId,
+    userEmail: log.User ? log.User.email : 'N/A',
+    ipAddress: log.ipAddress,
+    userAgent: log.userAgent,
+    requestBody: JSON.stringify(log.requestBody),
+    responseBody: JSON.stringify(log.responseBody),
+  }));
+
+  const filePath = path.join(__dirname, '../../api_logs_export.csv');
+  const csvWriter = createCsvWriter({
+    path: filePath,
+    header: [
+      { id: 'id', title: 'Log ID' },
+      { id: 'method', title: 'Method' },
+      { id: 'endpoint', title: 'Endpoint' },
+      { id: 'statusCode', title: 'Status Code' },
+      { id: 'responseTime', title: 'Response Time (ms)' },
+      { id: 'timestamp', title: 'Timestamp' },
+      { id: 'userId', title: 'User ID' },
+      { id: 'userEmail', title: 'User Email' },
+      { id: 'ipAddress', title: 'IP Address' },
+      { id: 'userAgent', title: 'User Agent' },
+      { id: 'requestBody', title: 'Request Body' },
+      { id: 'responseBody', title: 'Response Body' },
+    ],
+  });
+  await csvWriter.writeRecords(records);
+  return filePath;
+}
+
 async function bulkUploadUsers(filePath) {
   const workbook = xlsx.readFile(filePath);
   const sheetName = workbook.SheetNames[0];
@@ -157,4 +203,4 @@ async function bulkUploadUsers(filePath) {
   return results;
 }
 
-module.exports = { getApiLogs, exportStudentsCsv, getPointRules, updatePointRule, getSystemStats, bulkUploadUsers };
+module.exports = { getApiLogs, exportStudentsCsv, getPointRules, updatePointRule, getSystemStats, bulkUploadUsers, exportApiLogsCsv };

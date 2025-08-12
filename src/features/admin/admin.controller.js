@@ -45,6 +45,18 @@ async function exportStudentsCsv(req, res, next) {
   }
 }
 
+async function exportApiLogsCsv(req, res, next) {
+  try {
+    const filePath = await adminService.exportApiLogsCsv();
+    res.download(filePath, 'api_logs_export.csv', err => {
+      if (err) res.status(500).json({ error: 'Failed to download API logs CSV' });
+      fs.unlinkSync(filePath); // Clean up the generated file
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function getSystemStats(req, res, next) {
   try {
     const stats = await adminService.getSystemStats();
@@ -74,4 +86,4 @@ async function bulkUploadUsers(req, res, next) {
   }
 }
 
-module.exports = { getApiLogs, exportStudentsCsv, getPointRules, updatePointRule, getSystemStats, bulkUploadUsers };
+module.exports = { getApiLogs, exportStudentsCsv, getPointRules, updatePointRule, getSystemStats, bulkUploadUsers, exportApiLogsCsv };

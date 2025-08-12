@@ -58,12 +58,12 @@ const AdminLogsPage: React.FC = () => {
   const logs: ApiLog[] = logsResponse || [];
 
   const exportLogsMutation = useMutation({
-    mutationFn: () => adminAPI.exportStudents(),
+    mutationFn: () => adminAPI.exportLogs(), // Changed to exportLogs()
     onSuccess: (response) => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'students_export.csv');
+      link.setAttribute('download', 'api_logs_export.csv'); // Changed filename
       document.body.appendChild(link);
       link.click();
       link.parentNode?.removeChild(link);
