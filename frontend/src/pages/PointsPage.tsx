@@ -44,8 +44,7 @@ const AdminPointsView: React.FC<{
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const { isOpen: isUpdateModalOpen, onOpen: onUpdateModalOpen, onClose: onUpdateModalClose } = useDisclosure();
   const { isOpen: isResetModalOpen, onOpen: onResetModalOpen, onClose: onResetModalClose } = useDisclosure();
-  const [updateForm, setUpdateForm] = useState({ pointsToAdd: 0, reason: '' });
-  const [resetForm, setResetForm] = useState({ reason: '' });
+  const [resetForm, setResetForm] = useState({ reason: '' }); // Keep for ResetPointsModal
   const [searchTerm, setSearchTerm] = useState<string>(''); // New state for search term
 
   const updateUsersMutation = useMutation({
@@ -59,10 +58,10 @@ const AdminPointsView: React.FC<{
         duration: 3000,
       });
       onUpdateModalClose();
-      setUpdateForm({ pointsToAdd: 0, reason: '' });
       setSelectedUsers([]);
       queryClient.invalidateQueries({ queryKey: ['allUsers'] });
       queryClient.invalidateQueries({ queryKey: ['pointStatistics'] });
+      queryClient.invalidateQueries({ queryKey: ['pointBreakdown'] }); // Invalidate student's breakdown too
     },
     onError: (error: any) => {
       toast({
@@ -89,6 +88,7 @@ const AdminPointsView: React.FC<{
       setSelectedUsers([]);
       queryClient.invalidateQueries({ queryKey: ['allUsers'] });
       queryClient.invalidateQueries({ queryKey: ['pointStatistics'] });
+      queryClient.invalidateQueries({ queryKey: ['pointBreakdown'] }); // Invalidate student's breakdown too
     },
     onError: (error: any) => {
       toast({
@@ -116,7 +116,7 @@ const AdminPointsView: React.FC<{
     setSelectedUsers([]);
   };
 
-  const handleUpdatePoints = () => {
+  const handleUpdatePoints = (data: { pointsToAdd: number; reason: string }) => {
     if (selectedUsers.length === 0) {
       toast({
         title: 'No Users Selected',
@@ -127,20 +127,10 @@ const AdminPointsView: React.FC<{
       return;
     }
 
-    if (!updateForm.reason.trim()) {
-      toast({
-        title: 'Reason Required',
-        description: 'Please provide a reason for the points update',
-        status: 'warning',
-        duration: 3000,
-      });
-      return;
-    }
-
     updateUsersMutation.mutate({
       userIds: selectedUsers,
-      pointsToAdd: updateForm.pointsToAdd,
-      reason: updateForm.reason,
+      pointsToAdd: data.pointsToAdd,
+      reason: data.reason,
     });
   };
 
@@ -210,10 +200,10 @@ const AdminPointsView: React.FC<{
         isOpen={isUpdateModalOpen}
         onClose={onUpdateModalClose}
         selectedUsersCount={selectedUsers.length}
-        updateForm={updateForm}
-        setUpdateForm={setUpdateForm}
         handleUpdatePoints={handleUpdatePoints}
         isUpdating={updateUsersMutation.isPending}
+        initialPointsToAdd={0} // Pass initial values
+        initialReason={''} // Pass initial values
       />
 
       <ResetPointsModal
