@@ -33,7 +33,7 @@ import PointRulesDisplay from '../components/points/PointRulesDisplay';
 const AdminPointsView: React.FC<{ 
   statistics: PointStatistics | undefined; 
   onUpdateAllPoints: () => void;
-  isUpdatingAllPoints: boolean; // New prop for loading state
+  isUpdatingAllPoints: boolean;
   users: UserWithPoints[];
   usersLoading: boolean;
   rules: PointRule[];
@@ -46,6 +46,7 @@ const AdminPointsView: React.FC<{
   const { isOpen: isResetModalOpen, onOpen: onResetModalOpen, onClose: onResetModalClose } = useDisclosure();
   const [updateForm, setUpdateForm] = useState({ pointsToAdd: 0, reason: '' });
   const [resetForm, setResetForm] = useState({ reason: '' });
+  const [searchTerm, setSearchTerm] = useState<string>(''); // New state for search term
 
   const updateUsersMutation = useMutation({
     mutationFn: (data: { userIds: string[]; pointsToAdd: number; reason: string }) =>
@@ -108,7 +109,7 @@ const AdminPointsView: React.FC<{
   };
 
   const handleSelectAll = () => {
-    setSelectedUsers(users.map((user: UserWithPoints) => user.id));
+    setSelectedUsers(filteredUsers.map((user: UserWithPoints) => user.id)); // Select all filtered users
   };
 
   const handleClearSelection = () => {
@@ -143,7 +144,6 @@ const AdminPointsView: React.FC<{
     });
   };
 
-  // Modified to accept reason directly from modal
   const handleResetPoints = (reason: string) => {
     if (selectedUsers.length === 0) {
       toast({
@@ -155,12 +155,17 @@ const AdminPointsView: React.FC<{
       return;
     }
 
-    // Client-side validation for reason is now handled by react-hook-form in the modal
     resetUsersMutation.mutate({
       userIds: selectedUsers,
-      reason: reason, // Use the reason passed from the modal
+      reason: reason,
     });
   };
+
+  // Filter users based on search term
+  const filteredUsers = users.filter(user =>
+    user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <VStack spacing={6} align="stretch">
@@ -178,7 +183,7 @@ const AdminPointsView: React.FC<{
           leftIcon={<FiRefreshCw />}
           colorScheme="brand"
           onClick={onUpdateAllPoints}
-          isLoading={isUpdatingAllPoints} // Use the new prop here
+          isLoading={isUpdatingAllPoints}
         >
           Update All Points
         </Button>
@@ -187,7 +192,7 @@ const AdminPointsView: React.FC<{
       <AdminPointsSummaryCards statistics={statistics} />
 
       <AdminUserPointsTable
-        users={users}
+        users={filteredUsers} // Pass filtered users
         usersLoading={usersLoading}
         selectedUsers={selectedUsers}
         handleUserSelection={handleUserSelection}
@@ -195,6 +200,8 @@ const AdminPointsView: React.FC<{
         handleClearSelection={handleClearSelection}
         onUpdateModalOpen={onUpdateModalOpen}
         onResetModalOpen={onResetModalOpen}
+        searchTerm={searchTerm} // Pass search term
+        setSearchTerm={setSearchTerm} // Pass set search term
       />
 
       <PointRulesDisplay rules={rules} />
@@ -348,7 +355,7 @@ const PointsPage: React.FC = () => {
       <AdminPointsView
         statistics={statistics}
         onUpdateAllPoints={handleUpdateAllPoints}
-        isUpdatingAllPoints={updateAllPointsMutation.isPending} // Pass the loading state
+        isUpdatingAllPoints={updateAllPointsMutation.isPending}
         users={users}
         usersLoading={usersLoading}
         rules={rules}

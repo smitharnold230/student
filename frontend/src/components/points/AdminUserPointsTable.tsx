@@ -17,9 +17,13 @@ import {
   Th,
   Td,
   Skeleton,
+  Input, // Added Input
+  InputGroup, // Added InputGroup
+  InputLeftElement, // Added InputLeftElement
+  Icon, // Added Icon
 } from '@chakra-ui/react';
-import { FiEdit, FiRefreshCw } from 'react-icons/fi';
-import { UserWithPoints } from '../../types/points'; // Assuming UserWithPoints is defined or will be
+import { FiEdit, FiRefreshCw, FiSearch } from 'react-icons/fi'; // Added FiSearch
+import { UserWithPoints } from '../../types/points';
 import { getStudentLevel } from '../../utils/points';
 
 interface AdminUserPointsTableProps {
@@ -31,6 +35,8 @@ interface AdminUserPointsTableProps {
   handleClearSelection: () => void;
   onUpdateModalOpen: () => void;
   onResetModalOpen: () => void;
+  searchTerm: string; // New prop for search term
+  setSearchTerm: (term: string) => void; // New prop for setting search term
 }
 
 const AdminUserPointsTable: React.FC<AdminUserPointsTableProps> = ({
@@ -42,6 +48,8 @@ const AdminUserPointsTable: React.FC<AdminUserPointsTableProps> = ({
   handleClearSelection,
   onUpdateModalOpen,
   onResetModalOpen,
+  searchTerm,
+  setSearchTerm,
 }) => {
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
@@ -55,6 +63,20 @@ const AdminUserPointsTable: React.FC<AdminUserPointsTableProps> = ({
               User Management
             </Heading>
             <HStack spacing={2}>
+              <InputGroup width="250px">
+                <InputLeftElement pointerEvents="none">
+                  <Icon as={FiSearch} color="gray.400" />
+                </InputLeftElement>
+                <Input
+                  placeholder="Search users..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  bg="gray.700"
+                  borderColor="gray.600"
+                  color="white"
+                  _placeholder={{ color: 'gray.400' }}
+                />
+              </InputGroup>
               <Button
                 size="sm"
                 colorScheme="blue"
