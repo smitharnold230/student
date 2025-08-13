@@ -1,14 +1,41 @@
-const express = require('express');
-const { authenticateToken, requireRole } = require('../../middleware/auth');
-const { validate, validateFileUpload } = require('../../middleware/validate');
-const { uploadCertification, getPendingCertifications, getUserCertifications, verifyCertification } = require('./certification.controller');
-const upload = require('../../middleware/upload');
+/**
+ * Certification routes with validation and auth
+ */
+const router = require('express').Router();
+const { z } = require('zod');
+const { validate } = require('../../middleware/validate');
+const { requireAuth, requireRole } = require('../../middleware/auth');
+const { upload } = require('../../middleware/upload');
+const certificationService = require('./certification.service');
 
-const router = express.Router();
+const createSchema = {
+  body: z.object({
+    title: z.string().min(1),
+    issuer: z.string().min(1),
+    issueDate: z.string(),
+    expiryDate: z.string().optional()
+  })
+};
 
-router.post('/upload', authenticateToken, requireRole('STUDENT'), upload.single('certification'), validateFileUpload('certification'), uploadCertification);
-router.get('/pending', authenticateToken, requireRole('ADMIN'), getPendingCertifications);
-router.get('/user', authenticateToken, requireRole('STUDENT'), getUserCertifications);
-router.post('/verify/:submissionId', authenticateToken, requireRole('ADMIN'), validate('certification.verify'), verifyCertification);
+router.post('/', requireAuth, upload.single('file'), validate(createSchema), async (req, res, next) => {
+  try {
+    const data = await certificationService.createCertification({
+      ...req.body,
+      file: req.file
+    });
+    res.json({ ok: true, data });
+  } catch (e) {
+    next(e);
+  }
+});
 
-module.exports = router; 
+router.get('/', requireAuth, async (req, res, next) => {
+  try {
+    const data = await certificationService.listCertifications();
+    res.json({ ok: true, data });
+  } catch (e) {
+    next(e);
+  }
+});
+
+module.exports = router;

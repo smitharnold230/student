@@ -1,32 +1,37 @@
-const express = require('express');
-const { authenticateToken, requireRole } = require('../../middleware/auth');
+/**
+ * Event routes with validation and role-based access control
+ */
+const router = require('express').Router();
+const { z } = require('zod');
 const { validate } = require('../../middleware/validate');
-const { 
-  createEvent, 
-  getEvents, 
-  participateInEvent, 
-  acceptEvent, 
-  getEventDetails, 
-  setCertificationDeadline, 
-  getCertificationDeadline,
-  updateEvent, // Import new controller function
-  deleteEvent // Import new controller function
-} = require('./event.controller');
+const { requireAuth, requireRole } = require('../../middleware/auth');
+const eventService = require('./event.service');
 
-const router = express.Router();
+const createSchema = {
+  body: z.object({
+    name: z.string().min(3),
+    startsAt: z.string(),
+    endsAt: z.string(),
+    description: z.string().optional()
+  })
+};
 
-router.post('/', authenticateToken, requireRole('ADMIN'), validate('event.create'), createEvent);
-router.get('/', authenticateToken, getEvents);
-router.post('/participate', authenticateToken, requireRole('STUDENT'), validate('event.participate'), participateInEvent);
-router.post('/accept', authenticateToken, requireRole('STUDENT'), validate('event.participate'), acceptEvent);
-router.get('/:eventId', authenticateToken, getEventDetails);
-// Admin: Set certification deadline
-router.post('/set-deadline', authenticateToken, requireRole('ADMIN'), setCertificationDeadline);
-// Admin: Get certification deadline for event
-router.get('/deadline/:eventId', authenticateToken, requireRole('ADMIN'), getCertificationDeadline);
+router.post('/', requireAuth, requireRole('admin'), validate(createSchema), async (req, res, next) => {
+  try {
+    const data = await eventService.createEvent(req.body);
+    res.json({ ok: true, data });
+  } catch (e) {
+    next(e);
+  }
+});
 
-// Admin: Update and Delete Event
-router.put('/:eventId', authenticateToken, requireRole('ADMIN'), validate('event.update'), updateEvent);
-router.delete('/:eventId', authenticateToken, requireRole('ADMIN'), validate('event.delete'), deleteEvent);
+router.get('/', requireAuth, async (req, res, next) => {
+  try {
+    const data = await eventService.listEvents();
+    res.json({ ok: true, data });
+  } catch (e) {
+    next(e);
+  }
+});
 
 module.exports = router;

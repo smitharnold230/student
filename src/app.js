@@ -26,6 +26,26 @@ app.use(authLimiter);
 // Static files
 app.use('/uploads', express.static('uploads'));
 
+// Import and mount all feature routes
+const leaderboardRoutes = require('./features/leaderboard/leaderboard.routes');
+const eventRoutes = require('./features/event/event.routes');
+const certificationRoutes = require('./features/certification/certification.routes');
+const userRoutes = require('./features/user/user.routes');
+const adminRoutes = require('./features/admin/admin.routes');
+const pointsRoutes = require('./features/points/points.routes');
+const eligibilityRoutes = require('./features/eligibility/eligibility.routes');
+const filesRouter = require('./routes/files.routes');
+
+// Mount routes
+app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/certifications', certificationRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/points', pointsRoutes);
+app.use('/api/eligibility', eligibilityRoutes);
+app.use('/api/files', filesRouter);
+
 // 404 handler
 app.use((req, res) => res.status(404).json({
   ok: false,

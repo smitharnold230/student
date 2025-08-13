@@ -1,30 +1,37 @@
-const express = require('express');
-const { authenticateToken, requireRole } = require('../../middleware/auth');
-const { validate, validateFileUpload } = require('../../middleware/validate');
-const { getApiLogs, exportStudentsCsv, getPointRules, updatePointRule, getSystemStats, bulkUploadUsers, exportApiLogsCsv } = require('./admin.controller'); // Import new controller
-const upload = require('../../middleware/upload'); // Import upload middleware
+/**
+ * Admin routes with validation and auth
+ */
+const router = require('express').Router();
+const { z } = require('zod');
+const { validate } = require('../../middleware/validate');
+const { requireAuth, requireRole } = require('../../middleware/auth');
+const adminService = require('./admin.service');
 
-const router = express.Router();
+const userSchema = {
+  body: z.object({
+    email: z.string().email(),
+    firstName: z.string().min(1),
+    lastName: z.string().min(1),
+    role: z.enum(['student', 'admin'])
+  })
+};
 
-router.get('/logs', authenticateToken, requireRole('ADMIN'), getApiLogs);
-router.get('/export-students', authenticateToken, requireRole('ADMIN'), exportStudentsCsv);
-router.get('/export-logs', authenticateToken, requireRole('ADMIN'), exportApiLogsCsv); // New route for exporting API logs
-router.get('/point-rules', authenticateToken, requireRole('ADMIN'), getPointRules);
-router.post('/point-rules', authenticateToken, requireRole('ADMIN'), validate('admin.updatePointRule'), updatePointRule);
-router.get('/stats', authenticateToken, requireRole('ADMIN'), getSystemStats);
+router.post('/users', requireAuth, requireRole('admin'), validate(userSchema), async (req, res, next) => {
+  try {
+    const data = await adminService.createUser(req.body);
+    res.json({ ok: true, data });
+  } catch (e) {
+    next(e);
+  }
+});
 
-// New route for bulk user upload
-router.post(
-  '/users/bulk-upload',
-  authenticateToken,
-  requireRole('ADMIN'),
-  upload.single('bulkUsers'), // Use 'bulkUsers' fieldname for multer
-  validateFileUpload('bulkUsers', 10 * 1024 * 1024, [ // 10MB limit, allow xlsx, xls, csv
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'application/vnd.ms-excel',
-    'text/csv'
-  ]),
-  bulkUploadUsers
-);
+router.get('/dashboard', requireAuth, requireRole('admin'), async (req, res, next) => {
+  try {
+    const data = await adminService.getDashboardStats();
+    res.json({ ok: true, data });
+  } catch (e) {
+    next(e);
+  }
+});
 
 module.exports = router;
