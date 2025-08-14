@@ -7,7 +7,7 @@ async function getResumeData(userId) {
       { model: CodingStat },
       {
         model: Submission,
-        include: [{ model: Event }] // Correctly include Event through Submission
+        include: [{ model: Event }], // Correctly include Event through Submission
       },
     ],
   });

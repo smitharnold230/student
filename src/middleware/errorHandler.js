@@ -17,6 +17,6 @@ module.exports = (err, req, res, next) => {
     ok: false,
     code,
     message,
-    ...(details && { details })
+    ...(details && { details }),
   });
 };

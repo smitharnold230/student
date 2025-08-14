@@ -11,10 +11,12 @@ const app = express();
 
 // Security middleware
 app.use(helmet());
-app.use(cors({ 
-  origin: process.env.CORS_ORIGIN?.split(',') || '*',
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN?.split(',') || '*',
+    credentials: true,
+  }),
+);
 
 // Body parsing
 app.use(express.json({ limit: '1mb' }));
@@ -47,11 +49,13 @@ app.use('/api/eligibility', eligibilityRoutes);
 app.use('/api/files', filesRouter);
 
 // 404 handler
-app.use((req, res) => res.status(404).json({
-  ok: false,
-  code: 'NOT_FOUND',
-  message: 'Route not found'
-}));
+app.use((req, res) =>
+  res.status(404).json({
+    ok: false,
+    code: 'NOT_FOUND',
+    message: 'Route not found',
+  }),
+);
 
 // Global error handler
 app.use(errorHandler);

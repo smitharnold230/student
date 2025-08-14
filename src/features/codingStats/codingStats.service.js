@@ -12,11 +12,15 @@ async function fetchLeetCodeProblemsDirectly(url) {
   try {
     const username = extractLeetCodeUsername(url);
     if (!username) {
-      throw new Error('Invalid LeetCode profile URL. Could not extract username.');
+      throw new Error(
+        'Invalid LeetCode profile URL. Could not extract username.',
+      );
     }
-    
-    const response = await axios.post('https://leetcode.com/graphql', {
-      query: `
+
+    const response = await axios.post(
+      'https://leetcode.com/graphql',
+      {
+        query: `
         query getUserProfile($username: String!) {
           allQuestionsCount {
             difficulty
@@ -32,28 +36,36 @@ async function fetchLeetCodeProblemsDirectly(url) {
           }
         }
       `,
-      variables: { username }
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Referer': `https://leetcode.com/${username}/`,
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        variables: { username },
       },
-      timeout: 10000
-    });
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Referer: `https://leetcode.com/${username}/`,
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        },
+        timeout: 10000,
+      },
+    );
 
     if (!response.data || response.data.errors) {
-      throw new Error(response.data.errors ? response.data.errors[0].message : 'No response data received from LeetCode API');
+      throw new Error(
+        response.data.errors
+          ? response.data.errors[0].message
+          : 'No response data received from LeetCode API',
+      );
     }
-    
+
     const stats = response.data.data?.matchedUser?.submitStats?.acSubmissionNum;
     if (!stats) {
-      throw new Error('User not found or stats unavailable for this LeetCode username.');
+      throw new Error(
+        'User not found or stats unavailable for this LeetCode username.',
+      );
     }
-    
-    const totalSolved = stats.find(x => x.difficulty === 'All')?.count || 0;
+
+    const totalSolved = stats.find((x) => x.difficulty === 'All')?.count || 0;
     return totalSolved;
-    
   } catch (error) {
     console.error('Error fetching LeetCode problems directly:', error.message);
     throw new Error(`Failed to fetch LeetCode stats: ${error.message}`);
@@ -65,22 +77,28 @@ async function submitLeetCode(userId, url) {
   if (!profile) {
     throw new Error('Profile not found');
   }
-  
+
   const problemsSolved = await fetchLeetCodeProblemsDirectly(url);
-  
-  const [stat, created] = await CodingStat.upsert({
-    profileId: profile.id,
-    platform: 'LEETCODE',
-    url,
-    problemsSolved,
-  }, { where: { profileId: profile.id, platform: 'LEETCODE' } });
-  
+
+  const [stat, created] = await CodingStat.upsert(
+    {
+      profileId: profile.id,
+      platform: 'LEETCODE',
+      url,
+      problemsSolved,
+    },
+    { where: { profileId: profile.id, platform: 'LEETCODE' } },
+  );
+
   try {
-    await pointsService.addPointsForActivity(userId, 'LEETCODE_SUBMISSION', { platform: 'LEETCODE', problemsSolved });
+    await pointsService.addPointsForActivity(userId, 'LEETCODE_SUBMISSION', {
+      platform: 'LEETCODE',
+      problemsSolved,
+    });
   } catch (error) {
     console.error('Error adding points for LeetCode submission:', error);
   }
-  
+
   return stat;
 }
 
@@ -89,25 +107,33 @@ async function submitHackerRank(userId, url, manualCount) {
   if (!profile) {
     throw new Error('Profile not found');
   }
-  
+
   // For HackerRank, we'll rely on manualCount for now as direct scraping is complex
   if (!manualCount) {
-    throw new Error('Please provide the number of problems solved on HackerRank');
+    throw new Error(
+      'Please provide the number of problems solved on HackerRank',
+    );
   }
-  
-  const [stat, created] = await CodingStat.upsert({
-    profileId: profile.id,
-    platform: 'HACKERRANK',
-    url,
-    problemsSolved: manualCount,
-  }, { where: { profileId: profile.id, platform: 'HACKERRANK' } });
-  
+
+  const [stat, created] = await CodingStat.upsert(
+    {
+      profileId: profile.id,
+      platform: 'HACKERRANK',
+      url,
+      problemsSolved: manualCount,
+    },
+    { where: { profileId: profile.id, platform: 'HACKERRANK' } },
+  );
+
   try {
-    await pointsService.addPointsForActivity(userId, 'HACKERRANK_SUBMISSION', { platform: 'HackerRank', problemsSolved: manualCount });
+    await pointsService.addPointsForActivity(userId, 'HACKERRANK_SUBMISSION', {
+      platform: 'HackerRank',
+      problemsSolved: manualCount,
+    });
   } catch (error) {
     console.error('Error adding points for HackerRank submission:', error);
   }
-  
+
   return stat;
 }
 
@@ -126,8 +152,8 @@ async function deleteCodingStat(userId, platform) {
   const result = await CodingStat.destroy({
     where: {
       profileId: profile.id,
-      platform: platform.toUpperCase() // Ensure platform is uppercase
-    }
+      platform: platform.toUpperCase(), // Ensure platform is uppercase
+    },
   });
 
   if (result === 0) {
@@ -138,12 +164,22 @@ async function deleteCodingStat(userId, platform) {
   try {
     await pointsService.updateUserPoints(userId);
   } catch (error) {
-    console.error(`Error recalculating points after deleting ${platform} profile:`, error); // Added explicit log
+    console.error(
+      `Error recalculating points after deleting ${platform} profile:`,
+      error,
+    ); // Added explicit log
     // Re-throw the error so the calling controller/middleware can handle it
-    throw new Error(`Failed to recalculate points after deleting ${platform} profile: ${error.message}`);
+    throw new Error(
+      `Failed to recalculate points after deleting ${platform} profile: ${error.message}`,
+    );
   }
 
   return { message: `${platform} profile deleted successfully.` };
 }
 
-module.exports = { submitLeetCode, submitHackerRank, getStats, deleteCodingStat };
+module.exports = {
+  submitLeetCode,
+  submitHackerRank,
+  getStats,
+  deleteCodingStat,
+};

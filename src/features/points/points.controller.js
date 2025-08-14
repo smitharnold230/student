@@ -8,7 +8,7 @@ async function calculateMyPoints(req, res, next) {
     const result = await pointsService.updateUserPoints(req.user.userId);
     res.json({
       success: true,
-      data: result
+      data: result,
     });
   } catch (err) {
     next(err);
@@ -23,7 +23,7 @@ async function getMyPointBreakdown(req, res, next) {
     const result = await pointsService.calculateUserPoints(req.user.userId);
     res.json({
       success: true,
-      data: result
+      data: result,
     });
   } catch (err) {
     next(err);
@@ -38,7 +38,7 @@ async function getPointStatistics(req, res, next) {
     const stats = await pointsService.getPointStatistics();
     res.json({
       success: true,
-      data: stats
+      data: stats,
     });
   } catch (err) {
     next(err);
@@ -54,7 +54,7 @@ async function updateAllUserPoints(req, res, next) {
     res.json({
       success: true,
       message: `Updated points for ${results.length} users`,
-      data: results
+      data: results,
     });
   } catch (err) {
     next(err);
@@ -69,7 +69,7 @@ async function getPointRules(req, res, next) {
     const rules = await pointsService.getPointRules();
     res.json({
       success: true,
-      data: rules
+      data: rules,
     });
   } catch (err) {
     next(err);
@@ -87,16 +87,20 @@ async function addPointsForActivity(req, res, next) {
     if (userId && userId !== req.user.userId && req.user.role !== 'ADMIN') {
       return res.status(403).json({
         success: false,
-        error: 'Only admins can add points for other users'
+        error: 'Only admins can add points for other users',
       });
     }
 
     const targetUserId = userId || req.user.userId;
-    const result = await pointsService.addPointsForActivity(targetUserId, activityType, activityData);
+    const result = await pointsService.addPointsForActivity(
+      targetUserId,
+      activityType,
+      activityData,
+    );
 
     res.json({
       success: true,
-      data: result
+      data: result,
     });
   } catch (err) {
     next(err);
@@ -111,7 +115,7 @@ async function getAllUsersWithPoints(req, res, next) {
     const users = await pointsService.getAllUsersWithPoints();
     res.json({
       success: true,
-      data: users
+      data: users,
     });
   } catch (err) {
     next(err);
@@ -124,7 +128,7 @@ async function getAllUsersWithPoints(req, res, next) {
 async function updateUserPointsManually(req, res, next) {
   try {
     const { userIds, pointsToAdd, reason } = req.body;
-    
+
     // These checks are now handled by the validate middleware
     // if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
     //   return res.status(400).json({
@@ -148,15 +152,15 @@ async function updateUserPointsManually(req, res, next) {
     // }
 
     const results = await pointsService.updateUserPointsManually(
-      userIds, 
-      pointsToAdd, 
-      reason, 
-      req.user.userId
+      userIds,
+      pointsToAdd,
+      reason,
+      req.user.userId,
     );
 
     res.json({
       success: true,
-      data: results
+      data: results,
     });
   } catch (err) {
     next(err);
@@ -169,7 +173,7 @@ async function updateUserPointsManually(req, res, next) {
 async function resetUserPoints(req, res, next) {
   try {
     const { userIds, reason } = req.body;
-    
+
     // These checks are now handled by the validate middleware
     // if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
     //   return res.status(400).json({
@@ -186,14 +190,14 @@ async function resetUserPoints(req, res, next) {
     // }
 
     const results = await pointsService.resetUserPoints(
-      userIds, 
-      reason, 
-      req.user.userId
+      userIds,
+      reason,
+      req.user.userId,
     );
 
     res.json({
       success: true,
-      data: results
+      data: results,
     });
   } catch (err) {
     next(err);
@@ -209,5 +213,5 @@ module.exports = {
   addPointsForActivity,
   getAllUsersWithPoints,
   updateUserPointsManually,
-  resetUserPoints
+  resetUserPoints,
 };

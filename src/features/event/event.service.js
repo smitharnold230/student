@@ -10,9 +10,11 @@ async function createEvent(data) {
     const eventData = {
       ...data,
       date: data.date ? new Date(data.date) : null,
-      certificationDeadline: data.certificationDeadline ? new Date(data.certificationDeadline) : null,
+      certificationDeadline: data.certificationDeadline
+        ? new Date(data.certificationDeadline)
+        : null,
     };
-    
+
     const event = await Event.create(eventData);
     return event;
   } catch (error) {
@@ -24,20 +26,20 @@ async function createEvent(data) {
 async function getEvents(userId = null) {
   try {
     const events = await Event.findAll();
-    
+
     if (userId) {
       const participations = await EventParticipation.findAll({
         where: { userId },
-        attributes: ['eventId']
+        attributes: ['eventId'],
       });
-      const participatedEventIds = participations.map(p => p.eventId);
-      
-      return events.map(event => ({
+      const participatedEventIds = participations.map((p) => p.eventId);
+
+      return events.map((event) => ({
         ...event.toJSON(),
-        isParticipated: participatedEventIds.includes(event.id)
+        isParticipated: participatedEventIds.includes(event.id),
       }));
     }
-    
+
     return events;
   } catch (error) {
     console.error('Error in getEvents service:', error);
@@ -51,28 +53,33 @@ async function participateInEvent(userId, eventId) {
     if (!event) {
       throw new Error('Event not found');
     }
-    
+
     const existingParticipation = await EventParticipation.findOne({
-      where: { userId, eventId }
+      where: { userId, eventId },
     });
-    
+
     if (existingParticipation) {
       return { message: 'Already participated in this event' };
     }
-    
+
     await EventParticipation.create({
       userId,
       eventId,
-      participatedAt: new Date()
+      participatedAt: new Date(),
     });
-    
+
     try {
-      const activityType = event.type === 'WORKSHOP' ? 'WORKSHOP_PARTICIPATION' : 'HACKATHON_PARTICIPATION';
-      await pointsService.addPointsForActivity(userId, activityType, { eventName: event.name });
+      const activityType =
+        event.type === 'WORKSHOP'
+          ? 'WORKSHOP_PARTICIPATION'
+          : 'HACKATHON_PARTICIPATION';
+      await pointsService.addPointsForActivity(userId, activityType, {
+        eventName: event.name,
+      });
     } catch (error) {
       console.error('Error adding points for event participation:', error);
     }
-    
+
     return { message: 'Participation recorded successfully' };
   } catch (error) {
     console.error('Error in participateInEvent:', error);
@@ -86,28 +93,33 @@ async function acceptEvent(userId, eventId) {
     if (!event) {
       throw new Error('Event not found');
     }
-    
+
     const existingAcceptance = await EventParticipation.findOne({
-      where: { userId, eventId }
+      where: { userId, eventId },
     });
-    
+
     if (existingAcceptance) {
       return { message: 'Already accepted this event' };
     }
-    
+
     await EventParticipation.create({
       userId,
       eventId,
-      participatedAt: new Date()
+      participatedAt: new Date(),
     });
-    
+
     try {
-      const activityType = event.type === 'WORKSHOP' ? 'WORKSHOP_PARTICIPATION' : 'HACKATHON_PARTICIPATION';
-      await pointsService.addPointsForActivity(userId, activityType, { eventName: event.name });
+      const activityType =
+        event.type === 'WORKSHOP'
+          ? 'WORKSHOP_PARTICIPATION'
+          : 'HACKATHON_PARTICIPATION';
+      await pointsService.addPointsForActivity(userId, activityType, {
+        eventName: event.name,
+      });
     } catch (error) {
       console.error('Error adding points for event participation:', error);
     }
-    
+
     if (event.certificationDeadline) {
       await Notification.create({
         userId,
@@ -119,7 +131,7 @@ async function acceptEvent(userId, eventId) {
         read: false,
       });
     }
-    
+
     return { message: 'Event accepted successfully' };
   } catch (error) {
     console.error('Error in acceptEvent:', error);
@@ -165,7 +177,9 @@ async function updateEvent(eventId, data) {
     updatedData.date = new Date(updatedData.date);
   }
   if (updatedData.certificationDeadline) {
-    updatedData.certificationDeadline = new Date(updatedData.certificationDeadline);
+    updatedData.certificationDeadline = new Date(
+      updatedData.certificationDeadline,
+    );
   } else if (updatedData.certificationDeadline === '') {
     updatedData.certificationDeadline = null; // Explicitly set to null if empty string
   }
@@ -189,14 +203,14 @@ async function deleteEvent(eventId) {
   return { message: 'Event deleted successfully' };
 }
 
-module.exports = { 
-  createEvent, 
-  getEvents, 
-  participateInEvent, 
-  acceptEvent, 
-  getEventDetails, 
-  setCertificationDeadline, 
+module.exports = {
+  createEvent,
+  getEvents,
+  participateInEvent,
+  acceptEvent,
+  getEventDetails,
+  setCertificationDeadline,
   getCertificationDeadline,
   updateEvent,
-  deleteEvent
+  deleteEvent,
 };

@@ -9,15 +9,15 @@ async function getLeaderboard() {
   } catch (error) {
     console.error('Error updating all user points for leaderboard:', error);
   }
-  
+
   const students = await Profile.findAll({
     include: [
       { model: Point },
       {
         model: User,
         attributes: ['email'],
-        where: { role: 'STUDENT' } // Filter to include only students
-      }
+        where: { role: 'STUDENT' }, // Filter to include only students
+      },
     ],
     order: [[{ model: Point }, 'value', 'DESC']],
   });
@@ -42,15 +42,23 @@ async function getMyRank(userId) {
 
     if (user.role === 'ADMIN') {
       // Admins do not have a rank on the student leaderboard
-      return { rank: null, points: null, totalStudents: null, message: 'Admins are not ranked on the student leaderboard.' };
+      return {
+        rank: null,
+        points: null,
+        totalStudents: null,
+        message: 'Admins are not ranked on the student leaderboard.',
+      };
     }
 
     // If it's a student, proceed with calculating their rank among students
     await pointsService.updateUserPoints(userId);
-    
-    const profile = await Profile.findOne({ where: { userId }, include: [Point] });
+
+    const profile = await Profile.findOne({
+      where: { userId },
+      include: [Point],
+    });
     if (!profile) throw new Error('Profile not found');
-    
+
     // Fetch all student profiles, ordered by points
     const allStudents = await Profile.findAll({
       include: [
@@ -58,14 +66,14 @@ async function getMyRank(userId) {
         {
           model: User,
           attributes: ['email'],
-          where: { role: 'STUDENT' } // Ensure we only rank among students
-        }
+          where: { role: 'STUDENT' }, // Ensure we only rank among students
+        },
       ],
       order: [[{ model: Point }, 'value', 'DESC']],
     });
-    
-    const rank = allStudents.findIndex(s => s.id === profile.id) + 1;
-    
+
+    const rank = allStudents.findIndex((s) => s.id === profile.id) + 1;
+
     return {
       rank,
       points: profile.Point ? profile.Point.value : 0,

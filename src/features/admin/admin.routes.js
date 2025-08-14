@@ -12,26 +12,37 @@ const userSchema = {
     email: z.string().email(),
     firstName: z.string().min(1),
     lastName: z.string().min(1),
-    role: z.enum(['student', 'admin'])
-  })
+    role: z.enum(['student', 'admin']),
+  }),
 };
 
-router.post('/users', requireAuth, requireRole('admin'), validate(userSchema), async (req, res, next) => {
-  try {
-    const data = await adminService.createUser(req.body);
-    res.json({ ok: true, data });
-  } catch (e) {
-    next(e);
-  }
-});
+router.post(
+  '/users',
+  requireAuth,
+  requireRole('admin'),
+  validate(userSchema),
+  async (req, res, next) => {
+    try {
+      const data = await adminService.createUser(req.body);
+      res.json({ ok: true, data });
+    } catch (e) {
+      next(e);
+    }
+  },
+);
 
-router.get('/dashboard', requireAuth, requireRole('admin'), async (req, res, next) => {
-  try {
-    const data = await adminService.getDashboardStats();
-    res.json({ ok: true, data });
-  } catch (e) {
-    next(e);
-  }
-});
+router.get(
+  '/dashboard',
+  requireAuth,
+  requireRole('admin'),
+  async (req, res, next) => {
+    try {
+      const data = await adminService.getDashboardStats();
+      res.json({ ok: true, data });
+    } catch (e) {
+      next(e);
+    }
+  },
+);
 
 module.exports = router;

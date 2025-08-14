@@ -8,12 +8,12 @@ const jwt = require('jsonwebtoken');
  */
 const requireAuth = (req, res, next) => {
   const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-  
+
   if (!token) {
     return next({
       status: 401,
       code: 'NO_TOKEN',
-      message: 'Missing authorization token'
+      message: 'Missing authorization token',
     });
   }
 
@@ -25,7 +25,7 @@ const requireAuth = (req, res, next) => {
     next({
       status: 401,
       code: 'BAD_TOKEN',
-      message: 'Invalid or expired token'
+      message: 'Invalid or expired token',
     });
   }
 };
@@ -33,15 +33,17 @@ const requireAuth = (req, res, next) => {
 /**
  * Require specific role(s)
  */
-const requireRole = (...roles) => (req, res, next) => {
-  if (!req.user || !roles.includes(req.user.role)) {
-    return next({
-      status: 403,
-      code: 'FORBIDDEN',
-      message: 'Insufficient permissions'
-    });
-  }
-  next();
-};
+const requireRole =
+  (...roles) =>
+  (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return next({
+        status: 403,
+        code: 'FORBIDDEN',
+        message: 'Insufficient permissions',
+      });
+    }
+    next();
+  };
 
 module.exports = { requireAuth, requireRole };

@@ -9,7 +9,7 @@ const Ticket = require('../../db/Ticket');
 
 async function getMe(userId) {
   return User.findByPk(userId, {
-    attributes: ['id', 'email', 'role']
+    attributes: ['id', 'email', 'role'],
   });
 }
 
@@ -35,11 +35,13 @@ async function createUser({ email, password, role }) {
 async function getAllUsers() {
   return User.findAll({
     attributes: ['id', 'email', 'role', 'createdAt'],
-    include: [{
-      model: Profile,
-      attributes: ['name', 'class', 'batch', 'status']
-    }],
-    order: [['createdAt', 'DESC']]
+    include: [
+      {
+        model: Profile,
+        attributes: ['name', 'class', 'batch', 'status'],
+      },
+    ],
+    order: [['createdAt', 'DESC']],
   });
 }
 
@@ -51,36 +53,36 @@ async function getAllUsers() {
 async function _cascadeDeleteUserData(userId, profileId) {
   // Delete points
   await Point.destroy({ where: { profileId } });
-  
+
   // Delete coding stats
   await CodingStat.destroy({ where: { profileId } });
-  
+
   // Delete submissions
   await Submission.destroy({ where: { profileId } });
-  
+
   // Delete event participations
   await EventParticipation.destroy({ where: { userId } });
-  
+
   // Delete notifications
   await Notification.destroy({ where: { userId } });
-  
+
   // Delete tickets
   await Ticket.destroy({ where: { userId } });
-  
+
   // Delete profile
   await Profile.destroy({ where: { userId } });
 }
 
 async function deleteUser(userId) {
   const profile = await Profile.findOne({ where: { userId } });
-  
+
   if (profile) {
     await _cascadeDeleteUserData(userId, profile.id);
   }
-  
+
   // Finally delete the user
   await User.destroy({ where: { id: userId } });
-  
+
   return { message: 'User deleted successfully' };
 }
 

@@ -6,4 +6,4 @@ const router = express.Router();
 
 router.get('/', authenticateToken, requireRole('STUDENT'), generateResume);
 
-module.exports = router; 
+module.exports = router;

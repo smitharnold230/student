@@ -13,21 +13,27 @@ const createSchema = {
     title: z.string().min(1),
     issuer: z.string().min(1),
     issueDate: z.string(),
-    expiryDate: z.string().optional()
-  })
+    expiryDate: z.string().optional(),
+  }),
 };
 
-router.post('/', requireAuth, upload.single('file'), validate(createSchema), async (req, res, next) => {
-  try {
-    const data = await certificationService.createCertification({
-      ...req.body,
-      file: req.file
-    });
-    res.json({ ok: true, data });
-  } catch (e) {
-    next(e);
-  }
-});
+router.post(
+  '/',
+  requireAuth,
+  upload.single('file'),
+  validate(createSchema),
+  async (req, res, next) => {
+    try {
+      const data = await certificationService.createCertification({
+        ...req.body,
+        file: req.file,
+      });
+      res.json({ ok: true, data });
+    } catch (e) {
+      next(e);
+    }
+  },
+);
 
 router.get('/', requireAuth, async (req, res, next) => {
   try {

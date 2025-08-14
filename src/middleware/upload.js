@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
     const ext = path.extname(file.originalname).toLowerCase();
     const name = crypto.randomBytes(16).toString('hex') + ext;
     cb(null, name);
-  }
+  },
 });
 
 const fileFilter = (req, file, cb) => {
@@ -25,10 +25,10 @@ const fileFilter = (req, file, cb) => {
   cb(null, true);
 };
 
-const upload = multer({ 
-  storage, 
-  limits: { fileSize: MAX }, 
-  fileFilter 
+const upload = multer({
+  storage,
+  limits: { fileSize: MAX },
+  fileFilter,
 });
 
 module.exports = { upload };

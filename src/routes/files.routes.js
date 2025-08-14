@@ -12,17 +12,20 @@ const { requireAuth } = require('../middleware/auth');
  * Only authenticated users can access files
  */
 router.get('/:filename', requireAuth, (req, res, next) => {
-  const file = path.join(process.env.UPLOAD_DIR || 'uploads', path.basename(req.params.filename));
-  
+  const file = path.join(
+    process.env.UPLOAD_DIR || 'uploads',
+    path.basename(req.params.filename),
+  );
+
   fs.stat(file, (err, stats) => {
     if (err || !stats.isFile()) {
-      return next({ 
-        status: 404, 
-        code: 'FILE_NOT_FOUND', 
-        message: 'No such file' 
+      return next({
+        status: 404,
+        code: 'FILE_NOT_FOUND',
+        message: 'No such file',
       });
     }
-    
+
     res.sendFile(path.resolve(file));
   });
 });

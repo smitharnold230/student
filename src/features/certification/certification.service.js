@@ -8,14 +8,14 @@ const profileService = require('../profile/profile.service'); // Added top-level
 async function uploadCertification(userId, eventId, fileUrl) {
   try {
     const profile = await profileService.getProfileByUserId(userId);
-    
+
     const submission = await Submission.create({
       profileId: profile.id,
       eventId,
       fileUrl,
       status: 'PENDING',
     });
-    
+
     return submission;
   } catch (error) {
     console.error('Error in uploadCertification:', error);
@@ -27,18 +27,23 @@ async function getPendingCertifications() {
   try {
     return await Submission.findAll({
       where: { status: 'PENDING' },
-      include: [{
-        model: Profile,
-        attributes: ['name', 'class', 'batch', 'userId'],
-        include: [{
-          model: User, // Use the imported User model
-          attributes: ['email']
-        }]
-      }, {
-        model: Event,
-        attributes: ['name']
-      }],
-      order: [['createdAt', 'DESC']]
+      include: [
+        {
+          model: Profile,
+          attributes: ['name', 'class', 'batch', 'userId'],
+          include: [
+            {
+              model: User, // Use the imported User model
+              attributes: ['email'],
+            },
+          ],
+        },
+        {
+          model: Event,
+          attributes: ['name'],
+        },
+      ],
+      order: [['createdAt', 'DESC']],
     });
   } catch (error) {
     console.error('Error in getPendingCertifications:', error);
@@ -50,13 +55,15 @@ async function getUserCertifications(userId) {
   try {
     const profile = await Profile.findOne({ where: { userId } });
     if (!profile) return [];
-    
+
     return await Submission.findAll({
       where: { profileId: profile.id },
-      include: [{
-        model: Event,
-        attributes: ['name']
-      }],
+      include: [
+        {
+          model: Event,
+          attributes: ['name'],
+        },
+      ],
       order: [['createdAt', 'DESC']],
     });
   } catch (error) {
@@ -67,31 +74,40 @@ async function getUserCertifications(userId) {
 
 async function verifyCertification(submissionId, status, adminId) {
   const submission = await Submission.findByPk(submissionId, {
-    include: [Profile, { model: Event }]
+    include: [Profile, { model: Event }],
   });
-  
+
   if (!submission) {
     throw new Error('Submission not found');
   }
-  
+
   const result = await Submission.update(
     { status, verifiedById: adminId },
-    { where: { id: submissionId }, returning: true }
+    { where: { id: submissionId }, returning: true },
   );
-  
-  if (status === 'APPROVED' && submission.Profile && submission.Profile.userId) {
+
+  if (
+    status === 'APPROVED' &&
+    submission.Profile &&
+    submission.Profile.userId
+  ) {
     try {
       await pointsService.addPointsForActivity(
-        submission.Profile.userId, 
-        'CERTIFICATION_APPROVED', 
-        { eventName: submission.Event?.name || 'Unknown event' }
+        submission.Profile.userId,
+        'CERTIFICATION_APPROVED',
+        { eventName: submission.Event?.name || 'Unknown event' },
       );
     } catch (error) {
       console.error('Error adding points for approved certification:', error);
     }
   }
-  
+
   return result;
 }
 
-module.exports = { uploadCertification, getPendingCertifications, getUserCertifications, verifyCertification };
+module.exports = {
+  uploadCertification,
+  getPendingCertifications,
+  getUserCertifications,
+  verifyCertification,
+};

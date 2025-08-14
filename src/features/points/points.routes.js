@@ -10,18 +10,24 @@ const pointsService = require('./points.service');
 const updateSchema = {
   body: z.object({
     points: z.number().int().min(0),
-    reason: z.string().min(1)
-  })
+    reason: z.string().min(1),
+  }),
 };
 
-router.post('/update', requireAuth, requireRole('admin'), validate(updateSchema), async (req, res, next) => {
-  try {
-    const data = await pointsService.updatePoints(req.body);
-    res.json({ ok: true, data });
-  } catch (e) {
-    next(e);
-  }
-});
+router.post(
+  '/update',
+  requireAuth,
+  requireRole('admin'),
+  validate(updateSchema),
+  async (req, res, next) => {
+    try {
+      const data = await pointsService.updatePoints(req.body);
+      res.json({ ok: true, data });
+    } catch (e) {
+      next(e);
+    }
+  },
+);
 
 router.get('/', requireAuth, async (req, res, next) => {
   try {

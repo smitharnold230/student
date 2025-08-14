@@ -19,13 +19,16 @@ async function getPointRecord(profileId) {
  * @returns {Promise<Point>}
  */
 async function upsertPoint(profileId, value, manualAdjustment) {
-  const [pointRecord, created] = await Point.upsert({
-    profileId: profileId,
-    value: value,
-    manualAdjustment: manualAdjustment,
-  }, {
-    where: { profileId: profileId }
-  });
+  const [pointRecord, created] = await Point.upsert(
+    {
+      profileId: profileId,
+      value: value,
+      manualAdjustment: manualAdjustment,
+    },
+    {
+      where: { profileId: profileId },
+    },
+  );
   return pointRecord;
 }
 
@@ -38,17 +41,17 @@ async function getAllUsersWithPointsAndProfile() {
       include: [
         {
           model: Point,
-          attributes: ['value', 'manualAdjustment']
+          attributes: ['value', 'manualAdjustment'],
         },
         {
           model: User,
-          attributes: ['id', 'email', 'role']
-        }
+          attributes: ['id', 'email', 'role'],
+        },
       ],
-      attributes: ['id', 'name', 'class', 'batch', 'userId']
+      attributes: ['id', 'name', 'class', 'batch', 'userId'],
     });
 
-    return profiles.map(profile => ({
+    return profiles.map((profile) => ({
       id: profile.userId,
       name: profile.name,
       email: profile.User.email,
@@ -56,10 +59,9 @@ async function getAllUsersWithPointsAndProfile() {
       batch: profile.batch,
       points: profile.Point?.value || 0,
       manualAdjustment: profile.Point?.manualAdjustment || 0,
-      profileId: profile.id
+      profileId: profile.id,
     }));
-  }
-  catch (error) {
+  } catch (error) {
     console.error('Error getting all users with points:', error);
     throw error;
   }

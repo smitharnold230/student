@@ -15,7 +15,7 @@ const validate = (schema) => (req, res, next) => {
         status: 400,
         code: 'VALIDATION_ERROR',
         message: 'Invalid input',
-        details: e.errors
+        details: e.errors,
       });
     }
     next(e);

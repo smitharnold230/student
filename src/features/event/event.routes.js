@@ -12,18 +12,24 @@ const createSchema = {
     name: z.string().min(3),
     startsAt: z.string(),
     endsAt: z.string(),
-    description: z.string().optional()
-  })
+    description: z.string().optional(),
+  }),
 };
 
-router.post('/', requireAuth, requireRole('admin'), validate(createSchema), async (req, res, next) => {
-  try {
-    const data = await eventService.createEvent(req.body);
-    res.json({ ok: true, data });
-  } catch (e) {
-    next(e);
-  }
-});
+router.post(
+  '/',
+  requireAuth,
+  requireRole('admin'),
+  validate(createSchema),
+  async (req, res, next) => {
+    try {
+      const data = await eventService.createEvent(req.body);
+      res.json({ ok: true, data });
+    } catch (e) {
+      next(e);
+    }
+  },
+);
 
 router.get('/', requireAuth, async (req, res, next) => {
   try {

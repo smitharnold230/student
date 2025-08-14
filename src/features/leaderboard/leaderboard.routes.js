@@ -10,15 +10,15 @@ const leaderboardService = require('./leaderboard.service');
 const querySchema = {
   query: z.object({
     limit: z.string().transform(Number).optional(),
-    page: z.string().transform(Number).optional()
-  })
+    page: z.string().transform(Number).optional(),
+  }),
 };
 
 router.get('/', requireAuth, validate(querySchema), async (req, res, next) => {
   try {
     const data = await leaderboardService.getLeaderboard({
       page: req.query.page || 1,
-      limit: req.query.limit || 20
+      limit: req.query.limit || 20,
     });
     res.json({ ok: true, data });
   } catch (e) {

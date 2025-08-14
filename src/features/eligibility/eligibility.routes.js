@@ -13,18 +13,24 @@ const createSchema = {
     description: z.string().min(1),
     criteria: z.string().min(1),
     startDate: z.string(),
-    endDate: z.string()
-  })
+    endDate: z.string(),
+  }),
 };
 
-router.post('/', requireAuth, requireRole('admin'), validate(createSchema), async (req, res, next) => {
-  try {
-    const data = await eligibilityService.createEligibility(req.body);
-    res.json({ ok: true, data });
-  } catch (e) {
-    next(e);
-  }
-});
+router.post(
+  '/',
+  requireAuth,
+  requireRole('admin'),
+  validate(createSchema),
+  async (req, res, next) => {
+    try {
+      const data = await eligibilityService.createEligibility(req.body);
+      res.json({ ok: true, data });
+    } catch (e) {
+      next(e);
+    }
+  },
+);
 
 router.get('/', requireAuth, async (req, res, next) => {
   try {

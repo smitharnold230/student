@@ -2,7 +2,9 @@ const notificationService = require('./notification.service');
 
 async function getNotifications(req, res, next) {
   try {
-    const notifications = await notificationService.getNotifications(req.user.userId);
+    const notifications = await notificationService.getNotifications(
+      req.user.userId,
+    );
     res.json(notifications);
   } catch (err) {
     next(err);
@@ -14,7 +16,8 @@ async function markAsRead(req, res, next) {
     const { notificationId } = req.params;
     // Correctly receive the single notification object from the service
     const notification = await notificationService.markAsRead(notificationId);
-    if (!notification) return res.status(404).json({ error: 'Notification not found' });
+    if (!notification)
+      return res.status(404).json({ error: 'Notification not found' });
     res.json({ message: 'Notification marked as read', notification });
   } catch (err) {
     next(err);
@@ -23,7 +26,10 @@ async function markAsRead(req, res, next) {
 
 async function createNotification(req, res, next) {
   try {
-    const notification = await notificationService.createNotification(req.user.userId, req.body);
+    const notification = await notificationService.createNotification(
+      req.user.userId,
+      req.body,
+    );
     res.status(201).json(notification);
   } catch (err) {
     next(err);
@@ -40,4 +46,9 @@ async function deleteNotification(req, res, next) {
   }
 }
 
-module.exports = { getNotifications, markAsRead, createNotification, deleteNotification };
+module.exports = {
+  getNotifications,
+  markAsRead,
+  createNotification,
+  deleteNotification,
+};

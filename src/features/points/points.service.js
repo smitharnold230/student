@@ -1,8 +1,15 @@
 const Profile = require('../../db/Profile');
 const { getPointRules } = require('./utils/pointRules');
 const { calculateActivityPoints } = require('./utils/activityCalculators');
-const { getPointRecord, upsertPoint, getAllUsersWithPointsAndProfile } = require('./utils/pointDb');
-const { sendPointUpdateNotification, sendPointResetNotification } = require('./utils/pointNotifications');
+const {
+  getPointRecord,
+  upsertPoint,
+  getAllUsersWithPointsAndProfile,
+} = require('./utils/pointDb');
+const {
+  sendPointUpdateNotification,
+  sendPointResetNotification,
+} = require('./utils/pointNotifications');
 
 /**
  * Calculate points for a specific user based on their activities,
@@ -15,10 +22,13 @@ async function calculateUserPoints(userId) {
       throw new Error('Profile not found');
     }
 
-    const { activityBasedPoints, breakdown } = await calculateActivityPoints(profile.id, userId);
+    const { activityBasedPoints, breakdown } = await calculateActivityPoints(
+      profile.id,
+      userId,
+    );
     const currentPointRecord = await getPointRecord(profile.id);
     const manualAdjustment = currentPointRecord?.manualAdjustment || 0;
-    
+
     const totalPoints = activityBasedPoints + manualAdjustment;
 
     return {
@@ -26,7 +36,7 @@ async function calculateUserPoints(userId) {
       activityBasedPoints, // Points from activities only
       breakdown,
       profileId: profile.id,
-      manualAdjustment // Current manual adjustment from DB
+      manualAdjustment, // Current manual adjustment from DB
     };
   } catch (error) {
     console.error('Error calculating user points:', error);
@@ -40,16 +50,21 @@ async function calculateUserPoints(userId) {
  */
 async function updateUserPoints(userId) {
   try {
-    const { profileId, activityBasedPoints, manualAdjustment } = await calculateUserPoints(userId);
+    const { profileId, activityBasedPoints, manualAdjustment } =
+      await calculateUserPoints(userId);
     const newTotalPoints = activityBasedPoints + manualAdjustment;
 
-    const pointRecord = await upsertPoint(profileId, newTotalPoints, manualAdjustment);
+    const pointRecord = await upsertPoint(
+      profileId,
+      newTotalPoints,
+      manualAdjustment,
+    );
 
     return {
       totalPoints: newTotalPoints,
       activityBasedPoints,
       manualAdjustment,
-      pointRecord
+      pointRecord,
     };
   } catch (error) {
     console.error('Error updating user points:', error);
@@ -70,7 +85,10 @@ async function updateAllUserPoints() {
         const result = await updateUserPoints(profile.userId);
         results.push(result);
       } catch (error) {
-        console.error(`Error updating points for user ${profile.userId}:`, error);
+        console.error(
+          `Error updating points for user ${profile.userId}:`,
+          error,
+        );
         results.push({ error: error.message, userId: profile.userId });
       }
     }
@@ -91,7 +109,8 @@ async function getPointStatistics() {
 
     const totalUsers = allPoints.length;
     const totalPoints = allPoints.reduce((sum, user) => sum + user.points, 0);
-    const averagePoints = totalUsers > 0 ? Math.round(totalPoints / totalUsers) : 0;
+    const averagePoints =
+      totalUsers > 0 ? Math.round(totalPoints / totalUsers) : 0;
 
     const topPerformers = allPoints
       .sort((a, b) => b.points - a.points)
@@ -101,14 +120,14 @@ async function getPointStatistics() {
         name: user.name,
         class: user.class,
         batch: user.batch,
-        points: user.points
+        points: user.points,
       }));
 
     return {
       totalUsers,
       totalPoints,
       averagePoints,
-      topPerformers
+      topPerformers,
     };
   } catch (error) {
     console.error('Error getting point statistics:', error);
@@ -167,7 +186,7 @@ async function addPointsForActivity(userId, activityType, activityData = {}) {
     return {
       pointsAdded: pointsToAdd,
       description,
-      activityType
+      activityType,
     };
   } catch (error) {
     console.error('Error adding points for activity:', error);
@@ -198,11 +217,14 @@ async function updateUserPointsManually(userIds, pointsToAdd, reason, adminId) {
 
       const currentPointRecord = await getPointRecord(profile.id);
       const oldManualAdjustment = currentPointRecord?.manualAdjustment || 0;
-      
+
       const newManualAdjustment = oldManualAdjustment + pointsToAdd;
-      
+
       // Recalculate activity-based points
-      const { activityBasedPoints } = await calculateActivityPoints(profile.id, userId);
+      const { activityBasedPoints } = await calculateActivityPoints(
+        profile.id,
+        userId,
+      );
       const newTotalPoints = activityBasedPoints + newManualAdjustment;
 
       await upsertPoint(profile.id, newTotalPoints, newManualAdjustment);
@@ -214,7 +236,7 @@ async function updateUserPointsManually(userIds, pointsToAdd, reason, adminId) {
         success: true,
         oldPoints: currentPointRecord?.value || 0, // Use old total value for comparison
         newPoints: newTotalPoints,
-        pointsChange: pointsToAdd
+        pointsChange: pointsToAdd,
       });
     }
 
