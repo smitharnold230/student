@@ -27,17 +27,25 @@ import { Profile } from '../../types/profile';
 import { User } from '../../store/authStore';
 
 // Updated schema to match backend's profile.editRequest
-const editRequestSchema = z.object({
-  name: z.string().min(1, 'Full name is required').optional(),
-  degree: z.string().min(1, 'Degree is required').optional(),
-  class: z.string().min(1, 'Class is required').optional(),
-  status: z.string().min(1, 'Status is required').optional(),
-  transport: z.string().optional(),
-  hostelInfo: z.string().optional(),
-}).refine(data => Object.values(data).some(value => value !== undefined && value !== null && value !== ''), {
-  message: 'At least one field must be provided for edit request',
-  path: ['root'],
-});
+const editRequestSchema = z
+  .object({
+    name: z.string().min(1, 'Full name is required').optional(),
+    degree: z.string().min(1, 'Degree is required').optional(),
+    class: z.string().min(1, 'Class is required').optional(),
+    status: z.string().min(1, 'Status is required').optional(),
+    transport: z.string().optional(),
+    hostelInfo: z.string().optional(),
+  })
+  .refine(
+    (data) =>
+      Object.values(data).some(
+        (value) => value !== undefined && value !== null && value !== '',
+      ),
+    {
+      message: 'At least one field must be provided for edit request',
+      path: ['root'],
+    },
+  );
 
 type EditRequestForm = z.infer<typeof editRequestSchema>;
 
@@ -46,8 +54,18 @@ interface EditProfileModalProps {
   onClose: () => void;
   profile: Profile | undefined; // Allow profile to be undefined
   userRole: string | null; // Changed from 'user' to 'userRole'
-  editRequestMutation: UseMutationResult<any, Error, Partial<EditRequestForm>, unknown>;
-  updateProfileMutation: UseMutationResult<any, Error, Partial<Profile>, unknown>; // New prop for admin update
+  editRequestMutation: UseMutationResult<
+    any,
+    Error,
+    Partial<EditRequestForm>,
+    unknown
+  >;
+  updateProfileMutation: UseMutationResult<
+    any,
+    Error,
+    Partial<Profile>,
+    unknown
+  >; // New prop for admin update
 }
 
 const EditProfileModal: React.FC<EditProfileModalProps> = ({
@@ -107,8 +125,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       if (data.degree !== profile?.degree) changedData.degree = data.degree;
       if (data.class !== profile?.class) changedData.class = data.class;
       if (data.status !== profile?.status) changedData.status = data.status;
-      if (data.transport !== profile?.transport) changedData.transport = data.transport;
-      if (data.hostelInfo !== profile?.hostelInfo) changedData.hostelInfo = data.hostelInfo;
+      if (data.transport !== profile?.transport)
+        changedData.transport = data.transport;
+      if (data.hostelInfo !== profile?.hostelInfo)
+        changedData.hostelInfo = data.hostelInfo;
     }
     // For ADMIN, only name is considered for direct update. Other fields are not even rendered.
 
@@ -141,7 +161,12 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
         </ModalHeader>
         <ModalCloseButton color="white" />
         <ModalBody>
-          <VStack spacing={4} as="form" id="profile-edit-form" onSubmit={handleSubmit(onSubmit)}>
+          <VStack
+            spacing={4}
+            as="form"
+            id="profile-edit-form"
+            onSubmit={handleSubmit(onSubmit)}
+          >
             <FormControl isInvalid={!!errors.name}>
               <FormLabel color="gray.300">Full Name</FormLabel>
               <Input
@@ -154,7 +179,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               />
               <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
             </FormControl>
-            
+
             {userRole === 'STUDENT' && (
               <>
                 <FormControl isInvalid={!!errors.degree}>
@@ -220,7 +245,9 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                       <option value="Out Bus">Out Bus</option>
                       <option value="Self Transport">Self Transport</option>
                     </Select>
-                    <FormErrorMessage>{errors.transport?.message}</FormErrorMessage>
+                    <FormErrorMessage>
+                      {errors.transport?.message}
+                    </FormErrorMessage>
                   </FormControl>
                 )}
                 {statusValue === 'Hosteller' && (
@@ -234,7 +261,9 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                       _placeholder={{ color: 'gray.400' }}
                       {...register('hostelInfo')}
                     />
-                    <FormErrorMessage>{errors.hostelInfo?.message}</FormErrorMessage>
+                    <FormErrorMessage>
+                      {errors.hostelInfo?.message}
+                    </FormErrorMessage>
                   </FormControl>
                 )}
               </>
@@ -254,7 +283,9 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             colorScheme="brand"
             type="submit"
             form="profile-edit-form"
-            isLoading={editRequestMutation.isPending || updateProfileMutation.isPending}
+            isLoading={
+              editRequestMutation.isPending || updateProfileMutation.isPending
+            }
           >
             {userRole === 'ADMIN' ? 'Save Changes' : 'Submit Request'}
           </Button>

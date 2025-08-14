@@ -5,7 +5,10 @@ interface ProtectedRouteProps {
   role?: string;
 }
 
-export default function ProtectedRoute({ children, role }: ProtectedRouteProps) {
+export default function ProtectedRoute({
+  children,
+  role,
+}: ProtectedRouteProps) {
   const token = localStorage.getItem('token');
   const userRole = localStorage.getItem('role');
 

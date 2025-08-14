@@ -37,11 +37,19 @@ interface CodingStat {
 const CodingStatsPage: React.FC = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
-  const { isOpen: isAddModalOpen, onOpen: onAddModalOpen, onClose: onAddModalClose } = useDisclosure();
-  const { isOpen: isConfirmDeleteOpen, onOpen: onConfirmDeleteOpen, onClose: onConfirmDeleteClose } = useDisclosure();
+  const {
+    isOpen: isAddModalOpen,
+    onOpen: onAddModalOpen,
+    onClose: onAddModalClose,
+  } = useDisclosure();
+  const {
+    isOpen: isConfirmDeleteOpen,
+    onOpen: onConfirmDeleteOpen,
+    onClose: onConfirmDeleteClose,
+  } = useDisclosure();
   const [statToDelete, setStatToDelete] = useState<CodingStat | null>(null);
   const { user } = useAuthStore();
-  
+
   const cancelRef = useRef<HTMLButtonElement>(null);
 
   const cardBg = useColorModeValue('gray.800', 'gray.900');
@@ -53,15 +61,16 @@ const CodingStatsPage: React.FC = () => {
   });
 
   const stats: CodingStat[] = statsResponse?.data || [];
-  const hasLeetCode = stats.some(s => s.platform === 'LEETCODE');
-  const hasHackerRank = stats.some(s => s.platform === 'HACKERRANK');
+  const hasLeetCode = stats.some((s) => s.platform === 'LEETCODE');
+  const hasHackerRank = stats.some((s) => s.platform === 'HACKERRANK');
 
   const submitLeetCodeMutation = useMutation({
     mutationFn: (url: string) => codingStatsAPI.submitLeetCode(url),
     onSuccess: () => {
       toast({
         title: 'LeetCode stats submitted',
-        description: 'Your LeetCode statistics have been submitted successfully.',
+        description:
+          'Your LeetCode statistics have been submitted successfully.',
         status: 'success',
         duration: 3000,
       });
@@ -69,7 +78,8 @@ const CodingStatsPage: React.FC = () => {
       onAddModalClose();
     },
     onError: (error: any) => {
-      const errorMessage = error.response?.data?.error || 'Failed to submit LeetCode statistics';
+      const errorMessage =
+        error.response?.data?.error || 'Failed to submit LeetCode statistics';
       toast({
         title: 'Failed to submit LeetCode stats',
         description: errorMessage,
@@ -81,11 +91,13 @@ const CodingStatsPage: React.FC = () => {
   });
 
   const submitHackerRankMutation = useMutation({
-    mutationFn: (data: { url: string; manualCount: number }) => codingStatsAPI.submitHackerRank(data.url, data.manualCount),
+    mutationFn: (data: { url: string; manualCount: number }) =>
+      codingStatsAPI.submitHackerRank(data.url, data.manualCount),
     onSuccess: () => {
       toast({
         title: 'HackerRank stats submitted',
-        description: 'Your HackerRank statistics have been submitted successfully.',
+        description:
+          'Your HackerRank statistics have been submitted successfully.',
         status: 'success',
         duration: 3000,
       });
@@ -95,7 +107,9 @@ const CodingStatsPage: React.FC = () => {
     onError: (error: any) => {
       toast({
         title: 'Failed to submit HackerRank stats',
-        description: error.response?.data?.error || 'Failed to submit HackerRank statistics',
+        description:
+          error.response?.data?.error ||
+          'Failed to submit HackerRank statistics',
         status: 'error',
         duration: 5000,
       });
@@ -103,7 +117,8 @@ const CodingStatsPage: React.FC = () => {
   });
 
   const deleteStatMutation = useMutation({
-    mutationFn: (platform: 'LEETCODE' | 'HACKERRANK') => codingStatsAPI.deleteStat(platform),
+    mutationFn: (platform: 'LEETCODE' | 'HACKERRANK') =>
+      codingStatsAPI.deleteStat(platform),
     onSuccess: () => {
       toast({
         title: 'Profile Removed',
@@ -118,7 +133,8 @@ const CodingStatsPage: React.FC = () => {
     onError: (error: any) => {
       toast({
         title: 'Removal Failed',
-        description: error.response?.data?.error || 'Failed to remove coding profile',
+        description:
+          error.response?.data?.error || 'Failed to remove coding profile',
         status: 'error',
         duration: 5000,
       });
@@ -136,7 +152,8 @@ const CodingStatsPage: React.FC = () => {
     }
   };
 
-  const totalProblemsSolved = stats?.reduce((sum, stat) => sum + (stat.problemsSolved || 0), 0) || 0;
+  const totalProblemsSolved =
+    stats?.reduce((sum, stat) => sum + (stat.problemsSolved || 0), 0) || 0;
 
   if (isLoading) {
     return (
@@ -149,7 +166,7 @@ const CodingStatsPage: React.FC = () => {
             Track your progress on LeetCode and HackerRank
           </Text>
         </Box>
-        
+
         <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={6}>
           {[...Array(4)].map((_, i) => (
             <GridItem key={i}>
@@ -172,7 +189,7 @@ const CodingStatsPage: React.FC = () => {
             Track your progress on LeetCode and HackerRank
           </Text>
         </Box>
-        
+
         {user?.role === 'STUDENT' && (
           <Button
             leftIcon={<FiPlus />}
@@ -204,7 +221,13 @@ const CodingStatsPage: React.FC = () => {
       </Grid>
 
       {(!stats || stats.length === 0) && (
-        <Box bg={cardBg} border="1px solid" borderColor={borderColor} p={6} borderRadius="lg">
+        <Box
+          bg={cardBg}
+          border="1px solid"
+          borderColor={borderColor}
+          p={6}
+          borderRadius="lg"
+        >
           <VStack spacing={4}>
             <Icon as={FiCode} color="gray.500" boxSize={12} />
             <Text color="gray.400" textAlign="center">

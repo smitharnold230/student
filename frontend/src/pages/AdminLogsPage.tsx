@@ -38,11 +38,15 @@ const AdminLogsPage: React.FC = () => {
     statusCode: '',
     endpoint: '',
   });
-  
+
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
 
-  const { data: logsResponse, isLoading, refetch } = useQuery({
+  const {
+    data: logsResponse,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['adminLogs', filters],
     queryFn: async () => {
       const response = await adminAPI.getLogs(filters);
@@ -110,7 +114,7 @@ const AdminLogsPage: React.FC = () => {
             Monitor system API requests and responses
           </Text>
         </Box>
-        
+
         <Skeleton height="120px" />
         <Skeleton height="150px" />
         <Skeleton height="300px" />

@@ -46,15 +46,11 @@ const StudentPointsSummaryCards: React.FC<StudentPointsSummaryCardsProps> = ({
                 <Text fontSize="md" color="white" fontWeight="bold">
                   Total Points
                 </Text>
-                <Badge
-                  colorScheme="green"
-                  variant="subtle"
-                  fontSize="lg"
-                >
+                <Badge colorScheme="green" variant="subtle" fontSize="lg">
                   {breakdown?.totalPoints || 0} pts
                 </Badge>
               </HStack>
-              
+
               <Stat>
                 <StatNumber color="white" fontSize="4xl" fontWeight="bold">
                   {breakdown?.totalPoints || 0}
@@ -67,10 +63,15 @@ const StudentPointsSummaryCards: React.FC<StudentPointsSummaryCardsProps> = ({
               <Box>
                 <HStack justify="space-between" mb={2}>
                   <Text color="gray.400" fontSize="sm">
-                    Current Level: <Text as="span" fontWeight="bold" color="white">{level}</Text>
+                    Current Level:{' '}
+                    <Text as="span" fontWeight="bold" color="white">
+                      {level}
+                    </Text>
                   </Text>
                   <Text color="white" fontSize="sm">
-                    {breakdown?.totalPoints || 0} / {nextLevelPoints === Infinity ? 'Max' : nextLevelPoints} points
+                    {breakdown?.totalPoints || 0} /{' '}
+                    {nextLevelPoints === Infinity ? 'Max' : nextLevelPoints}{' '}
+                    points
                   </Text>
                 </HStack>
                 <Progress
@@ -81,7 +82,8 @@ const StudentPointsSummaryCards: React.FC<StudentPointsSummaryCardsProps> = ({
                 />
                 {nextLevelPoints !== Infinity && (
                   <Text color="gray.500" fontSize="xs" mt={1}>
-                    {nextLevelPoints - (breakdown?.totalPoints || 0)} points to reach next level
+                    {nextLevelPoints - (breakdown?.totalPoints || 0)} points to
+                    reach next level
                   </Text>
                 )}
               </Box>
@@ -97,7 +99,7 @@ const StudentPointsSummaryCards: React.FC<StudentPointsSummaryCardsProps> = ({
               <Text fontSize="md" color="white" fontWeight="bold">
                 Quick Stats
               </Text>
-              
+
               <Grid templateColumns="repeat(2, 1fr)" gap={4}>
                 <Box textAlign="center">
                   <Icon as={FiCalendar} color="blue.500" boxSize={6} mb={2} />
@@ -108,7 +110,7 @@ const StudentPointsSummaryCards: React.FC<StudentPointsSummaryCardsProps> = ({
                     Workshops
                   </Text>
                 </Box>
-                
+
                 <Box textAlign="center">
                   <Icon as={FiCode} color="purple.500" boxSize={6} mb={2} />
                   <Text color="white" fontSize="lg" fontWeight="bold">
@@ -118,9 +120,14 @@ const StudentPointsSummaryCards: React.FC<StudentPointsSummaryCardsProps> = ({
                     Hackathons
                   </Text>
                 </Box>
-                
+
                 <Box textAlign="center">
-                  <Icon as={FiCheckCircle} color="green.500" boxSize={6} mb={2} />
+                  <Icon
+                    as={FiCheckCircle}
+                    color="green.500"
+                    boxSize={6}
+                    mb={2}
+                  />
                   <Text color="white" fontSize="lg" fontWeight="bold">
                     {breakdown?.breakdown?.certifications?.count || 0}
                   </Text>
@@ -128,7 +135,7 @@ const StudentPointsSummaryCards: React.FC<StudentPointsSummaryCardsProps> = ({
                     Certifications
                   </Text>
                 </Box>
-                
+
                 <Box textAlign="center">
                   <Icon as={FiStar} color="yellow.500" boxSize={6} mb={2} />
                   <Text color="white" fontSize="lg" fontWeight="bold">

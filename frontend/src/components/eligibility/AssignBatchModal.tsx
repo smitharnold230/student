@@ -108,11 +108,17 @@ const AssignBatchModal: React.FC<AssignBatchModalProps> = ({
             </FormControl>
 
             {selectedStudent?.eligibility && (
-              <Alert status={selectedStudent.eligibility.eligible ? 'success' : 'warning'}>
+              <Alert
+                status={
+                  selectedStudent.eligibility.eligible ? 'success' : 'warning'
+                }
+              >
                 <AlertIcon />
                 <Box>
                   <AlertTitle>
-                    {selectedStudent.eligibility.eligible ? 'Eligible' : 'Not Eligible'}
+                    {selectedStudent.eligibility.eligible
+                      ? 'Eligible'
+                      : 'Not Eligible'}
                   </AlertTitle>
                   <AlertDescription>
                     Workshops: {selectedStudent.eligibility.workshops}/2,

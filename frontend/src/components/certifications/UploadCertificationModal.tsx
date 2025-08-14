@@ -30,7 +30,12 @@ interface UploadCertificationModalProps {
   isOpen: boolean;
   onClose: () => void;
   events: Event[];
-  uploadMutation: UseMutationResult<any, Error, { eventId: string; file: File }, unknown>;
+  uploadMutation: UseMutationResult<
+    any,
+    Error,
+    { eventId: string; file: File },
+    unknown
+  >;
   uploadProgress: number;
   setUploadProgress: React.Dispatch<React.SetStateAction<number>>;
 }
@@ -40,8 +45,14 @@ const uploadCertificationSchema = z.object({
   file: z
     .any()
     .refine((file) => file instanceof File, 'File is required')
-    .refine((file) => file && file.type === 'application/pdf', 'Only PDF files are allowed')
-    .refine((file) => file && file.size <= 10 * 1024 * 1024, 'File must be less than 10MB'),
+    .refine(
+      (file) => file && file.type === 'application/pdf',
+      'Only PDF files are allowed',
+    )
+    .refine(
+      (file) => file && file.size <= 10 * 1024 * 1024,
+      'File must be less than 10MB',
+    ),
 });
 
 type UploadCertificationForm = z.infer<typeof uploadCertificationSchema>;
@@ -95,7 +106,12 @@ const UploadCertificationModal: React.FC<UploadCertificationModalProps> = ({
         <ModalHeader color="white">Upload Certification</ModalHeader>
         <ModalCloseButton color="white" />
         <ModalBody>
-          <VStack spacing={4} as="form" id="upload-cert-form" onSubmit={handleSubmit(onSubmit)}>
+          <VStack
+            spacing={4}
+            as="form"
+            id="upload-cert-form"
+            onSubmit={handleSubmit(onSubmit)}
+          >
             <FormControl isInvalid={!!errors.eventId} isRequired>
               <FormLabel color="gray.300">Event</FormLabel>
               <Select
@@ -152,10 +168,17 @@ const UploadCertificationModal: React.FC<UploadCertificationModalProps> = ({
               <Text color="gray.400" fontSize="xs" mt={1}>
                 Only PDF files are allowed (max 10MB)
               </Text>
-              <FormErrorMessage>{String(errors.file?.message || '')}</FormErrorMessage>
+              <FormErrorMessage>
+                {String(errors.file?.message || '')}
+              </FormErrorMessage>
             </FormControl>
             {uploadProgress > 0 && (
-              <Progress value={uploadProgress} size="sm" colorScheme="green" mt={2} />
+              <Progress
+                value={uploadProgress}
+                size="sm"
+                colorScheme="green"
+                mt={2}
+              />
             )}
           </VStack>
         </ModalBody>

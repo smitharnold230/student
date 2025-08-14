@@ -82,17 +82,23 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) {
-                    if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
+                    if (
+                      !['image/jpeg', 'image/png', 'image/jpg'].includes(
+                        file.type,
+                      )
+                    ) {
                       toast({
                         title: 'Invalid file type',
-                        description: 'Only JPEG, PNG, or JPG image files are allowed.',
+                        description:
+                          'Only JPEG, PNG, or JPG image files are allowed.',
                         status: 'error',
                         duration: 4000,
                       });
                       setSelectedFile(null);
                       return;
                     }
-                    if (file.size > 5 * 1024 * 1024) { // 5MB limit for photos
+                    if (file.size > 5 * 1024 * 1024) {
+                      // 5MB limit for photos
                       toast({
                         title: 'File too large',
                         description: 'File must be less than 5MB.',
@@ -111,7 +117,12 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({
               </Text>
             </FormControl>
             {uploadProgress > 0 && (
-              <Progress value={uploadProgress} size="sm" colorScheme="green" mt={2} />
+              <Progress
+                value={uploadProgress}
+                size="sm"
+                colorScheme="green"
+                mt={2}
+              />
             )}
           </VStack>
         </ModalBody>
@@ -123,7 +134,11 @@ const UploadPhotoModal: React.FC<UploadPhotoModalProps> = ({
             colorScheme="brand"
             onClick={handlePhotoUpload}
             isLoading={uploadPhotoMutation.isPending}
-            isDisabled={!selectedFile || uploadPhotoMutation.isPending || uploadProgress > 0}
+            isDisabled={
+              !selectedFile ||
+              uploadPhotoMutation.isPending ||
+              uploadProgress > 0
+            }
           >
             Upload Photo
           </Button>

@@ -8,12 +8,7 @@ import {
   Skeleton,
 } from '@chakra-ui/react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  adminAPI,
-  eventAPI,
-  profileAPI,
-  pointsAPI
-} from '../services/api';
+import { adminAPI, eventAPI, profileAPI, pointsAPI } from '../services/api';
 
 // Import the new modular component
 import AdminDashboardContent from '../components/admin/AdminDashboardContent';
@@ -70,17 +65,20 @@ const AdminDashboardPage: React.FC = () => {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  const { data: systemStatsResponse, isLoading: systemStatsLoading } = useQuery({
-    queryKey: ['systemStats'],
-    queryFn: () => adminAPI.getSystemStats(),
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });
+  const { data: systemStatsResponse, isLoading: systemStatsLoading } = useQuery(
+    {
+      queryKey: ['systemStats'],
+      queryFn: () => adminAPI.getSystemStats(),
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    },
+  );
 
-  const { data: profileRequestsResponse, isLoading: profileRequestsLoading } = useQuery({
-    queryKey: ['profileRequests'],
-    queryFn: () => profileAPI.getPendingRequests(),
-    staleTime: 1000 * 60 * 1, // 1 minute, as these might change more frequently
-  });
+  const { data: profileRequestsResponse, isLoading: profileRequestsLoading } =
+    useQuery({
+      queryKey: ['profileRequests'],
+      queryFn: () => profileAPI.getPendingRequests(),
+      staleTime: 1000 * 60 * 1, // 1 minute, as these might change more frequently
+    });
 
   const { data: pointStatsResponse, isLoading: pointStatsLoading } = useQuery({
     queryKey: ['pointStats'],
@@ -99,14 +97,23 @@ const AdminDashboardPage: React.FC = () => {
 
   const events: Event[] = eventsResponse?.data || [];
   const profileRequests: ProfileRequest[] = profileRequestsResponse?.data || [];
-  const pointStats: { totalUsers: number; totalPoints: number; averagePoints: number; topPerformers: UserWithPoints[] } = pointStatsResponse?.data?.data || {
+  const pointStats: {
+    totalUsers: number;
+    totalPoints: number;
+    averagePoints: number;
+    topPerformers: UserWithPoints[];
+  } = pointStatsResponse?.data?.data || {
     totalUsers: 0,
     totalPoints: 0,
     averagePoints: 0,
     topPerformers: [],
   };
 
-  const isLoading = eventsLoading || systemStatsLoading || profileRequestsLoading || pointStatsLoading;
+  const isLoading =
+    eventsLoading ||
+    systemStatsLoading ||
+    profileRequestsLoading ||
+    pointStatsLoading;
 
   if (isLoading) {
     return (

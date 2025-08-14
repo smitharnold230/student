@@ -42,18 +42,18 @@ import {
   Divider,
 } from '@chakra-ui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  FiSettings, 
-  FiEdit, 
-  FiSave, 
-  FiX, 
+import {
+  FiSettings,
+  FiEdit,
+  FiSave,
+  FiX,
   FiCheck,
   FiTrendingUp,
   FiAward,
   FiCode,
   FiCalendar,
   FiUsers,
-  FiStar
+  FiStar,
 } from 'react-icons/fi';
 import { adminAPI } from '../services/api';
 
@@ -91,7 +91,10 @@ const PointRulesPage: React.FC = () => {
   });
 
   // Correctly access the 'data' property from the response
-  const rules: PointRule[] = (rulesResponse?.data?.data && Array.isArray(rulesResponse.data.data)) ? rulesResponse.data.data : [];
+  const rules: PointRule[] =
+    rulesResponse?.data?.data && Array.isArray(rulesResponse.data.data)
+      ? rulesResponse.data.data
+      : [];
 
   // Update point rule mutation
   const updateRuleMutation = useMutation({
@@ -110,7 +113,8 @@ const PointRulesPage: React.FC = () => {
     onError: (error: any) => {
       toast({
         title: 'Update Failed',
-        description: error.response?.data?.error || 'Failed to update point rule',
+        description:
+          error.response?.data?.error || 'Failed to update point rule',
         status: 'error',
         duration: 5000,
       });
@@ -133,7 +137,7 @@ const PointRulesPage: React.FC = () => {
 
   const handleSaveRule = () => {
     if (!editingRule) return;
-    
+
     updateRuleMutation.mutate({
       key: editingRule.key,
       value: formData.value,
@@ -172,15 +176,18 @@ const PointRulesPage: React.FC = () => {
   };
 
   const categories = {
-    Events: rules.filter(rule => getRuleCategory(rule.key) === 'Events'),
-    Certifications: rules.filter(rule => getRuleCategory(rule.key) === 'Certifications'),
-    Coding: rules.filter(rule => getRuleCategory(rule.key) === 'Coding'),
-    Bonuses: rules.filter(rule => getRuleCategory(rule.key) === 'Bonuses'),
-    Other: rules.filter(rule => getRuleCategory(rule.key) === 'Other'),
+    Events: rules.filter((rule) => getRuleCategory(rule.key) === 'Events'),
+    Certifications: rules.filter(
+      (rule) => getRuleCategory(rule.key) === 'Certifications',
+    ),
+    Coding: rules.filter((rule) => getRuleCategory(rule.key) === 'Coding'),
+    Bonuses: rules.filter((rule) => getRuleCategory(rule.key) === 'Bonuses'),
+    Other: rules.filter((rule) => getRuleCategory(rule.key) === 'Other'),
   };
 
   const totalPoints = rules.reduce((sum, rule) => sum + rule.value, 0);
-  const averagePoints = rules.length > 0 ? Math.round(totalPoints / rules.length) : 0;
+  const averagePoints =
+    rules.length > 0 ? Math.round(totalPoints / rules.length) : 0;
 
   return (
     <VStack spacing={6} align="stretch">
@@ -195,7 +202,12 @@ const PointRulesPage: React.FC = () => {
 
       {/* Stats Cards */}
       <HStack spacing={6} wrap="wrap">
-        <Card bg={cardBg} border="1px solid" borderColor={borderColor} minW="200px">
+        <Card
+          bg={cardBg}
+          border="1px solid"
+          borderColor={borderColor}
+          minW="200px"
+        >
           <CardBody>
             <HStack spacing={3}>
               <Box p={2} borderRadius="lg" bg="blue.500" color="white">
@@ -213,7 +225,12 @@ const PointRulesPage: React.FC = () => {
           </CardBody>
         </Card>
 
-        <Card bg={cardBg} border="1px solid" borderColor={borderColor} minW="200px">
+        <Card
+          bg={cardBg}
+          border="1px solid"
+          borderColor={borderColor}
+          minW="200px"
+        >
           <CardBody>
             <HStack spacing={3}>
               <Box p={2} borderRadius="lg" bg="green.500" color="white">
@@ -231,7 +248,12 @@ const PointRulesPage: React.FC = () => {
           </CardBody>
         </Card>
 
-        <Card bg={cardBg} border="1px solid" borderColor={borderColor} minW="200px">
+        <Card
+          bg={cardBg}
+          border="1px solid"
+          borderColor={borderColor}
+          minW="200px"
+        >
           <CardBody>
             <HStack spacing={3}>
               <Box p={2} borderRadius="lg" bg="purple.500" color="white">
@@ -261,15 +283,20 @@ const PointRulesPage: React.FC = () => {
         <VStack spacing={6}>
           {Object.entries(categories).map(([category, categoryRules]) => {
             if (categoryRules.length === 0) return null;
-            
+
             return (
-              <Card key={category} bg={cardBg} border="1px solid" borderColor={borderColor}>
+              <Card
+                key={category}
+                bg={cardBg}
+                border="1px solid"
+                borderColor={borderColor}
+              >
                 <CardBody>
                   <VStack spacing={4} align="stretch">
                     <Heading size="md" color="white">
                       {category}
                     </Heading>
-                    
+
                     <Box overflowX="auto">
                       <Table variant="simple">
                         <Thead>
@@ -284,12 +311,15 @@ const PointRulesPage: React.FC = () => {
                           {categoryRules.map((rule) => {
                             const IconComponent = getRuleIcon(rule.key);
                             const color = getRuleColor(rule.key);
-                            
+
                             return (
                               <Tr key={rule.id} _hover={{ bg: 'gray.700' }}>
                                 <Td>
                                   <HStack spacing={3}>
-                                    <Icon as={IconComponent} color={`${color}.400`} />
+                                    <Icon
+                                      as={IconComponent}
+                                      color={`${color}.400`}
+                                    />
                                     <VStack align="start" spacing={1}>
                                       <Text color="white" fontWeight="bold">
                                         {rule.key.replace(/_/g, ' ')}
@@ -347,7 +377,9 @@ const PointRulesPage: React.FC = () => {
                   <Alert status="info">
                     <AlertIcon />
                     <Box>
-                      <AlertTitle>Rule: {editingRule.key.replace(/_/g, ' ')}</AlertTitle>
+                      <AlertTitle>
+                        Rule: {editingRule.key.replace(/_/g, ' ')}
+                      </AlertTitle>
                       <AlertDescription>
                         Current value: {editingRule.value} points
                       </AlertDescription>
@@ -359,7 +391,12 @@ const PointRulesPage: React.FC = () => {
                     <Input
                       type="number"
                       value={formData.value}
-                      onChange={(e) => setFormData({ ...formData, value: parseInt(e.target.value) || 0 })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          value: parseInt(e.target.value) || 0,
+                        })
+                      }
                       bg="gray.700"
                       color="white"
                       borderColor={borderColor}
@@ -371,7 +408,12 @@ const PointRulesPage: React.FC = () => {
                     <FormLabel color="white">Description</FormLabel>
                     <Textarea
                       value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          description: e.target.value,
+                        })
+                      }
                       bg="gray.700"
                       color="white"
                       borderColor={borderColor}
@@ -387,8 +429,9 @@ const PointRulesPage: React.FC = () => {
                     <Box>
                       <AlertTitle>Important</AlertTitle>
                       <AlertDescription>
-                        Changing point values will affect all students' point calculations. 
-                        Consider the impact on existing achievements.
+                        Changing point values will affect all students' point
+                        calculations. Consider the impact on existing
+                        achievements.
                       </AlertDescription>
                     </Box>
                   </Alert>

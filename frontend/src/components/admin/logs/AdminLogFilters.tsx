@@ -23,11 +23,13 @@ interface AdminLogFiltersProps {
     statusCode: string;
     endpoint: string;
   };
-  setFilters: React.Dispatch<React.SetStateAction<{
-    method: string;
-    statusCode: string;
-    endpoint: string;
-  }>>;
+  setFilters: React.Dispatch<
+    React.SetStateAction<{
+      method: string;
+      statusCode: string;
+      endpoint: string;
+    }>
+  >;
   handleRefresh: () => void;
   isLoading: boolean;
   handleExport: () => void;
@@ -74,14 +76,16 @@ const AdminLogFilters: React.FC<AdminLogFiltersProps> = ({
               </Button>
             </HStack>
           </HStack>
-          
+
           <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={4}>
             <FormControl>
               <FormLabel color="gray.300">HTTP Method</FormLabel>
               <Select
                 placeholder="All methods"
                 value={filters.method}
-                onChange={(e) => setFilters({ ...filters, method: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, method: e.target.value })
+                }
                 bg="gray.700"
                 borderColor="gray.600"
                 color="white"
@@ -98,7 +102,9 @@ const AdminLogFilters: React.FC<AdminLogFiltersProps> = ({
               <Select
                 placeholder="All status codes"
                 value={filters.statusCode}
-                onChange={(e) => setFilters({ ...filters, statusCode: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, statusCode: e.target.value })
+                }
                 bg="gray.700"
                 borderColor="gray.600"
                 color="white"
@@ -117,7 +123,9 @@ const AdminLogFilters: React.FC<AdminLogFiltersProps> = ({
               <Input
                 placeholder="Filter by endpoint"
                 value={filters.endpoint}
-                onChange={(e) => setFilters({ ...filters, endpoint: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, endpoint: e.target.value })
+                }
                 bg="gray.700"
                 borderColor="gray.600"
                 color="white"

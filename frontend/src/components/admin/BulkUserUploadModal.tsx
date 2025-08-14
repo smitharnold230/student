@@ -78,14 +78,16 @@ const BulkUserUploadModal: React.FC<BulkUserUploadModalProps> = ({
       if (!allowedTypes.includes(file.type)) {
         toast({
           title: 'Invalid file type',
-          description: 'Only Excel (.xlsx, .xls) or CSV (.csv) files are allowed.',
+          description:
+            'Only Excel (.xlsx, .xls) or CSV (.csv) files are allowed.',
           status: 'error',
           duration: 4000,
         });
         setSelectedFile(null);
         return;
       }
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      if (file.size > 10 * 1024 * 1024) {
+        // 10MB limit
         toast({
           title: 'File too large',
           description: 'File must be less than 10MB.',
@@ -162,20 +164,31 @@ const BulkUserUploadModal: React.FC<BulkUserUploadModalProps> = ({
                 <AlertTitle>File Format Instructions</AlertTitle>
                 <AlertDescription fontSize="sm">
                   <Text mb={2}>
-                    Please upload an Excel (.xlsx, .xls) or CSV (.csv) file with the following columns in the first row:
+                    Please upload an Excel (.xlsx, .xls) or CSV (.csv) file with
+                    the following columns in the first row:
                   </Text>
                   <List spacing={1}>
                     <ListItem>
                       <ListIcon as={FiFileText} color="blue.300" />
-                      <Text as="span" fontWeight="bold">email</Text>: (Required) User's email address.
+                      <Text as="span" fontWeight="bold">
+                        email
+                      </Text>
+                      : (Required) User's email address.
                     </ListItem>
                     <ListItem>
                       <ListIcon as={FiFileText} color="blue.300" />
-                      <Text as="span" fontWeight="bold">password</Text>: (Required) User's password (min 6 characters).
+                      <Text as="span" fontWeight="bold">
+                        password
+                      </Text>
+                      : (Required) User's password (min 6 characters).
                     </ListItem>
                     <ListItem>
                       <ListIcon as={FiFileText} color="blue.300" />
-                      <Text as="span" fontWeight="bold">role</Text>: (Optional) User's role ('STUDENT' or 'ADMIN'). Defaults to 'STUDENT'.
+                      <Text as="span" fontWeight="bold">
+                        role
+                      </Text>
+                      : (Optional) User's role ('STUDENT' or 'ADMIN'). Defaults
+                      to 'STUDENT'.
                     </ListItem>
                   </List>
                   <Text mt={2}>
@@ -204,27 +217,53 @@ const BulkUserUploadModal: React.FC<BulkUserUploadModalProps> = ({
             </FormControl>
 
             {uploadProgress > 0 && (
-              <Progress value={uploadProgress} size="sm" colorScheme="green" mt={2} hasStripe isAnimated />
+              <Progress
+                value={uploadProgress}
+                size="sm"
+                colorScheme="green"
+                mt={2}
+                hasStripe
+                isAnimated
+              />
             )}
 
             {uploadResult && (
               <Box p={4} bg="gray.700" borderRadius="md" mt={4}>
-                <Heading size="sm" color="white" mb={3}>Upload Summary</Heading>
+                <Heading size="sm" color="white" mb={3}>
+                  Upload Summary
+                </Heading>
                 <HStack spacing={4} mb={3}>
-                  <Text color="gray.300">Total Rows: <Badge colorScheme="blue">{uploadResult.total}</Badge></Text>
-                  <Text color="gray.300">Successful: <Badge colorScheme="green">{uploadResult.successful}</Badge></Text>
-                  <Text color="gray.300">Failed: <Badge colorScheme="red">{uploadResult.failed}</Badge></Text>
+                  <Text color="gray.300">
+                    Total Rows:{' '}
+                    <Badge colorScheme="blue">{uploadResult.total}</Badge>
+                  </Text>
+                  <Text color="gray.300">
+                    Successful:{' '}
+                    <Badge colorScheme="green">{uploadResult.successful}</Badge>
+                  </Text>
+                  <Text color="gray.300">
+                    Failed:{' '}
+                    <Badge colorScheme="red">{uploadResult.failed}</Badge>
+                  </Text>
                 </HStack>
 
                 {uploadResult.failed > 0 && (
                   <Box mt={4}>
-                    <Text color="red.300" fontWeight="semibold" mb={2}>Errors:</Text>
-                    <VStack align="start" spacing={2} maxHeight="200px" overflowY="auto">
+                    <Text color="red.300" fontWeight="semibold" mb={2}>
+                      Errors:
+                    </Text>
+                    <VStack
+                      align="start"
+                      spacing={2}
+                      maxHeight="200px"
+                      overflowY="auto"
+                    >
                       {uploadResult.errors.map((error, index) => (
                         <HStack key={index} align="start" spacing={2}>
                           <Icon as={FiXCircle} color="red.400" mt={1} />
                           <Text color="gray.300" fontSize="sm">
-                            Row {error.row} (Email: {error.email || 'N/A'}): {error.reason}
+                            Row {error.row} (Email: {error.email || 'N/A'}):{' '}
+                            {error.reason}
                           </Text>
                         </HStack>
                       ))}
@@ -243,7 +282,9 @@ const BulkUserUploadModal: React.FC<BulkUserUploadModalProps> = ({
             colorScheme="brand"
             onClick={handleUpload}
             isLoading={uploadMutation.isPending}
-            isDisabled={!selectedFile || uploadMutation.isPending || uploadProgress > 0}
+            isDisabled={
+              !selectedFile || uploadMutation.isPending || uploadProgress > 0
+            }
             leftIcon={<FiFileText />}
           >
             Upload Users

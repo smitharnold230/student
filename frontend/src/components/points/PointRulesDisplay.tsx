@@ -28,7 +28,7 @@ const PointRulesDisplay: React.FC<PointRulesDisplayProps> = ({ rules }) => {
           <Heading size="md" color="white">
             Point Rules
           </Heading>
-          
+
           <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={4}>
             {rules.map((rule: PointRule) => (
               <Box key={rule.key} p={3} bg="gray.700" borderRadius="md">

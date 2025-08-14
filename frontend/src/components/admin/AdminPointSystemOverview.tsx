@@ -38,7 +38,11 @@ interface AdminPointSystemOverviewProps {
   borderColor: string;
 }
 
-const AdminPointSystemOverview: React.FC<AdminPointSystemOverviewProps> = ({ pointStats, cardBg, borderColor }) => {
+const AdminPointSystemOverview: React.FC<AdminPointSystemOverviewProps> = ({
+  pointStats,
+  cardBg,
+  borderColor,
+}) => {
   return (
     <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
       <CardBody>
@@ -46,10 +50,12 @@ const AdminPointSystemOverview: React.FC<AdminPointSystemOverviewProps> = ({ poi
           <Heading size="md" color="white">
             Point System Overview
           </Heading>
-          
+
           <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={4}>
             <Stat>
-              <StatLabel color="gray.400" fontSize="sm">Total Users</StatLabel>
+              <StatLabel color="gray.400" fontSize="sm">
+                Total Users
+              </StatLabel>
               <StatNumber color="white" fontSize="xl">
                 {pointStats.totalUsers || 0}
               </StatNumber>
@@ -57,9 +63,11 @@ const AdminPointSystemOverview: React.FC<AdminPointSystemOverviewProps> = ({ poi
                 With point records
               </StatHelpText>
             </Stat>
-            
+
             <Stat>
-              <StatLabel color="gray.400" fontSize="sm">Total Points</StatLabel>
+              <StatLabel color="gray.400" fontSize="sm">
+                Total Points
+              </StatLabel>
               <StatNumber color="white" fontSize="xl">
                 {pointStats.totalPoints || 0}
               </StatNumber>
@@ -67,9 +75,11 @@ const AdminPointSystemOverview: React.FC<AdminPointSystemOverviewProps> = ({ poi
                 System-wide total
               </StatHelpText>
             </Stat>
-            
+
             <Stat>
-              <StatLabel color="gray.400" fontSize="sm">Average Points</StatLabel>
+              <StatLabel color="gray.400" fontSize="sm">
+                Average Points
+              </StatLabel>
               <StatNumber color="white" fontSize="xl">
                 {pointStats.averagePoints || 0}
               </StatNumber>
@@ -83,14 +93,35 @@ const AdminPointSystemOverview: React.FC<AdminPointSystemOverviewProps> = ({ poi
             <Text color="white" fontSize="sm" fontWeight="medium">
               Points Overview
             </Text>
-            <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={3}>
-              <HStack justify="space-between" p={2} bg="gray.700" borderRadius="md">
-                <Text color="white" fontSize="sm">Total Users</Text>
-                <Badge colorScheme="blue" fontSize="sm">{pointStats.totalUsers || 0}</Badge>
+            <Grid
+              templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }}
+              gap={3}
+            >
+              <HStack
+                justify="space-between"
+                p={2}
+                bg="gray.700"
+                borderRadius="md"
+              >
+                <Text color="white" fontSize="sm">
+                  Total Users
+                </Text>
+                <Badge colorScheme="blue" fontSize="sm">
+                  {pointStats.totalUsers || 0}
+                </Badge>
               </HStack>
-              <HStack justify="space-between" p={2} bg="gray.700" borderRadius="md">
-                <Text color="white" fontSize="sm">Average Points</Text>
-                <Badge colorScheme="green" fontSize="sm">{Math.round(pointStats.averagePoints || 0)}</Badge>
+              <HStack
+                justify="space-between"
+                p={2}
+                bg="gray.700"
+                borderRadius="md"
+              >
+                <Text color="white" fontSize="sm">
+                  Average Points
+                </Text>
+                <Badge colorScheme="green" fontSize="sm">
+                  {Math.round(pointStats.averagePoints || 0)}
+                </Badge>
               </HStack>
             </Grid>
           </VStack>

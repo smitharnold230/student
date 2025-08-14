@@ -70,10 +70,16 @@ const AdminEligibilityTable: React.FC<AdminEligibilityTableProps> = ({
       <CardBody>
         <VStack spacing={4} align="stretch">
           <HStack justify="space-between">
-            <Heading size="md" color="white">Student Eligibility</Heading>
+            <Heading size="md" color="white">
+              Student Eligibility
+            </Heading>
             <HStack>
-              <InputGroup width="250px"> {/* Wrap Input with InputGroup */}
-                <InputLeftElement pointerEvents="none"> {/* Use InputLeftElement for the icon */}
+              <InputGroup width="250px">
+                {' '}
+                {/* Wrap Input with InputGroup */}
+                <InputLeftElement pointerEvents="none">
+                  {' '}
+                  {/* Use InputLeftElement for the icon */}
                   <Icon as={FiSearch} color="gray.400" />
                 </InputLeftElement>
                 <Input
@@ -142,11 +148,21 @@ const AdminEligibilityTable: React.FC<AdminEligibilityTableProps> = ({
                       <Td>
                         <HStack spacing={2}>
                           <Icon
-                            as={getEligibilityIcon(student.eligibility?.eligible || false)}
-                            color={getEligibilityColor(student.eligibility?.eligible || false)}
+                            as={getEligibilityIcon(
+                              student.eligibility?.eligible || false,
+                            )}
+                            color={getEligibilityColor(
+                              student.eligibility?.eligible || false,
+                            )}
                           />
-                          <Badge colorScheme={getEligibilityColor(student.eligibility?.eligible || false)}>
-                            {student.eligibility?.eligible ? 'Eligible' : 'Not Eligible'}
+                          <Badge
+                            colorScheme={getEligibilityColor(
+                              student.eligibility?.eligible || false,
+                            )}
+                          >
+                            {student.eligibility?.eligible
+                              ? 'Eligible'
+                              : 'Not Eligible'}
                           </Badge>
                         </HStack>
                       </Td>

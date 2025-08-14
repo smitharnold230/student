@@ -19,7 +19,16 @@ import {
   Skeleton,
 } from '@chakra-ui/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { FiSettings, FiSave, FiAward, FiTrendingUp, FiUsers, FiDownload, FiRefreshCw, FiMonitor } from 'react-icons/fi';
+import {
+  FiSettings,
+  FiSave,
+  FiAward,
+  FiTrendingUp,
+  FiUsers,
+  FiDownload,
+  FiRefreshCw,
+  FiMonitor,
+} from 'react-icons/fi';
 import { adminAPI } from '../services/api';
 
 interface PointRule {
@@ -50,7 +59,8 @@ const AdminSettingsPage: React.FC = () => {
   }, [rulesResponse]);
 
   const updatePointRuleMutation = useMutation({
-    mutationFn: (rule: PointRule) => adminAPI.updatePointRule(rule.key, rule.value, rule.description),
+    mutationFn: (rule: PointRule) =>
+      adminAPI.updatePointRule(rule.key, rule.value, rule.description),
     onSuccess: () => {
       toast({
         title: 'Point rule updated',
@@ -64,7 +74,8 @@ const AdminSettingsPage: React.FC = () => {
     onError: (error: any) => {
       toast({
         title: 'Update failed',
-        description: error.response?.data?.error || 'Failed to update point rule',
+        description:
+          error.response?.data?.error || 'Failed to update point rule',
         status: 'error',
         duration: 5000,
       });
@@ -94,7 +105,8 @@ const AdminSettingsPage: React.FC = () => {
     onError: (error: any) => {
       toast({
         title: 'Export Failed',
-        description: error.response?.data?.error || 'Failed to export student data',
+        description:
+          error.response?.data?.error || 'Failed to export student data',
         status: 'error',
         duration: 5000,
       });
@@ -105,7 +117,11 @@ const AdminSettingsPage: React.FC = () => {
     updatePointRuleMutation.mutate(rule);
   };
 
-  const handleRuleChange = (index: number, field: keyof PointRule, value: string | number) => {
+  const handleRuleChange = (
+    index: number,
+    field: keyof PointRule,
+    value: string | number,
+  ) => {
     const updatedRules = [...pointRules];
     updatedRules[index] = { ...updatedRules[index], [field]: value };
     setPointRules(updatedRules);
@@ -169,8 +185,11 @@ const AdminSettingsPage: React.FC = () => {
                 Point Rules Configuration
               </Heading>
             </HStack>
-            
-            <Grid templateColumns={{ base: '1fr', lg: 'repeat(2, 1fr)' }} gap={6}>
+
+            <Grid
+              templateColumns={{ base: '1fr', lg: 'repeat(2, 1fr)' }}
+              gap={6}
+            >
               {pointRules.map((rule, index) => (
                 <GridItem key={rule.key}>
                   <Card bg="gray.700" border="1px solid" borderColor="gray.600">
@@ -179,20 +198,28 @@ const AdminSettingsPage: React.FC = () => {
                         <Text color="white" fontWeight="semibold" fontSize="sm">
                           {rule.description}
                         </Text>
-                        
+
                         <FormControl>
-                          <FormLabel color="gray.300" fontSize="sm">Points</FormLabel>
+                          <FormLabel color="gray.300" fontSize="sm">
+                            Points
+                          </FormLabel>
                           <Input
                             type="number"
                             value={rule.value}
-                            onChange={(e) => handleRuleChange(index, 'value', parseInt(e.target.value) || 0)}
+                            onChange={(e) =>
+                              handleRuleChange(
+                                index,
+                                'value',
+                                parseInt(e.target.value) || 0,
+                              )
+                            }
                             bg="gray.600"
                             borderColor="gray.500"
                             color="white"
                             size="sm"
                           />
                         </FormControl>
-                        
+
                         <Button
                           size="sm"
                           colorScheme="brand"
@@ -222,8 +249,11 @@ const AdminSettingsPage: React.FC = () => {
                 Quick Actions
               </Heading>
             </HStack>
-            
-            <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={4}>
+
+            <Grid
+              templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }}
+              gap={4}
+            >
               <Button
                 colorScheme="blue"
                 variant="outline"
@@ -241,7 +271,7 @@ const AdminSettingsPage: React.FC = () => {
                   Download student records (CSV)
                 </Text>
               </Button>
-              
+
               <Button
                 colorScheme="green"
                 variant="outline"
@@ -258,7 +288,7 @@ const AdminSettingsPage: React.FC = () => {
                   Refresh system cache
                 </Text>
               </Button>
-              
+
               <Button
                 colorScheme="orange"
                 variant="outline"
@@ -266,7 +296,9 @@ const AdminSettingsPage: React.FC = () => {
                 h="auto"
                 p={4}
                 flexDirection="column"
-                onClick={() => handleFeatureNotImplemented('System Health Check')}
+                onClick={() =>
+                  handleFeatureNotImplemented('System Health Check')
+                }
               >
                 <Text fontSize="sm" fontWeight="bold">
                   System Health Check
@@ -275,7 +307,7 @@ const AdminSettingsPage: React.FC = () => {
                   Run diagnostics
                 </Text>
               </Button>
-              
+
               <Button
                 colorScheme="purple"
                 variant="outline"

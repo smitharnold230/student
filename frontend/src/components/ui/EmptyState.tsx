@@ -3,7 +3,10 @@ interface EmptyStateProps {
   icon?: React.ReactNode;
 }
 
-export default function EmptyState({ message = 'No items found', icon }: EmptyStateProps) {
+export default function EmptyState({
+  message = 'No items found',
+  icon,
+}: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center p-8 text-center">
       {icon && <div className="mb-4 text-gray-400">{icon}</div>}

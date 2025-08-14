@@ -62,7 +62,7 @@ const AdminLogTable: React.FC<AdminLogTableProps> = ({
           <Heading size="md" color="white">
             API Requests ({logs.length})
           </Heading>
-          
+
           {logs.length > 0 ? (
             <Box overflowX="auto">
               <Table variant="simple" size="sm">

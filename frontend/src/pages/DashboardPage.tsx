@@ -9,7 +9,14 @@ import {
   Skeleton,
 } from '@chakra-ui/react';
 import { useQuery } from '@tanstack/react-query';
-import { leaderboardAPI, profileAPI, eventAPI, codingStatsAPI, notificationAPI, adminAPI } from '../services/api';
+import {
+  leaderboardAPI,
+  profileAPI,
+  eventAPI,
+  codingStatsAPI,
+  notificationAPI,
+  adminAPI,
+} from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import DashboardContent from '../components/dashboard/DashboardContent'; // Import the new component
 
@@ -73,15 +80,18 @@ const DashboardPage: React.FC = () => {
     queryFn: () => eventAPI.getEvents(),
   });
 
-  const { data: codingStatsResponse, isLoading: codingStatsLoading } = useQuery({
-    queryKey: ['codingStats'],
-    queryFn: () => codingStatsAPI.getStats(),
-  });
+  const { data: codingStatsResponse, isLoading: codingStatsLoading } = useQuery(
+    {
+      queryKey: ['codingStats'],
+      queryFn: () => codingStatsAPI.getStats(),
+    },
+  );
 
-  const { data: notificationsResponse, isLoading: notificationsLoading } = useQuery({
-    queryKey: ['notifications'],
-    queryFn: () => notificationAPI.getNotifications(),
-  });
+  const { data: notificationsResponse, isLoading: notificationsLoading } =
+    useQuery({
+      queryKey: ['notifications'],
+      queryFn: () => notificationAPI.getNotifications(),
+    });
 
   const myRank: MyRank = myRankResponse?.data;
   const profile: Profile | undefined = profileResponse?.data;
@@ -89,7 +99,12 @@ const DashboardPage: React.FC = () => {
   const codingStats: CodingStat[] = codingStatsResponse?.data || [];
   const notifications: Notification[] = notificationsResponse?.data || [];
 
-  const isLoading = myRankLoading || profileLoading || eventsLoading || codingStatsLoading || notificationsLoading;
+  const isLoading =
+    myRankLoading ||
+    profileLoading ||
+    eventsLoading ||
+    codingStatsLoading ||
+    notificationsLoading;
 
   if (isLoading) {
     return (
@@ -102,7 +117,14 @@ const DashboardPage: React.FC = () => {
             Track your development progress and achievements
           </Text>
         </Box>
-        <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }} gap={6}>
+        <Grid
+          templateColumns={{
+            base: '1fr',
+            md: 'repeat(2, 1fr)',
+            lg: 'repeat(4, 1fr)',
+          }}
+          gap={6}
+        >
           {[...Array(4)].map((_, i) => (
             <GridItem key={i}>
               <Skeleton height="120px" />

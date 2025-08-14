@@ -13,7 +13,12 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { pointsAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
-import { PointBreakdown, UserWithPoints, PointStatistics, PointRule } from '../types/points';
+import {
+  PointBreakdown,
+  UserWithPoints,
+  PointStatistics,
+  PointRule,
+} from '../types/points';
 
 // Import new modular components
 import AdminPointsView from '../components/points/AdminPointsView';
@@ -57,7 +62,8 @@ const PointsPage: React.FC = () => {
 
   const breakdown: PointBreakdown | undefined = breakdownResponse?.data?.data;
   const rules: PointRule[] = rulesResponse?.data?.data || [];
-  const statistics: PointStatistics | undefined = statisticsResponse?.data?.data;
+  const statistics: PointStatistics | undefined =
+    statisticsResponse?.data?.data;
   const users: UserWithPoints[] = usersResponse?.data?.data || [];
 
   const updateAllPointsMutation = useMutation({
@@ -86,7 +92,10 @@ const PointsPage: React.FC = () => {
     updateAllPointsMutation.mutate();
   };
 
-  const isLoading = user?.role === 'STUDENT' ? (breakdownLoading || rulesLoading) : (statsLoading || rulesLoading || usersLoading);
+  const isLoading =
+    user?.role === 'STUDENT'
+      ? breakdownLoading || rulesLoading
+      : statsLoading || rulesLoading || usersLoading;
 
   if (isLoading) {
     return (
@@ -96,10 +105,12 @@ const PointsPage: React.FC = () => {
             {user?.role === 'ADMIN' ? 'Points Management' : 'My Points'}
           </Heading>
           <Text color="gray.400">
-            {user?.role === 'ADMIN' ? 'Manage all users\' points' : 'Track your progress and point breakdown'}
+            {user?.role === 'ADMIN'
+              ? "Manage all users' points"
+              : 'Track your progress and point breakdown'}
           </Text>
         </Box>
-        
+
         <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={6}>
           {[...Array(4)].map((_, i) => (
             <GridItem key={i}>

@@ -17,7 +17,13 @@ import {
   Icon,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { FiCalendar, FiExternalLink, FiUsers, FiEdit, FiTrash2 } from 'react-icons/fi';
+import {
+  FiCalendar,
+  FiExternalLink,
+  FiUsers,
+  FiEdit,
+  FiTrash2,
+} from 'react-icons/fi';
 import { Event } from '../../types/event';
 import { UseMutationResult } from '@tanstack/react-query';
 
@@ -72,7 +78,10 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
                 <Heading size="md" color="white" mb={2}>
                   {selectedEvent.name}
                 </Heading>
-                <Badge colorScheme={getEventTypeColor(selectedEvent.type)} mb={3}>
+                <Badge
+                  colorScheme={getEventTypeColor(selectedEvent.type)}
+                  mb={3}
+                >
                   {selectedEvent.type}
                 </Badge>
               </Box>
@@ -97,7 +106,12 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
                     <Icon as={FiExternalLink} color="gray.500" boxSize={4} />
                     <Text color="gray.300">
                       <strong>Event URL:</strong>{' '}
-                      <a href={selectedEvent.url} target="_blank" rel="noopener noreferrer" style={{ color: '#3182ce' }}>
+                      <a
+                        href={selectedEvent.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: '#3182ce' }}
+                      >
                         {selectedEvent.url}
                       </a>
                     </Text>
@@ -109,7 +123,12 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
                     <Icon as={FiExternalLink} color="gray.500" boxSize={4} />
                     <Text color="gray.300">
                       <strong>Registration Link:</strong>{' '}
-                      <a href={selectedEvent.link} target="_blank" rel="noopener noreferrer" style={{ color: '#3182ce' }}>
+                      <a
+                        href={selectedEvent.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: '#3182ce' }}
+                      >
                         {selectedEvent.link}
                       </a>
                     </Text>
@@ -120,7 +139,8 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
                   <HStack spacing={2}>
                     <Icon as={FiCalendar} color="orange.400" boxSize={4} />
                     <Text color="orange.400">
-                      <strong>Certification Deadline:</strong> {formatDate(selectedEvent.certificationDeadline)}
+                      <strong>Certification Deadline:</strong>{' '}
+                      {formatDate(selectedEvent.certificationDeadline)}
                     </Text>
                   </HStack>
                 )}
@@ -151,31 +171,34 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
                 Accept Event
               </Button>
             )
-          ) : userRole === 'ADMIN' && selectedEvent && (
-            <>
-              <Button
-                colorScheme="blue"
-                mr={3}
-                leftIcon={<FiEdit />}
-                onClick={() => {
-                  onEdit(selectedEvent);
-                  onClose(); // Close details modal when opening edit modal
-                }}
-              >
-                Edit
-              </Button>
-              <Button
-                colorScheme="red"
-                leftIcon={<FiTrash2 />}
-                onClick={() => {
-                  onDelete(selectedEvent.id);
-                  onClose(); // Close details modal after triggering delete
-                }}
-                isLoading={deleteMutation.isPending}
-              >
-                Delete
-              </Button>
-            </>
+          ) : (
+            userRole === 'ADMIN' &&
+            selectedEvent && (
+              <>
+                <Button
+                  colorScheme="blue"
+                  mr={3}
+                  leftIcon={<FiEdit />}
+                  onClick={() => {
+                    onEdit(selectedEvent);
+                    onClose(); // Close details modal when opening edit modal
+                  }}
+                >
+                  Edit
+                </Button>
+                <Button
+                  colorScheme="red"
+                  leftIcon={<FiTrash2 />}
+                  onClick={() => {
+                    onDelete(selectedEvent.id);
+                    onClose(); // Close details modal after triggering delete
+                  }}
+                  isLoading={deleteMutation.isPending}
+                >
+                  Delete
+                </Button>
+              </>
+            )
           )}
         </ModalFooter>
       </ModalContent>

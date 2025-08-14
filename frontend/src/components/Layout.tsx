@@ -33,7 +33,7 @@ import {
   FiFileText,
   FiUsers,
   FiTrendingUp,
-  FiCheckCircle
+  FiCheckCircle,
 } from 'react-icons/fi';
 import { useAuthStore } from '../store/authStore';
 import { useQuery } from '@tanstack/react-query';
@@ -58,11 +58,36 @@ const navItems: NavItem[] = [
   { label: 'Points', icon: FiTrendingUp, path: '/points' },
   { label: 'Eligibility', icon: FiCheckCircle, path: '/eligibility' },
   { label: 'Notifications', icon: FiBell, path: '/notifications' },
-  { label: 'Admin Dashboard', icon: FiSettings, path: '/admin', roles: ['ADMIN'] },
-  { label: 'Point Rules', icon: FiTrendingUp, path: '/admin/point-rules', roles: ['ADMIN'] },
-  { label: 'User Management', icon: FiUsers, path: '/admin/users', roles: ['ADMIN'] },
-  { label: 'Profile Requests', icon: FiUsers, path: '/admin/profile-requests', roles: ['ADMIN'] },
-  { label: 'Admin Logs', icon: FiFileText, path: '/admin/logs', roles: ['ADMIN'] },
+  {
+    label: 'Admin Dashboard',
+    icon: FiSettings,
+    path: '/admin',
+    roles: ['ADMIN'],
+  },
+  {
+    label: 'Point Rules',
+    icon: FiTrendingUp,
+    path: '/admin/point-rules',
+    roles: ['ADMIN'],
+  },
+  {
+    label: 'User Management',
+    icon: FiUsers,
+    path: '/admin/users',
+    roles: ['ADMIN'],
+  },
+  {
+    label: 'Profile Requests',
+    icon: FiUsers,
+    path: '/admin/profile-requests',
+    roles: ['ADMIN'],
+  },
+  {
+    label: 'Admin Logs',
+    icon: FiFileText,
+    path: '/admin/logs',
+    roles: ['ADMIN'],
+  },
 ];
 
 const Layout: React.FC = () => {
@@ -70,7 +95,7 @@ const Layout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuthStore();
-  
+
   const sidebarBg = useColorModeValue('gray.800', 'gray.900');
   const sidebarBorder = useColorModeValue('gray.700', 'gray.600');
   const hoverBg = useColorModeValue('gray.700', 'gray.600');
@@ -91,7 +116,7 @@ const Layout: React.FC = () => {
   };
 
   const filteredNavItems = navItems.filter(
-    item => !item.roles || (user && item.roles.includes(user.role))
+    (item) => !item.roles || (user && item.roles.includes(user.role)),
   );
 
   const NavItemComponent: React.FC<{ item: NavItem }> = ({ item }) => {
@@ -131,10 +156,16 @@ const Layout: React.FC = () => {
             <Avatar
               size="md"
               name={profile.name || user?.email || ''} // Now profile.name is safe
-              src={profile.profilePhotoUrl ? `http://localhost:4000${profile.profilePhotoUrl}` : undefined}
+              src={
+                profile.profilePhotoUrl
+                  ? `http://localhost:4000${profile.profilePhotoUrl}`
+                  : undefined
+              }
               bg="brand.500"
             >
-              {profile.profilePhotoUrl && <AvatarBadge boxSize="1em" bg="green.500" />}
+              {profile.profilePhotoUrl && (
+                <AvatarBadge boxSize="1em" bg="green.500" />
+              )}
             </Avatar>
           ) : (
             // Fallback for when profile is not yet loaded or is undefined
@@ -195,7 +226,11 @@ const Layout: React.FC = () => {
       {/* Mobile Sidebar */}
       <Drawer isOpen={isOpen} placement="left" onClose={onClose}>
         <DrawerOverlay />
-        <DrawerContent bg={sidebarBg} borderRight="1px solid" borderColor={sidebarBorder}>
+        <DrawerContent
+          bg={sidebarBg}
+          borderRight="1px solid"
+          borderColor={sidebarBorder}
+        >
           <DrawerCloseButton color="white" />
           <DrawerHeader borderBottom="1px solid" borderColor={sidebarBorder}>
             <Text color="white">SDMS</Text>

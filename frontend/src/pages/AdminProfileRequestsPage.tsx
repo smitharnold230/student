@@ -35,7 +35,8 @@ const AdminProfileRequestsPage: React.FC = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [selectedRequest, setSelectedRequest] = useState<ProfileEditRequest | null>(null);
+  const [selectedRequest, setSelectedRequest] =
+    useState<ProfileEditRequest | null>(null);
 
   const { data: requestsResponse, isLoading } = useQuery({
     queryKey: ['profileRequests'],
@@ -45,8 +46,15 @@ const AdminProfileRequestsPage: React.FC = () => {
   const requests: ProfileEditRequest[] = requestsResponse?.data || [];
 
   const approveRequestMutation = useMutation({
-    mutationFn: ({ ticketId, status, adminNote }: { ticketId: string; status: 'APPROVED' | 'REJECTED'; adminNote?: string }) =>
-      profileAPI.approveRequest(ticketId, status, adminNote),
+    mutationFn: ({
+      ticketId,
+      status,
+      adminNote,
+    }: {
+      ticketId: string;
+      status: 'APPROVED' | 'REJECTED';
+      adminNote?: string;
+    }) => profileAPI.approveRequest(ticketId, status, adminNote),
     onSuccess: (data, variables) => {
       toast({
         title: 'Request processed',

@@ -89,10 +89,16 @@ const ProfileInfoCard: React.FC<ProfileInfoCardProps> = ({
                 <Avatar
                   size="xl"
                   name={profile?.name || user?.email || ''}
-                  src={profile?.profilePhotoUrl ? `http://localhost:4000${profile.profilePhotoUrl}` : undefined}
+                  src={
+                    profile?.profilePhotoUrl
+                      ? `http://localhost:4000${profile.profilePhotoUrl}`
+                      : undefined
+                  }
                   bg="brand.500"
                 >
-                  {profile?.profilePhotoUrl && <AvatarBadge boxSize="1em" bg="green.500" />}
+                  {profile?.profilePhotoUrl && (
+                    <AvatarBadge boxSize="1em" bg="green.500" />
+                  )}
                 </Avatar>
               </Box>
               <Box>

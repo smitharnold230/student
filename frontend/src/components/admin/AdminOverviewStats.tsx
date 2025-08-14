@@ -13,13 +13,13 @@ import {
   GridItem,
   Icon,
 } from '@chakra-ui/react';
-import { 
-  FiUsers, 
-  FiCalendar, 
-  FiAward, 
+import {
+  FiUsers,
+  FiCalendar,
+  FiAward,
   FiTrendingUp,
   FiBarChart,
-  FiCheckCircle
+  FiCheckCircle,
 } from 'react-icons/fi';
 
 interface SystemStats {
@@ -37,16 +37,29 @@ interface AdminOverviewStatsProps {
   borderColor: string;
 }
 
-const AdminOverviewStats: React.FC<AdminOverviewStatsProps> = ({ systemStats, cardBg, borderColor }) => {
+const AdminOverviewStats: React.FC<AdminOverviewStatsProps> = ({
+  systemStats,
+  cardBg,
+  borderColor,
+}) => {
   return (
-    <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }} gap={6}>
+    <Grid
+      templateColumns={{
+        base: '1fr',
+        md: 'repeat(2, 1fr)',
+        lg: 'repeat(3, 1fr)',
+      }}
+      gap={6}
+    >
       <GridItem>
         <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
           <CardBody>
             <VStack spacing={3}>
               <Icon as={FiUsers} color="blue.500" boxSize={8} />
               <Stat>
-                <StatLabel color="gray.400" fontSize="sm">Total Students</StatLabel>
+                <StatLabel color="gray.400" fontSize="sm">
+                  Total Students
+                </StatLabel>
                 <StatNumber color="white" fontSize="2xl" fontWeight="bold">
                   {systemStats.totalStudents}
                 </StatNumber>
@@ -65,7 +78,9 @@ const AdminOverviewStats: React.FC<AdminOverviewStatsProps> = ({ systemStats, ca
             <VStack spacing={3}>
               <Icon as={FiCalendar} color="green.500" boxSize={8} />
               <Stat>
-                <StatLabel color="gray.400" fontSize="sm">Total Events</StatLabel>
+                <StatLabel color="gray.400" fontSize="sm">
+                  Total Events
+                </StatLabel>
                 <StatNumber color="white" fontSize="2xl" fontWeight="bold">
                   {systemStats.totalEvents}
                 </StatNumber>
@@ -84,7 +99,9 @@ const AdminOverviewStats: React.FC<AdminOverviewStatsProps> = ({ systemStats, ca
             <VStack spacing={3}>
               <Icon as={FiAward} color="purple.500" boxSize={8} />
               <Stat>
-                <StatLabel color="gray.400" fontSize="sm">Pending Certifications</StatLabel>
+                <StatLabel color="gray.400" fontSize="sm">
+                  Pending Certifications
+                </StatLabel>
                 <StatNumber color="white" fontSize="2xl" fontWeight="bold">
                   {systemStats.pendingCertifications}
                 </StatNumber>
@@ -103,7 +120,9 @@ const AdminOverviewStats: React.FC<AdminOverviewStatsProps> = ({ systemStats, ca
             <VStack spacing={3}>
               <Icon as={FiTrendingUp} color="orange.500" boxSize={8} />
               <Stat>
-                <StatLabel color="gray.400" fontSize="sm">Total Points</StatLabel>
+                <StatLabel color="gray.400" fontSize="sm">
+                  Total Points
+                </StatLabel>
                 <StatNumber color="white" fontSize="2xl" fontWeight="bold">
                   {systemStats.totalPoints.toLocaleString()}
                 </StatNumber>
@@ -122,7 +141,9 @@ const AdminOverviewStats: React.FC<AdminOverviewStatsProps> = ({ systemStats, ca
             <VStack spacing={3}>
               <Icon as={FiBarChart} color="cyan.500" boxSize={8} />
               <Stat>
-                <StatLabel color="gray.400" fontSize="sm">Average Points</StatLabel>
+                <StatLabel color="gray.400" fontSize="sm">
+                  Average Points
+                </StatLabel>
                 <StatNumber color="white" fontSize="2xl" fontWeight="bold">
                   {systemStats.averagePoints}
                 </StatNumber>
@@ -141,7 +162,9 @@ const AdminOverviewStats: React.FC<AdminOverviewStatsProps> = ({ systemStats, ca
             <VStack spacing={3}>
               <Icon as={FiCheckCircle} color="green.500" boxSize={8} />
               <Stat>
-                <StatLabel color="gray.400" fontSize="sm">Active Users</StatLabel>
+                <StatLabel color="gray.400" fontSize="sm">
+                  Active Users
+                </StatLabel>
                 <StatNumber color="white" fontSize="2xl" fontWeight="bold">
                   {systemStats.activeUsers}
                 </StatNumber>

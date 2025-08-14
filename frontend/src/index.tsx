@@ -17,7 +17,7 @@ const queryClient = new QueryClient({
 });
 
 const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
+  document.getElementById('root') as HTMLElement,
 );
 
 root.render(
@@ -26,9 +26,9 @@ root.render(
       <ColorModeScript initialColorMode={theme.config.initialColorMode} />
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-    <App />
+          <App />
         </BrowserRouter>
       </QueryClientProvider>
     </ChakraProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

@@ -34,13 +34,24 @@ interface AddCodingStatModalProps {
   hasLeetCode: boolean;
   hasHackerRank: boolean;
   submitLeetCodeMutation: UseMutationResult<any, Error, string, unknown>;
-  submitHackerRankMutation: UseMutationResult<any, Error, { url: string; manualCount: number }, unknown>;
+  submitHackerRankMutation: UseMutationResult<
+    any,
+    Error,
+    { url: string; manualCount: number },
+    unknown
+  >;
 }
 
 const addStatSchema = z.object({
-  platform: z.enum(['LEETCODE', 'HACKERRANK'], { message: 'Platform is required' }),
+  platform: z.enum(['LEETCODE', 'HACKERRANK'], {
+    message: 'Platform is required',
+  }),
   username: z.string().min(1, 'Username is required'),
-  manualCount: z.number().int().min(0, 'Problems solved must be non-negative').optional(),
+  manualCount: z
+    .number()
+    .int()
+    .min(0, 'Problems solved must be non-negative')
+    .optional(),
 });
 
 const AddCodingStatModal: React.FC<AddCodingStatModalProps> = ({
@@ -96,11 +107,17 @@ const AddCodingStatModal: React.FC<AddCodingStatModalProps> = ({
       submitLeetCodeMutation.mutate(leetCodeUrl);
     } else {
       if (data.manualCount === undefined || data.manualCount < 0) {
-        setError('manualCount', { type: 'required', message: 'Problems solved is required for HackerRank.' });
+        setError('manualCount', {
+          type: 'required',
+          message: 'Problems solved is required for HackerRank.',
+        });
         return;
       }
       const hackerRankUrl = `https://www.hackerrank.com/profile/${data.username}`;
-      submitHackerRankMutation.mutate({ url: hackerRankUrl, manualCount: data.manualCount });
+      submitHackerRankMutation.mutate({
+        url: hackerRankUrl,
+        manualCount: data.manualCount,
+      });
     }
   };
 
@@ -117,7 +134,12 @@ const AddCodingStatModal: React.FC<AddCodingStatModalProps> = ({
         <ModalHeader color="white">Add Coding Statistics</ModalHeader>
         <ModalCloseButton color="white" />
         <ModalBody>
-          <VStack spacing={4} as="form" id="add-stats-form" onSubmit={handleSubmit(onSubmit)}>
+          <VStack
+            spacing={4}
+            as="form"
+            id="add-stats-form"
+            onSubmit={handleSubmit(onSubmit)}
+          >
             <FormControl isInvalid={!!errors.platform} isRequired>
               <FormLabel color="gray.300">Platform</FormLabel>
               <Select
@@ -126,7 +148,10 @@ const AddCodingStatModal: React.FC<AddCodingStatModalProps> = ({
                 color="white"
                 {...register('platform')}
                 onChange={(e) => {
-                  setValue('platform', e.target.value as 'LEETCODE' | 'HACKERRANK');
+                  setValue(
+                    'platform',
+                    e.target.value as 'LEETCODE' | 'HACKERRANK',
+                  );
                   setShowManualCount(e.target.value === 'HACKERRANK');
                   clearErrors('manualCount');
                 }}
@@ -155,7 +180,10 @@ const AddCodingStatModal: React.FC<AddCodingStatModalProps> = ({
             </FormControl>
 
             {showManualCount && (
-              <FormControl isInvalid={!!errors.manualCount} isRequired={selectedPlatform === 'HACKERRANK'}>
+              <FormControl
+                isInvalid={!!errors.manualCount}
+                isRequired={selectedPlatform === 'HACKERRANK'}
+              >
                 <FormLabel color="gray.300">Problems Solved (Manual)</FormLabel>
                 <Input
                   type="number"
@@ -166,7 +194,9 @@ const AddCodingStatModal: React.FC<AddCodingStatModalProps> = ({
                   _placeholder={{ color: 'gray.400' }}
                   {...register('manualCount', { valueAsNumber: true })}
                 />
-                <FormErrorMessage>{errors.manualCount?.message}</FormErrorMessage>
+                <FormErrorMessage>
+                  {errors.manualCount?.message}
+                </FormErrorMessage>
               </FormControl>
             )}
           </VStack>
@@ -179,7 +209,10 @@ const AddCodingStatModal: React.FC<AddCodingStatModalProps> = ({
             colorScheme="brand"
             type="submit"
             form="add-stats-form"
-            isLoading={submitLeetCodeMutation.isPending || submitHackerRankMutation.isPending}
+            isLoading={
+              submitLeetCodeMutation.isPending ||
+              submitHackerRankMutation.isPending
+            }
           >
             Submit Statistics
           </Button>

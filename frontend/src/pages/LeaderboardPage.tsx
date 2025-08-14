@@ -54,13 +54,20 @@ const LeaderboardPage: React.FC = () => {
   const getBatchColor = (batch: string) => {
     if (!batch) return 'gray';
     switch (batch) {
-      case 'PRODUCT': return 'purple';
-      case 'SERVICE_A': return 'blue';
-      case 'SERVICE_B': return 'green';
-      case 'SERVICE_C1': return 'yellow';
-      case 'SERVICE_C2': return 'orange';
-      case 'SERVICE_C3': return 'gray';
-      default: return 'gray';
+      case 'PRODUCT':
+        return 'purple';
+      case 'SERVICE_A':
+        return 'blue';
+      case 'SERVICE_B':
+        return 'green';
+      case 'SERVICE_C1':
+        return 'yellow';
+      case 'SERVICE_C2':
+        return 'orange';
+      case 'SERVICE_C3':
+        return 'gray';
+      default:
+        return 'gray';
     }
   };
 
@@ -75,7 +82,7 @@ const LeaderboardPage: React.FC = () => {
             Student rankings based on performance and achievements
           </Text>
         </Box>
-        
+
         <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
           <CardBody>
             <VStack spacing={4}>
@@ -103,7 +110,12 @@ const LeaderboardPage: React.FC = () => {
 
       {/* Stats Cards */}
       <HStack spacing={6} wrap="wrap">
-        <Card bg={cardBg} border="1px solid" borderColor={borderColor} minW="200px">
+        <Card
+          bg={cardBg}
+          border="1px solid"
+          borderColor={borderColor}
+          minW="200px"
+        >
           <CardBody>
             <HStack spacing={3}>
               <Box p={2} borderRadius="lg" bg="brand.500" color="white">
@@ -121,7 +133,12 @@ const LeaderboardPage: React.FC = () => {
           </CardBody>
         </Card>
 
-        <Card bg={cardBg} border="1px solid" borderColor={borderColor} minW="200px">
+        <Card
+          bg={cardBg}
+          border="1px solid"
+          borderColor={borderColor}
+          minW="200px"
+        >
           <CardBody>
             <HStack spacing={3}>
               <Box p={2} borderRadius="lg" bg="green.500" color="white">
@@ -147,13 +164,27 @@ const LeaderboardPage: React.FC = () => {
             <Table variant="simple">
               <Thead>
                 <Tr>
-                  <Th color="gray.300" borderColor={borderColor}>Rank</Th>
-                  <Th color="gray.300" borderColor={borderColor}>Student</Th>
-                  <Th color="gray.300" borderColor={borderColor}>Class</Th>
-                  <Th color="gray.300" borderColor={borderColor}>Batch</Th>
-                  <Th color="gray.300" borderColor={borderColor}>Points</Th>
-                  <Th color="gray.300" borderColor={borderColor}>Level</Th>
-                  <Th color="gray.300" borderColor={borderColor}>Status</Th>
+                  <Th color="gray.300" borderColor={borderColor}>
+                    Rank
+                  </Th>
+                  <Th color="gray.300" borderColor={borderColor}>
+                    Student
+                  </Th>
+                  <Th color="gray.300" borderColor={borderColor}>
+                    Class
+                  </Th>
+                  <Th color="gray.300" borderColor={borderColor}>
+                    Batch
+                  </Th>
+                  <Th color="gray.300" borderColor={borderColor}>
+                    Points
+                  </Th>
+                  <Th color="gray.300" borderColor={borderColor}>
+                    Level
+                  </Th>
+                  <Th color="gray.300" borderColor={borderColor}>
+                    Status
+                  </Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -172,11 +203,7 @@ const LeaderboardPage: React.FC = () => {
                     </Td>
                     <Td borderColor={borderColor}>
                       <HStack spacing={3}>
-                        <Avatar
-                          size="sm"
-                          name={student.name}
-                          bg="brand.500"
-                        />
+                        <Avatar size="sm" name={student.name} bg="brand.500" />
                         <VStack align="start" spacing={0}>
                           <Text color="white" fontWeight="medium">
                             {student.name || 'N/A'}
@@ -188,9 +215,7 @@ const LeaderboardPage: React.FC = () => {
                       </HStack>
                     </Td>
                     <Td borderColor={borderColor}>
-                      <Text color="gray.300">
-                        {student.class || 'N/A'}
-                      </Text>
+                      <Text color="gray.300">{student.class || 'N/A'}</Text>
                     </Td>
                     <Td borderColor={borderColor}>
                       <Badge
@@ -211,10 +236,7 @@ const LeaderboardPage: React.FC = () => {
                       </Badge>
                     </Td>
                     <Td borderColor={borderColor}>
-                      <Badge
-                        colorScheme="blue"
-                        variant="subtle"
-                      >
+                      <Badge colorScheme="blue" variant="subtle">
                         Active
                       </Badge>
                     </Td>

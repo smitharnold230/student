@@ -29,12 +29,19 @@ const CodingStatsSummary: React.FC<CodingStatsSummaryProps> = ({
 
   return (
     <HStack spacing={6} wrap="wrap">
-      <Card bg={cardBg} border="1px solid" borderColor={borderColor} minW="200px">
+      <Card
+        bg={cardBg}
+        border="1px solid"
+        borderColor={borderColor}
+        minW="200px"
+      >
         <CardBody>
           <VStack spacing={3}>
             <Icon as={FiCode} color="brand.500" boxSize={8} />
             <Stat>
-              <StatLabel color="gray.400" fontSize="sm">Total Problems Solved</StatLabel>
+              <StatLabel color="gray.400" fontSize="sm">
+                Total Problems Solved
+              </StatLabel>
               <StatNumber color="white" fontSize="2xl" fontWeight="bold">
                 {totalProblemsSolved}
               </StatNumber>
@@ -46,12 +53,19 @@ const CodingStatsSummary: React.FC<CodingStatsSummaryProps> = ({
         </CardBody>
       </Card>
 
-      <Card bg={cardBg} border="1px solid" borderColor={borderColor} minW="200px">
+      <Card
+        bg={cardBg}
+        border="1px solid"
+        borderColor={borderColor}
+        minW="200px"
+      >
         <CardBody>
           <VStack spacing={3}>
             <Icon as={FiAward} color="purple.500" boxSize={8} />
             <Stat>
-              <StatLabel color="gray.400" fontSize="sm">Active Platforms</StatLabel>
+              <StatLabel color="gray.400" fontSize="sm">
+                Active Platforms
+              </StatLabel>
               <StatNumber color="white" fontSize="2xl" fontWeight="bold">
                 {activePlatformsCount}
               </StatNumber>

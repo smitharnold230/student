@@ -20,8 +20,13 @@ interface StudentPointsViewProps {
   rules: PointRule[];
 }
 
-const StudentPointsView: React.FC<StudentPointsViewProps> = ({ breakdown, rules }) => {
-  const { level, nextLevelPoints, progressPercentage } = getStudentLevel(breakdown?.totalPoints || 0);
+const StudentPointsView: React.FC<StudentPointsViewProps> = ({
+  breakdown,
+  rules,
+}) => {
+  const { level, nextLevelPoints, progressPercentage } = getStudentLevel(
+    breakdown?.totalPoints || 0,
+  );
 
   return (
     <VStack spacing={6} align="stretch">
@@ -29,9 +34,7 @@ const StudentPointsView: React.FC<StudentPointsViewProps> = ({ breakdown, rules 
         <Heading size="lg" color="white" mb={2}>
           My Points
         </Heading>
-        <Text color="gray.400">
-          Track your progress and point breakdown
-        </Text>
+        <Text color="gray.400">Track your progress and point breakdown</Text>
       </Box>
 
       <StudentPointsSummaryCards

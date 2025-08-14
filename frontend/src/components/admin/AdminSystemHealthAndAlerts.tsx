@@ -51,31 +51,37 @@ const AdminSystemHealthAndAlerts: React.FC<AdminSystemHealthAndAlertsProps> = ({
             <Heading size="md" color="white">
               System Health
             </Heading>
-            
+
             <VStack spacing={3} align="stretch">
               <Box>
                 <HStack justify="space-between" mb={2}>
-                  <Text color="gray.400" fontSize="sm">Database</Text>
+                  <Text color="gray.400" fontSize="sm">
+                    Database
+                  </Text>
                   <Badge colorScheme="green" variant="subtle" fontSize="xs">
                     Healthy
                   </Badge>
                 </HStack>
                 <Progress value={95} colorScheme="green" size="sm" />
               </Box>
-              
+
               <Box>
                 <HStack justify="space-between" mb={2}>
-                  <Text color="gray.400" fontSize="sm">API Performance</Text>
+                  <Text color="gray.400" fontSize="sm">
+                    API Performance
+                  </Text>
                   <Badge colorScheme="green" variant="subtle" fontSize="xs">
                     Optimal
                   </Badge>
                 </HStack>
                 <Progress value={88} colorScheme="green" size="sm" />
               </Box>
-              
+
               <Box>
                 <HStack justify="space-between" mb={2}>
-                  <Text color="gray.400" fontSize="sm">Storage</Text>
+                  <Text color="gray.400" fontSize="sm">
+                    Storage
+                  </Text>
                   <Badge colorScheme="yellow" variant="subtle" fontSize="xs">
                     Moderate
                   </Badge>
@@ -93,36 +99,41 @@ const AdminSystemHealthAndAlerts: React.FC<AdminSystemHealthAndAlertsProps> = ({
             <Heading size="md" color="white">
               Alerts & Notifications
             </Heading>
-            
+
             <VStack spacing={3} align="stretch">
-                {systemStats.pendingCertifications > 0 && (
-                  <HStack spacing={3} p={3} bg="yellow.900" borderRadius="md">
-                    <Icon as={FiAlertCircle} color="yellow.500" boxSize={5} />
-                    <VStack align="start" spacing={1}>
-                      <Text color="white" fontSize="sm" fontWeight="medium">
-                        {systemStats.pendingCertifications} pending certifications
-                      </Text>
-                      <Text color="yellow.200" fontSize="xs">
-                        Requires attention
-                      </Text>
-                    </VStack>
-                  </HStack>
-                )}
-                
-                {profileRequests.filter(r => r.status === 'PENDING').length > 0 && (
-                  <HStack spacing={3} p={3} bg="blue.900" borderRadius="md">
-                    <Icon as={FiUsers} color="blue.500" boxSize={5} />
-                    <VStack align="start" spacing={1}>
-                      <Text color="white" fontSize="sm" fontWeight="medium">
-                        {profileRequests.filter(r => r.status === 'PENDING').length} pending profile requests
-                      </Text>
-                      <Text color="blue.200" fontSize="xs">
-                        Review student edit requests
-                      </Text>
-                    </VStack>
-                  </HStack>
-                )}
-              
+              {systemStats.pendingCertifications > 0 && (
+                <HStack spacing={3} p={3} bg="yellow.900" borderRadius="md">
+                  <Icon as={FiAlertCircle} color="yellow.500" boxSize={5} />
+                  <VStack align="start" spacing={1}>
+                    <Text color="white" fontSize="sm" fontWeight="medium">
+                      {systemStats.pendingCertifications} pending certifications
+                    </Text>
+                    <Text color="yellow.200" fontSize="xs">
+                      Requires attention
+                    </Text>
+                  </VStack>
+                </HStack>
+              )}
+
+              {profileRequests.filter((r) => r.status === 'PENDING').length >
+                0 && (
+                <HStack spacing={3} p={3} bg="blue.900" borderRadius="md">
+                  <Icon as={FiUsers} color="blue.500" boxSize={5} />
+                  <VStack align="start" spacing={1}>
+                    <Text color="white" fontSize="sm" fontWeight="medium">
+                      {
+                        profileRequests.filter((r) => r.status === 'PENDING')
+                          .length
+                      }{' '}
+                      pending profile requests
+                    </Text>
+                    <Text color="blue.200" fontSize="xs">
+                      Review student edit requests
+                    </Text>
+                  </VStack>
+                </HStack>
+              )}
+
               <HStack spacing={3} p={3} bg="blue.900" borderRadius="md">
                 <Icon as={FiClock} color="blue.500" boxSize={5} />
                 <VStack align="start" spacing={1}>
@@ -134,7 +145,7 @@ const AdminSystemHealthAndAlerts: React.FC<AdminSystemHealthAndAlertsProps> = ({
                   </Text>
                 </VStack>
               </HStack>
-              
+
               <HStack spacing={3} p={3} bg="green.900" borderRadius="md">
                 <Icon as={FiCheckCircle} color="green.500" boxSize={5} />
                 <VStack align="start" spacing={1}>

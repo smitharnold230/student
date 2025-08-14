@@ -17,7 +17,13 @@ import {
   AlertDescription,
   Icon,
 } from '@chakra-ui/react';
-import { FiCheckCircle, FiXCircle, FiAward, FiCode, FiCalendar } from 'react-icons/fi';
+import {
+  FiCheckCircle,
+  FiXCircle,
+  FiAward,
+  FiCode,
+  FiCalendar,
+} from 'react-icons/fi';
 
 interface EligibilityData {
   eligible: boolean;
@@ -78,8 +84,7 @@ const EligibilityStudentView: React.FC<EligibilityStudentViewProps> = ({
                 <Text color="gray.400">
                   {eligibility?.eligible
                     ? 'You meet all requirements for batch assignment'
-                    : 'You need to meet more requirements'
-                  }
+                    : 'You need to meet more requirements'}
                 </Text>
               </VStack>
             </HStack>
@@ -91,7 +96,9 @@ const EligibilityStudentView: React.FC<EligibilityStudentViewProps> = ({
       <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
         <CardBody>
           <VStack spacing={6}>
-            <Heading size="md" color="white">Requirements Progress</Heading>
+            <Heading size="md" color="white">
+              Requirements Progress
+            </Heading>
 
             {/* Workshops */}
             <VStack spacing={2} align="stretch" width="full">
@@ -100,13 +107,19 @@ const EligibilityStudentView: React.FC<EligibilityStudentViewProps> = ({
                   <Icon as={FiCalendar} color="blue.400" />
                   <Text color="white">Workshops Attended</Text>
                 </HStack>
-                <Badge colorScheme={(eligibility?.workshops || 0) >= 2 ? 'green' : 'red'}>
+                <Badge
+                  colorScheme={
+                    (eligibility?.workshops || 0) >= 2 ? 'green' : 'red'
+                  }
+                >
                   {eligibility?.workshops || 0}/2
                 </Badge>
               </HStack>
               <Progress
                 value={getProgressPercentage(eligibility?.workshops || 0, 2)}
-                colorScheme={(eligibility?.workshops || 0) >= 2 ? 'green' : 'red'}
+                colorScheme={
+                  (eligibility?.workshops || 0) >= 2 ? 'green' : 'red'
+                }
               />
             </VStack>
 
@@ -117,13 +130,19 @@ const EligibilityStudentView: React.FC<EligibilityStudentViewProps> = ({
                   <Icon as={FiAward} color="purple.400" />
                   <Text color="white">Hackathons Attended</Text>
                 </HStack>
-                <Badge colorScheme={(eligibility?.hackathons || 0) >= 2 ? 'green' : 'red'}>
+                <Badge
+                  colorScheme={
+                    (eligibility?.hackathons || 0) >= 2 ? 'green' : 'red'
+                  }
+                >
                   {eligibility?.hackathons || 0}/2
                 </Badge>
               </HStack>
               <Progress
                 value={getProgressPercentage(eligibility?.hackathons || 0, 2)}
-                colorScheme={(eligibility?.hackathons || 0) >= 2 ? 'green' : 'red'}
+                colorScheme={
+                  (eligibility?.hackathons || 0) >= 2 ? 'green' : 'red'
+                }
               />
             </VStack>
 
@@ -134,13 +153,19 @@ const EligibilityStudentView: React.FC<EligibilityStudentViewProps> = ({
                   <Icon as={FiCode} color="orange.400" />
                   <Text color="white">LeetCode Problems Solved</Text>
                 </HStack>
-                <Badge colorScheme={(eligibility?.leetcode || 0) >= 200 ? 'green' : 'red'}>
+                <Badge
+                  colorScheme={
+                    (eligibility?.leetcode || 0) >= 200 ? 'green' : 'red'
+                  }
+                >
                   {eligibility?.leetcode || 0}/200
                 </Badge>
               </HStack>
               <Progress
                 value={getProgressPercentage(eligibility?.leetcode || 0, 200)}
-                colorScheme={(eligibility?.leetcode || 0) >= 200 ? 'green' : 'red'}
+                colorScheme={
+                  (eligibility?.leetcode || 0) >= 200 ? 'green' : 'red'
+                }
               />
             </VStack>
           </VStack>
@@ -151,16 +176,17 @@ const EligibilityStudentView: React.FC<EligibilityStudentViewProps> = ({
       <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
         <CardBody>
           <VStack spacing={4}>
-            <Heading size="md" color="white">Requirements</Heading>
+            <Heading size="md" color="white">
+              Requirements
+            </Heading>
             <Alert status="info">
               <AlertIcon />
               <Box>
                 <AlertTitle>Batch Assignment Requirements</AlertTitle>
                 <AlertDescription>
-                  To be eligible for batch assignment, you need:
-                  • At least 2 workshops attended
-                  • At least 2 hackathons attended
-                  • At least 200 LeetCode problems solved
+                  To be eligible for batch assignment, you need: • At least 2
+                  workshops attended • At least 2 hackathons attended • At least
+                  200 LeetCode problems solved
                 </AlertDescription>
               </Box>
             </Alert>

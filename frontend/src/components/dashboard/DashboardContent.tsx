@@ -20,7 +20,15 @@ import {
   Button,
   Icon,
 } from '@chakra-ui/react';
-import { FiUsers, FiAward, FiCode, FiCalendar, FiBarChart, FiTrendingUp, FiBell } from 'react-icons/fi';
+import {
+  FiUsers,
+  FiAward,
+  FiCode,
+  FiCalendar,
+  FiBarChart,
+  FiTrendingUp,
+  FiBell,
+} from 'react-icons/fi';
 import { getStudentLevel } from '../../utils/points';
 
 // Define interfaces for the props
@@ -92,8 +100,13 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
 
-  const totalProblemsSolved = codingStats.reduce((sum, stat) => sum + (stat.problemsSolved || 0), 0);
-  const { level, nextLevelPoints, progressPercentage } = getStudentLevel(myRank?.points || 0);
+  const totalProblemsSolved = codingStats.reduce(
+    (sum, stat) => sum + (stat.problemsSolved || 0),
+    0,
+  );
+  const { level, nextLevelPoints, progressPercentage } = getStudentLevel(
+    myRank?.points || 0,
+  );
 
   const stats = [
     {
@@ -101,7 +114,10 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
       value: myRank?.rank !== null ? myRank?.rank : 'N/A',
       icon: FiBarChart,
       color: 'blue.500',
-      helpText: myRank?.totalStudents !== null ? `Out of ${myRank?.totalStudents || 0} students` : 'Not applicable for admins',
+      helpText:
+        myRank?.totalStudents !== null
+          ? `Out of ${myRank?.totalStudents || 0} students`
+          : 'Not applicable for admins',
     },
     {
       label: 'Total Points',
@@ -169,7 +185,14 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
       </Box>
 
       {/* Stats Grid */}
-      <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }} gap={6}>
+      <Grid
+        templateColumns={{
+          base: '1fr',
+          md: 'repeat(2, 1fr)',
+          lg: 'repeat(4, 1fr)',
+        }}
+        gap={6}
+      >
         {stats.map((stat, index) => (
           <GridItem key={index}>
             <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
@@ -207,14 +230,19 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
                   {myRank?.points || 0} pts
                 </Badge>
               </HStack>
-              
+
               <Box>
                 <HStack justify="space-between" mb={2}>
                   <Text color="gray.400" fontSize="sm">
-                    Current Level: <Text as="span" fontWeight="bold" color="white">{level}</Text>
+                    Current Level:{' '}
+                    <Text as="span" fontWeight="bold" color="white">
+                      {level}
+                    </Text>
                   </Text>
                   <Text color="white" fontSize="sm">
-                    {myRank?.points || 0} / {nextLevelPoints === Infinity ? 'Max' : nextLevelPoints} points
+                    {myRank?.points || 0} /{' '}
+                    {nextLevelPoints === Infinity ? 'Max' : nextLevelPoints}{' '}
+                    points
                   </Text>
                 </HStack>
                 <Progress
@@ -225,7 +253,8 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
                 />
                 {nextLevelPoints !== Infinity && (
                   <Text color="gray.500" fontSize="xs" mt={1}>
-                    {nextLevelPoints - (myRank?.points || 0)} points to reach next level
+                    {nextLevelPoints - (myRank?.points || 0)} points to reach
+                    next level
                   </Text>
                 )}
               </Box>
@@ -241,8 +270,15 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
             <Heading size="md" color="white">
               Quick Actions
             </Heading>
-            
-            <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }} gap={4}>
+
+            <Grid
+              templateColumns={{
+                base: '1fr',
+                md: 'repeat(2, 1fr)',
+                lg: 'repeat(4, 1fr)',
+              }}
+              gap={4}
+            >
               {quickActions.map((action, index) => (
                 <Button
                   key={index}
@@ -275,12 +311,26 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
             <Heading size="md" color="white">
               Notifications
             </Heading>
-            
+
             {notifications.length > 0 ? (
               <VStack spacing={3} align="stretch">
                 {notifications.slice(0, 5).map((notification) => (
-                  <HStack key={notification.id} spacing={4} p={3} bg="gray.700" borderRadius="md">
-                    <Icon as={FiCalendar} color={notification.type === 'CERTIFICATION_REMINDER' ? 'orange.500' : 'blue.500'} boxSize={5} />
+                  <HStack
+                    key={notification.id}
+                    spacing={4}
+                    p={3}
+                    bg="gray.700"
+                    borderRadius="md"
+                  >
+                    <Icon
+                      as={FiCalendar}
+                      color={
+                        notification.type === 'CERTIFICATION_REMINDER'
+                          ? 'orange.500'
+                          : 'blue.500'
+                      }
+                      boxSize={5}
+                    />
                     <VStack align="start" spacing={1} flex={1}>
                       <Text color="white" fontSize="sm" fontWeight="medium">
                         {notification.title}
@@ -290,7 +340,8 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
                       </Text>
                       {notification.deadline && (
                         <Text color="orange.400" fontSize="xs">
-                          Deadline: {new Date(notification.deadline).toLocaleDateString()}
+                          Deadline:{' '}
+                          {new Date(notification.deadline).toLocaleDateString()}
                         </Text>
                       )}
                     </VStack>
@@ -324,11 +375,17 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
             <Heading size="md" color="white">
               Recent Events
             </Heading>
-            
+
             {events.length > 0 ? (
               <VStack spacing={3} align="stretch">
                 {events.slice(0, 3).map((event) => (
-                  <HStack key={event.id} spacing={4} p={3} bg="gray.700" borderRadius="md">
+                  <HStack
+                    key={event.id}
+                    spacing={4}
+                    p={3}
+                    bg="gray.700"
+                    borderRadius="md"
+                  >
                     <Icon as={FiCalendar} color="blue.500" boxSize={5} />
                     <VStack align="start" spacing={1} flex={1}>
                       <Text color="white" fontSize="sm" fontWeight="medium">

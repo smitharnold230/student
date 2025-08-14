@@ -77,55 +77,94 @@ const AdminUserActivityOverview: React.FC<AdminUserActivityOverviewProps> = ({
           <Heading size="md" color="white">
             User Activity Overview
           </Heading>
-          
+
           <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={4}>
             <VStack spacing={3} align="stretch">
               <Text color="white" fontSize="sm" fontWeight="medium">
                 Top Performers
               </Text>
               {pointStats.topPerformers.length > 0 ? (
-                pointStats.topPerformers.slice(0, 5).map((user: UserWithPoints, index: number) => (
-                  <HStack key={user.id} justify="space-between" p={2} bg="gray.700" borderRadius="md">
-                    <HStack spacing={3}>
-                      <Badge colorScheme="yellow" fontSize="xs">#{index + 1}</Badge>
-                      <VStack align="start" spacing={0}>
-                        <Text color="white" fontSize="sm" fontWeight="medium">
-                          {user.name}
-                        </Text>
-                        <Text color="gray.400" fontSize="xs">
-                          {user.email}
-                        </Text>
-                      </VStack>
+                pointStats.topPerformers
+                  .slice(0, 5)
+                  .map((user: UserWithPoints, index: number) => (
+                    <HStack
+                      key={user.id}
+                      justify="space-between"
+                      p={2}
+                      bg="gray.700"
+                      borderRadius="md"
+                    >
+                      <HStack spacing={3}>
+                        <Badge colorScheme="yellow" fontSize="xs">
+                          #{index + 1}
+                        </Badge>
+                        <VStack align="start" spacing={0}>
+                          <Text color="white" fontSize="sm" fontWeight="medium">
+                            {user.name}
+                          </Text>
+                          <Text color="gray.400" fontSize="xs">
+                            {user.email}
+                          </Text>
+                        </VStack>
+                      </HStack>
+                      <Badge colorScheme="green" fontSize="sm">
+                        {user.points} pts
+                      </Badge>
                     </HStack>
-                    <Badge colorScheme="green" fontSize="sm">
-                      {user.points} pts
-                    </Badge>
-                  </HStack>
-                ))
+                  ))
               ) : (
-                <Text color="gray.400" fontSize="sm">No top performers yet.</Text>
+                <Text color="gray.400" fontSize="sm">
+                  No top performers yet.
+                </Text>
               )}
             </VStack>
-            
+
             <VStack spacing={3} align="stretch">
               <Text color="white" fontSize="sm" fontWeight="medium">
                 Recent Activity
               </Text>
               <VStack spacing={2} align="stretch">
-                <HStack justify="space-between" p={2} bg="gray.700" borderRadius="md">
-                  <Text color="gray.400" fontSize="sm">Profile Requests</Text>
+                <HStack
+                  justify="space-between"
+                  p={2}
+                  bg="gray.700"
+                  borderRadius="md"
+                >
+                  <Text color="gray.400" fontSize="sm">
+                    Profile Requests
+                  </Text>
                   <Badge colorScheme="orange" fontSize="sm">
-                    {profileRequests.filter(r => r.status === 'PENDING').length}
+                    {
+                      profileRequests.filter((r) => r.status === 'PENDING')
+                        .length
+                    }
                   </Badge>
                 </HStack>
-                <HStack justify="space-between" p={2} bg="gray.700" borderRadius="md">
-                    <Text color="gray.400" fontSize="sm">Active Events</Text>
-                    <Badge colorScheme="blue" fontSize="sm">
-                      {events.filter((e: any) => new Date(e.date) > new Date()).length}
-                    </Badge>
-                  </HStack>
-                <HStack justify="space-between" p={2} bg="gray.700" borderRadius="md">
-                  <Text color="gray.400" fontSize="sm">Pending Certifications</Text>
+                <HStack
+                  justify="space-between"
+                  p={2}
+                  bg="gray.700"
+                  borderRadius="md"
+                >
+                  <Text color="gray.400" fontSize="sm">
+                    Active Events
+                  </Text>
+                  <Badge colorScheme="blue" fontSize="sm">
+                    {
+                      events.filter((e: any) => new Date(e.date) > new Date())
+                        .length
+                    }
+                  </Badge>
+                </HStack>
+                <HStack
+                  justify="space-between"
+                  p={2}
+                  bg="gray.700"
+                  borderRadius="md"
+                >
+                  <Text color="gray.400" fontSize="sm">
+                    Pending Certifications
+                  </Text>
                   <Badge colorScheme="red" fontSize="sm">
                     {systemStats.pendingCertifications}
                   </Badge>

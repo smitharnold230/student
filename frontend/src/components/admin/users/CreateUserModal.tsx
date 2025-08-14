@@ -24,7 +24,11 @@ import { UseMutationResult } from '@tanstack/react-query';
 const createUserSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  role: z.string().refine(val => val === 'STUDENT' || val === 'ADMIN', { message: 'Role is required' }),
+  role: z
+    .string()
+    .refine((val) => val === 'STUDENT' || val === 'ADMIN', {
+      message: 'Role is required',
+    }),
 });
 
 type CreateUserForm = z.infer<typeof createUserSchema>;
@@ -71,7 +75,12 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
         <ModalHeader color="white">Add New User</ModalHeader>
         <ModalCloseButton color="gray.400" />
         <ModalBody>
-          <VStack spacing={4} as="form" id="create-user-form" onSubmit={handleSubmit(onSubmit)}>
+          <VStack
+            spacing={4}
+            as="form"
+            id="create-user-form"
+            onSubmit={handleSubmit(onSubmit)}
+          >
             <FormControl isInvalid={!!errors.email} isRequired>
               <FormLabel color="gray.300">Email</FormLabel>
               <Input

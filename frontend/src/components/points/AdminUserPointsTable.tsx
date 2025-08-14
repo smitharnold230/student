@@ -131,17 +131,36 @@ const AdminUserPointsTable: React.FC<AdminUserPointsTableProps> = ({
                     <Th color="gray.300" borderColor={borderColor} width="50px">
                       <input
                         type="checkbox"
-                        checked={selectedUsers.length === users.length && users.length > 0}
-                        onChange={(e) => e.target.checked ? handleSelectAll() : handleClearSelection()}
+                        checked={
+                          selectedUsers.length === users.length &&
+                          users.length > 0
+                        }
+                        onChange={(e) =>
+                          e.target.checked
+                            ? handleSelectAll()
+                            : handleClearSelection()
+                        }
                         style={{ cursor: 'pointer' }}
                       />
                     </Th>
-                    <Th color="gray.300" borderColor={borderColor}>Student</Th>
-                    <Th color="gray.300" borderColor={borderColor}>Class</Th>
-                    <Th color="gray.300" borderColor={borderColor}>Batch</Th>
-                    <Th color="gray.300" borderColor={borderColor}>Points</Th>
-                    <Th color="gray.300" borderColor={borderColor}>Manual Adj.</Th>
-                    <Th color="gray.300" borderColor={borderColor}>Level</Th>
+                    <Th color="gray.300" borderColor={borderColor}>
+                      Student
+                    </Th>
+                    <Th color="gray.300" borderColor={borderColor}>
+                      Class
+                    </Th>
+                    <Th color="gray.300" borderColor={borderColor}>
+                      Batch
+                    </Th>
+                    <Th color="gray.300" borderColor={borderColor}>
+                      Points
+                    </Th>
+                    <Th color="gray.300" borderColor={borderColor}>
+                      Manual Adj.
+                    </Th>
+                    <Th color="gray.300" borderColor={borderColor}>
+                      Level
+                    </Th>
                   </Tr>
                 </Thead>
                 <Tbody>
@@ -179,7 +198,12 @@ const AdminUserPointsTable: React.FC<AdminUserPointsTableProps> = ({
                         </Text>
                       </Td>
                       <Td borderColor={borderColor}>
-                        <Text color={user.manualAdjustment >= 0 ? 'green.300' : 'red.300'} fontWeight="bold">
+                        <Text
+                          color={
+                            user.manualAdjustment >= 0 ? 'green.300' : 'red.300'
+                          }
+                          fontWeight="bold"
+                        >
                           {user.manualAdjustment}
                         </Text>
                       </Td>

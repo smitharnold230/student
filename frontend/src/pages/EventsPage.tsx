@@ -38,14 +38,26 @@ const EventsPage: React.FC = () => {
   const { user } = useAuthStore();
   const toast = useToast();
   const queryClient = useQueryClient();
-  
-  const { isOpen: isCreateModalOpen, onOpen: onCreateModalOpen, onClose: onCreateModalClose } = useDisclosure();
-  const { isOpen: isDetailsModalOpen, onOpen: onDetailsModalOpen, onClose: onDetailsModalClose } = useDisclosure();
-  const { isOpen: isEditModalOpen, onOpen: onEditModalOpen, onClose: onEditModalClose } = useDisclosure();
-  
+
+  const {
+    isOpen: isCreateModalOpen,
+    onOpen: onCreateModalOpen,
+    onClose: onCreateModalClose,
+  } = useDisclosure();
+  const {
+    isOpen: isDetailsModalOpen,
+    onOpen: onDetailsModalOpen,
+    onClose: onDetailsModalClose,
+  } = useDisclosure();
+  const {
+    isOpen: isEditModalOpen,
+    onOpen: onEditModalOpen,
+    onClose: onEditModalClose,
+  } = useDisclosure();
+
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [eventToEdit, setEventToEdit] = useState<Event | null>(null);
-  
+
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
 
@@ -83,11 +95,12 @@ const EventsPage: React.FC = () => {
     onSuccess: (data, eventId) => {
       toast({
         title: 'Event accepted',
-        description: 'You have accepted this event. Certification deadline reminder has been set.',
+        description:
+          'You have accepted this event. Certification deadline reminder has been set.',
         status: 'success',
         duration: 3000,
       });
-      
+
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
@@ -102,8 +115,13 @@ const EventsPage: React.FC = () => {
   });
 
   const updateEventMutation = useMutation({
-    mutationFn: ({ eventId, data }: { eventId: string; data: Partial<UpdateEventData> }) =>
-      eventAPI.updateEvent(eventId, data),
+    mutationFn: ({
+      eventId,
+      data,
+    }: {
+      eventId: string;
+      data: Partial<UpdateEventData>;
+    }) => eventAPI.updateEvent(eventId, data),
     onSuccess: () => {
       toast({
         title: 'Event updated',
@@ -161,7 +179,11 @@ const EventsPage: React.FC = () => {
   };
 
   const handleDeleteEvent = (eventId: string) => {
-    if (window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+    if (
+      window.confirm(
+        'Are you sure you want to delete this event? This action cannot be undone.',
+      )
+    ) {
       deleteEventMutation.mutate(eventId);
     }
   };
@@ -177,8 +199,15 @@ const EventsPage: React.FC = () => {
             View and participate in workshops and hackathons
           </Text>
         </Box>
-        
-        <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }} gap={6}>
+
+        <Grid
+          templateColumns={{
+            base: '1fr',
+            md: 'repeat(2, 1fr)',
+            lg: 'repeat(3, 1fr)',
+          }}
+          gap={6}
+        >
           {[...Array(6)].map((_, i) => (
             <GridItem key={i}>
               <Skeleton height="200px" />
@@ -200,7 +229,7 @@ const EventsPage: React.FC = () => {
             View and participate in workshops and hackathons
           </Text>
         </Box>
-        
+
         {user?.role === 'ADMIN' && (
           <Button
             leftIcon={<FiPlus />}
@@ -213,7 +242,14 @@ const EventsPage: React.FC = () => {
       </HStack>
 
       {/* Events Grid */}
-      <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }} gap={6}>
+      <Grid
+        templateColumns={{
+          base: '1fr',
+          md: 'repeat(2, 1fr)',
+          lg: 'repeat(3, 1fr)',
+        }}
+        gap={6}
+      >
         {events.map((event) => (
           <GridItem key={event.id}>
             <EventCard
@@ -272,7 +308,9 @@ const EventsPage: React.FC = () => {
         isOpen={isEditModalOpen}
         onClose={onEditModalClose}
         eventToEdit={eventToEdit}
-        onUpdateEvent={(eventId: string, data: Partial<UpdateEventData>) => updateEventMutation.mutate({ eventId, data })}
+        onUpdateEvent={(eventId: string, data: Partial<UpdateEventData>) =>
+          updateEventMutation.mutate({ eventId, data })
+        }
         updateEventMutation={updateEventMutation}
       />
     </VStack>

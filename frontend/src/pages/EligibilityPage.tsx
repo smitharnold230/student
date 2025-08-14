@@ -36,7 +36,14 @@ interface Student {
   eligibility?: EligibilityData;
 }
 
-const BATCHES = ['PRODUCT', 'SERVICE_A', 'SERVICE_B', 'SERVICE_C1', 'SERVICE_C2', 'SERVICE_C3'];
+const BATCHES = [
+  'PRODUCT',
+  'SERVICE_A',
+  'SERVICE_B',
+  'SERVICE_C1',
+  'SERVICE_C2',
+  'SERVICE_C3',
+];
 
 const EligibilityPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -57,13 +64,20 @@ const EligibilityPage: React.FC = () => {
 
   const getBatchColor = (batch: string) => {
     switch (batch) {
-      case 'PRODUCT': return 'purple';
-      case 'SERVICE_A': return 'blue';
-      case 'SERVICE_B': return 'green';
-      case 'SERVICE_C1': return 'yellow';
-      case 'SERVICE_C2': return 'orange';
-      case 'SERVICE_C3': return 'gray';
-      default: return 'gray';
+      case 'PRODUCT':
+        return 'purple';
+      case 'SERVICE_A':
+        return 'blue';
+      case 'SERVICE_B':
+        return 'green';
+      case 'SERVICE_C1':
+        return 'yellow';
+      case 'SERVICE_C2':
+        return 'orange';
+      case 'SERVICE_C3':
+        return 'gray';
+      default:
+        return 'gray';
     }
   };
 
@@ -72,7 +86,11 @@ const EligibilityPage: React.FC = () => {
   };
 
   // Admin Queries & Mutations
-  const { data: studentsResponse, isLoading: studentsLoading, refetch: refetchStudents } = useQuery({
+  const {
+    data: studentsResponse,
+    isLoading: studentsLoading,
+    refetch: refetchStudents,
+  } = useQuery({
     queryKey: ['students'],
     queryFn: () => profileAPI.getAllStudents(),
     enabled: user?.role === 'ADMIN',
@@ -92,11 +110,13 @@ const EligibilityPage: React.FC = () => {
   });
 
   // Student Queries
-  const { data: eligibilityResponse, isLoading: eligibilityLoading } = useQuery({
-    queryKey: ['eligibility'],
-    queryFn: () => eligibilityAPI.checkEligibility(),
-    enabled: user?.role === 'STUDENT',
-  });
+  const { data: eligibilityResponse, isLoading: eligibilityLoading } = useQuery(
+    {
+      queryKey: ['eligibility'],
+      queryFn: () => eligibilityAPI.checkEligibility(),
+      enabled: user?.role === 'STUDENT',
+    },
+  );
 
   const eligibility: EligibilityData = eligibilityResponse?.data || {
     eligible: false,
@@ -105,7 +125,8 @@ const EligibilityPage: React.FC = () => {
     leetcode: 0,
   };
 
-  const isLoading = user?.role === 'STUDENT' ? eligibilityLoading : studentsLoading;
+  const isLoading =
+    user?.role === 'STUDENT' ? eligibilityLoading : studentsLoading;
 
   if (isLoading) {
     return (
@@ -114,9 +135,7 @@ const EligibilityPage: React.FC = () => {
           <Heading size="lg" color="white" mb={2}>
             Eligibility
           </Heading>
-          <Text color="gray.400">
-            Loading eligibility data...
-          </Text>
+          <Text color="gray.400">Loading eligibility data...</Text>
         </Box>
         <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={6}>
           {[...Array(4)].map((_, i) => (
