@@ -21,15 +21,15 @@ import PointRulesPage from './pages/PointRulesPage';
 import UserManagementPage from './pages/UserManagementPage';
 import EventDetailsPage from './pages/EventDetailsPage'; // Import the new EventDetailsPage
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles?: string[] }> = ({
-  children,
-  allowedRoles,
-}) => {
+const ProtectedRoute: React.FC<{
+  children: React.ReactNode;
+  allowedRoles?: string[];
+}> = ({ children, allowedRoles }) => {
   const { isAuthenticated, user } = useAuthStore();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
-    }
+  }
 
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
     return <Navigate to="/" replace />;
@@ -49,7 +49,7 @@ function App() {
     >
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        
+
         <Route
           path="/"
           element={
@@ -63,13 +63,13 @@ function App() {
           <Route path="leaderboard" element={<LeaderboardPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="events" element={<EventsPage />} />
-          <Route path="events/:eventId" element={<EventDetailsPage />} /> {/* New route for individual event details */}
+          <Route path="events/:eventId" element={<EventDetailsPage />} />{' '}
+          {/* New route for individual event details */}
           <Route path="coding-stats" element={<CodingStatsPage />} />
           <Route path="certifications" element={<CertificationsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="points" element={<PointsPage />} />
           <Route path="eligibility" element={<EligibilityPage />} />
-          
           {/* Admin Routes */}
           <Route
             path="admin"

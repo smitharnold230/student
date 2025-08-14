@@ -16,7 +16,13 @@ import {
   Divider,
 } from '@chakra-ui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { FiBell, FiCheck, FiAlertCircle, FiInfo, FiClock } from 'react-icons/fi';
+import {
+  FiBell,
+  FiCheck,
+  FiAlertCircle,
+  FiInfo,
+  FiClock,
+} from 'react-icons/fi';
 import { notificationAPI } from '../services/api';
 import { useNotifications } from '../hooks/useNotifications';
 import { Notification } from '../types/notification';
@@ -26,10 +32,10 @@ const NotificationsPage: React.FC = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate(); // Initialize useNavigate
-  
+
   // Initialize real-time notifications
   useNotifications();
-  
+
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
 
@@ -43,14 +49,16 @@ const NotificationsPage: React.FC = () => {
   const notifications: Notification[] = notificationsResponse?.data || [];
 
   const markAsReadMutation = useMutation({
-    mutationFn: (notificationId: string) => notificationAPI.markAsRead(notificationId),
+    mutationFn: (notificationId: string) =>
+      notificationAPI.markAsRead(notificationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
     onError: (error: any) => {
       toast({
         title: 'Failed to mark as read',
-        description: error.response?.data?.error || 'Failed to update notification',
+        description:
+          error.response?.data?.error || 'Failed to update notification',
         status: 'error',
         duration: 3000,
       });
@@ -92,8 +100,10 @@ const NotificationsPage: React.FC = () => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+    );
+
     if (diffInHours < 1) {
       return 'Just now';
     } else if (diffInHours < 24) {
@@ -107,7 +117,9 @@ const NotificationsPage: React.FC = () => {
     }
   };
 
-  const unreadCount = notifications.filter(notification => !notification.read).length;
+  const unreadCount = notifications.filter(
+    (notification) => !notification.read,
+  ).length;
   const totalCount = notifications.length;
 
   if (isLoading) {
@@ -117,11 +129,9 @@ const NotificationsPage: React.FC = () => {
           <Heading size="lg" color="white" mb={2}>
             Notifications
           </Heading>
-          <Text color="gray.400">
-            Stay updated with your latest activities
-          </Text>
+          <Text color="gray.400">Stay updated with your latest activities</Text>
         </Box>
-        
+
         <VStack spacing={4}>
           {[...Array(5)].map((_, i) => (
             <Skeleton key={i} height="100px" w="full" />
@@ -138,11 +148,9 @@ const NotificationsPage: React.FC = () => {
           <Heading size="lg" color="white" mb={2}>
             Notifications
           </Heading>
-          <Text color="gray.400">
-            Stay updated with your latest activities
-          </Text>
+          <Text color="gray.400">Stay updated with your latest activities</Text>
         </Box>
-        
+
         <HStack spacing={3}>
           <Badge colorScheme="brand" variant="subtle">
             {unreadCount} unread
@@ -184,7 +192,7 @@ const NotificationsPage: React.FC = () => {
                         </Text>
                       </VStack>
                     </HStack>
-                    
+
                     <VStack align="end" spacing={2}>
                       <HStack spacing={2}>
                         <Badge
@@ -195,18 +203,22 @@ const NotificationsPage: React.FC = () => {
                           {notification.type}
                         </Badge>
                         {!notification.read && (
-                          <Badge colorScheme="brand" variant="solid" fontSize="xs">
+                          <Badge
+                            colorScheme="brand"
+                            variant="solid"
+                            fontSize="xs"
+                          >
                             NEW
                           </Badge>
                         )}
                       </HStack>
-                      
+
                       <HStack spacing={2}>
                         <Text color="gray.500" fontSize="xs">
                           <Icon as={FiClock} mr={1} />
                           {formatDate(notification.createdAt)}
                         </Text>
-                        
+
                         {!notification.read && (
                           <Button
                             size="xs"
@@ -229,7 +241,9 @@ const NotificationsPage: React.FC = () => {
                         size="sm"
                         colorScheme="brand"
                         variant="outline"
-                        onClick={() => navigate(`/events/${notification.eventId}`)} // Changed to navigate
+                        onClick={() =>
+                          navigate(`/events/${notification.eventId}`)
+                        } // Changed to navigate
                       >
                         View Event Details
                       </Button>
@@ -255,8 +269,6 @@ const NotificationsPage: React.FC = () => {
           </Card>
         )}
       </VStack>
-
-
     </VStack>
   );
 };

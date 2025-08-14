@@ -17,7 +17,14 @@ import {
   Divider,
 } from '@chakra-ui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { FiCalendar, FiExternalLink, FiUsers, FiArrowLeft, FiEdit, FiTrash2 } from 'react-icons/fi';
+import {
+  FiCalendar,
+  FiExternalLink,
+  FiUsers,
+  FiArrowLeft,
+  FiEdit,
+  FiTrash2,
+} from 'react-icons/fi';
 import { eventAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import { Event, UpdateEventData } from '../types/event';
@@ -34,7 +41,12 @@ const EventDetailsPage: React.FC = () => {
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
 
-  const { data: eventResponse, isLoading, isError, error } = useQuery({
+  const {
+    data: eventResponse,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ['event', eventId],
     queryFn: () => eventAPI.getEventDetails(eventId!),
     enabled: !!eventId, // Only run query if eventId is available
@@ -47,7 +59,8 @@ const EventDetailsPage: React.FC = () => {
     onSuccess: () => {
       toast({
         title: 'Event accepted',
-        description: 'You have accepted this event. Certification deadline reminder has been set.',
+        description:
+          'You have accepted this event. Certification deadline reminder has been set.',
         status: 'success',
         duration: 3000,
       });
@@ -66,8 +79,12 @@ const EventDetailsPage: React.FC = () => {
   });
 
   const updateEventMutation = useMutation({
-    mutationFn: ({ eventId: id, data }: { eventId: string; data: Partial<UpdateEventData> }) => // Corrected 'id' to 'eventId'
-      eventAPI.updateEvent(id, data),
+    mutationFn: (
+      {
+        eventId: id,
+        data,
+      }: { eventId: string; data: Partial<UpdateEventData> }, // Corrected 'id' to 'eventId'
+    ) => eventAPI.updateEvent(id, data),
     onSuccess: () => {
       toast({
         title: 'Event updated',
@@ -119,7 +136,11 @@ const EventDetailsPage: React.FC = () => {
   };
 
   const handleDeleteClick = () => {
-    if (window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+    if (
+      window.confirm(
+        'Are you sure you want to delete this event? This action cannot be undone.',
+      )
+    ) {
       if (eventId) {
         deleteEventMutation.mutate(eventId);
       }
@@ -171,7 +192,9 @@ const EventDetailsPage: React.FC = () => {
         <Heading size="lg" color="white" mb={2}>
           Event Details
         </Heading>
-        <Text color="red.400">Error loading event: {error?.message || 'Event not found'}</Text>
+        <Text color="red.400">
+          Error loading event: {error?.message || 'Event not found'}
+        </Text>
         <Button leftIcon={<FiArrowLeft />} onClick={() => navigate('/events')}>
           Back to Events
         </Button>
@@ -186,9 +209,7 @@ const EventDetailsPage: React.FC = () => {
           <Heading size="lg" color="white" mb={2}>
             Event Details
           </Heading>
-          <Text color="gray.400">
-            Detailed information about the event
-          </Text>
+          <Text color="gray.400">Detailed information about the event</Text>
         </Box>
         <Button leftIcon={<FiArrowLeft />} onClick={() => navigate('/events')}>
           Back to Events
@@ -252,7 +273,12 @@ const EventDetailsPage: React.FC = () => {
                   <Icon as={FiExternalLink} color="gray.500" boxSize={4} />
                   <Text color="gray.300">
                     <strong>Event URL:</strong>{' '}
-                    <a href={event.url} target="_blank" rel="noopener noreferrer" style={{ color: '#3182ce' }}>
+                    <a
+                      href={event.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: '#3182ce' }}
+                    >
                       {event.url}
                     </a>
                   </Text>
@@ -264,7 +290,12 @@ const EventDetailsPage: React.FC = () => {
                   <Icon as={FiExternalLink} color="gray.500" boxSize={4} />
                   <Text color="gray.300">
                     <strong>Registration Link:</strong>{' '}
-                    <a href={event.link} target="_blank" rel="noopener noreferrer" style={{ color: '#3182ce' }}>
+                    <a
+                      href={event.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: '#3182ce' }}
+                    >
                       {event.link}
                     </a>
                   </Text>
@@ -275,7 +306,8 @@ const EventDetailsPage: React.FC = () => {
                 <HStack spacing={2}>
                   <Icon as={FiCalendar} color="orange.400" boxSize={4} />
                   <Text color="orange.400">
-                    <strong>Certification Deadline:</strong> {formatDate(event.certificationDeadline)}
+                    <strong>Certification Deadline:</strong>{' '}
+                    {formatDate(event.certificationDeadline)}
                   </Text>
                 </HStack>
               )}
@@ -302,7 +334,9 @@ const EventDetailsPage: React.FC = () => {
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           eventToEdit={event}
-          onUpdateEvent={(id, data) => updateEventMutation.mutate({ eventId: id, data })}
+          onUpdateEvent={(id, data) =>
+            updateEventMutation.mutate({ eventId: id, data })
+          }
           updateEventMutation={updateEventMutation}
         />
       )}

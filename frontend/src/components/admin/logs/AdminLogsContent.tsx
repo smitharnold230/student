@@ -36,11 +36,13 @@ interface AdminLogsContentProps {
     statusCode: string;
     endpoint: string;
   };
-  setFilters: React.Dispatch<React.SetStateAction<{
-    method: string;
-    statusCode: string;
-    endpoint: string;
-  }>>;
+  setFilters: React.Dispatch<
+    React.SetStateAction<{
+      method: string;
+      statusCode: string;
+      endpoint: string;
+    }>
+  >;
   handleRefresh: () => void;
   isLoading: boolean;
   handleExport: () => void;
@@ -105,11 +107,16 @@ const AdminLogsContent: React.FC<AdminLogsContentProps> = ({
   };
 
   const totalRequests = logs.length;
-  const successfulRequests = logs.filter(log => log.statusCode >= 200 && log.statusCode < 300).length;
-  const errorRequests = logs.filter(log => log.statusCode >= 400).length;
-  const averageResponseTime = logs.length > 0 
-    ? Math.round(logs.reduce((sum, log) => sum + log.responseTime, 0) / logs.length)
-    : 0;
+  const successfulRequests = logs.filter(
+    (log) => log.statusCode >= 200 && log.statusCode < 300,
+  ).length;
+  const errorRequests = logs.filter((log) => log.statusCode >= 400).length;
+  const averageResponseTime =
+    logs.length > 0
+      ? Math.round(
+          logs.reduce((sum, log) => sum + log.responseTime, 0) / logs.length,
+        )
+      : 0;
 
   return (
     <VStack spacing={6} align="stretch">

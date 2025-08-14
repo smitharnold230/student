@@ -16,7 +16,11 @@ async function submitLeetCode(req, res, next) {
 async function submitHackerRank(req, res, next) {
   try {
     const { url, manualCount } = req.body;
-    const stat = await codingStatsService.submitHackerRank(req.user.userId, url, manualCount);
+    const stat = await codingStatsService.submitHackerRank(
+      req.user.userId,
+      url,
+      manualCount,
+    );
     res.status(201).json({ message: 'HackerRank stats updated', stat });
   } catch (err) {
     next(err);
@@ -35,7 +39,10 @@ async function getStats(req, res, next) {
 async function deleteStat(req, res, next) {
   try {
     const { platform } = req.params; // Get platform from URL params
-    const result = await codingStatsService.deleteCodingStat(req.user.userId, platform);
+    const result = await codingStatsService.deleteCodingStat(
+      req.user.userId,
+      platform,
+    );
     res.json(result);
   } catch (err) {
     next(err);

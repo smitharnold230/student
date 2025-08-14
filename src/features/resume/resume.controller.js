@@ -10,4 +10,4 @@ async function generateResume(req, res, next) {
   }
 }
 
-module.exports = { generateResume }; 
+module.exports = { generateResume };

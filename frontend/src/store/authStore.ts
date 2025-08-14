@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export interface User { // Exporting the User interface
+export interface User {
+  // Exporting the User interface
   id: string;
   email: string;
   role: 'STUDENT' | 'ADMIN';
@@ -40,6 +41,6 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-    }
-  )
+    },
+  ),
 );

@@ -23,7 +23,12 @@ interface CertificationTableProps {
   certifications: Certification[];
   userRole: string | null;
   onVerify: (submissionId: string, status: 'APPROVED' | 'REJECTED') => void;
-  verifyMutation: UseMutationResult<any, Error, { submissionId: string; status: string }, unknown>;
+  verifyMutation: UseMutationResult<
+    any,
+    Error,
+    { submissionId: string; status: string },
+    unknown
+  >;
 }
 
 const CertificationTable: React.FC<CertificationTableProps> = ({
@@ -92,7 +97,12 @@ const CertificationTable: React.FC<CertificationTableProps> = ({
                     size="xs"
                     colorScheme="blue"
                     variant="outline"
-                    onClick={() => window.open(`http://localhost:4000${cert.fileUrl}`, '_blank')}
+                    onClick={() =>
+                      window.open(
+                        `http://localhost:4000${cert.fileUrl}`,
+                        '_blank',
+                      )
+                    }
                   >
                     View PDF
                   </Button>
@@ -139,10 +149,9 @@ const CertificationTable: React.FC<CertificationTableProps> = ({
         <VStack spacing={4}>
           <Icon as={FiAward} color="gray.500" boxSize={12} />
           <Text color="gray.400" textAlign="center">
-            {userRole === 'ADMIN' 
+            {userRole === 'ADMIN'
               ? 'No pending certifications to verify.'
-              : 'No certifications uploaded yet.'
-            }
+              : 'No certifications uploaded yet.'}
           </Text>
           {userRole === 'STUDENT' && (
             <Text color="gray.500" fontSize="sm" textAlign="center">

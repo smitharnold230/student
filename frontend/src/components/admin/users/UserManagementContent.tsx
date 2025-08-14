@@ -16,7 +16,7 @@ import {
   FiUserPlus,
   FiShield,
   FiUser,
-  FiUploadCloud
+  FiUploadCloud,
 } from 'react-icons/fi';
 import { UseMutationResult } from '@tanstack/react-query';
 import { AxiosProgressEvent } from 'axios';
@@ -43,7 +43,9 @@ interface User {
 const createUserSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  role: z.string().refine(val => val === 'STUDENT' || val === 'ADMIN', { message: 'Role is required' }),
+  role: z.string().refine((val) => val === 'STUDENT' || val === 'ADMIN', {
+    message: 'Role is required',
+  }),
 });
 
 type CreateUserForm = z.infer<typeof createUserSchema>;
@@ -53,7 +55,7 @@ interface UserManagementContentProps {
   usersLoading: boolean;
   handleDeleteUser: (userId: string, email: string) => void;
   deleteUserMutation: UseMutationResult<any, Error, string, unknown>;
-  
+
   isCreateModalOpen: boolean;
   onCreateModalOpen: () => void;
   onCreateModalClose: () => void;
@@ -88,8 +90,8 @@ const UserManagementContent: React.FC<UserManagementContentProps> = ({
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
 
-  const totalStudents = users.filter(u => u.role === 'STUDENT').length;
-  const totalAdmins = users.filter(u => u.role === 'ADMIN').length;
+  const totalStudents = users.filter((u) => u.role === 'STUDENT').length;
+  const totalAdmins = users.filter((u) => u.role === 'ADMIN').length;
 
   return (
     <VStack spacing={6} align="stretch">
@@ -98,9 +100,7 @@ const UserManagementContent: React.FC<UserManagementContentProps> = ({
         <Heading size="lg" color="white" mb={2}>
           User Management
         </Heading>
-        <Text color="gray.400">
-          Manage all users in the system
-        </Text>
+        <Text color="gray.400">Manage all users in the system</Text>
       </Box>
 
       {/* Statistics */}

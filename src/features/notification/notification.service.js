@@ -6,7 +6,16 @@ async function getNotifications(userId) {
     return await Notification.findAll({
       where: { userId },
       order: [['createdAt', 'DESC']],
-      attributes: ['id', 'type', 'title', 'message', 'read', 'createdAt', 'eventId', 'deadline']
+      attributes: [
+        'id',
+        'type',
+        'title',
+        'message',
+        'read',
+        'createdAt',
+        'eventId',
+        'deadline',
+      ],
     });
   } catch (error) {
     console.error('Failed to fetch notifications:', error);
@@ -18,10 +27,10 @@ async function markAsRead(notificationId) {
   try {
     const [_, [updatedNotification]] = await Notification.update(
       { read: true },
-      { 
+      {
         where: { id: notificationId },
-        returning: true
-      }
+        returning: true,
+      },
     );
     return updatedNotification;
   } catch (error) {
@@ -57,18 +66,24 @@ async function createNotification(userId, data) {
 
 async function deleteNotification(notificationId) {
   return Notification.destroy({
-    where: { id: notificationId }
+    where: { id: notificationId },
   });
 }
 
 async function deleteNotificationByEventId(userId, eventId, type) {
   return Notification.destroy({
-    where: { 
+    where: {
       userId,
       eventId,
-      type
-    }
+      type,
+    },
   });
 }
 
-module.exports = { getNotifications, markAsRead, createNotification, deleteNotification, deleteNotificationByEventId };
+module.exports = {
+  getNotifications,
+  markAsRead,
+  createNotification,
+  deleteNotification,
+  deleteNotificationByEventId,
+};

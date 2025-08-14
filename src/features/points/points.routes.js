@@ -1,20 +1,41 @@
-const express = require('express');
-const router = express.Router();
-const pointsController = require('./points.controller');
-const { authenticateToken, requireRole } = require('../../middleware/auth');
+/**
+ * Points routes with validation and auth
+ */
+const router = require('express').Router();
+const { z } = require('zod');
 const { validate } = require('../../middleware/validate');
+const { requireAuth, requireRole } = require('../../middleware/auth');
+const pointsService = require('./points.service');
 
-// Student routes
-router.get('/my-points', authenticateToken, pointsController.calculateMyPoints);
-router.get('/my-breakdown', authenticateToken, pointsController.getMyPointBreakdown);
-router.get('/rules', authenticateToken, pointsController.getPointRules);
-router.post('/add-activity', authenticateToken, validate('points.addActivity'), pointsController.addPointsForActivity);
+const updateSchema = {
+  body: z.object({
+    points: z.number().int().min(0),
+    reason: z.string().min(1),
+  }),
+};
 
-// Admin routes
-router.get('/statistics', authenticateToken, requireRole('ADMIN'), pointsController.getPointStatistics);
-router.post('/update-all', authenticateToken, requireRole('ADMIN'), pointsController.updateAllUserPoints);
-router.get('/users', authenticateToken, requireRole('ADMIN'), pointsController.getAllUsersWithPoints);
-router.post('/update-users', authenticateToken, requireRole('ADMIN'), validate('points.updateUsers'), pointsController.updateUserPointsManually);
-router.post('/reset-users', authenticateToken, requireRole('ADMIN'), validate('points.resetUsers'), pointsController.resetUserPoints);
+router.post(
+  '/update',
+  requireAuth,
+  requireRole('admin'),
+  validate(updateSchema),
+  async (req, res, next) => {
+    try {
+      const data = await pointsService.updatePoints(req.body);
+      res.json({ ok: true, data });
+    } catch (e) {
+      next(e);
+    }
+  },
+);
 
-module.exports = router; 
+router.get('/', requireAuth, async (req, res, next) => {
+  try {
+    const data = await pointsService.getUserPoints(req.user.id);
+    res.json({ ok: true, data });
+  } catch (e) {
+    next(e);
+  }
+});
+
+module.exports = router;

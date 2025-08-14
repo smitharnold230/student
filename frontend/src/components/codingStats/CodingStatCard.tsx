@@ -77,16 +77,20 @@ const CodingStatCard: React.FC<CodingStatCardProps> = ({
             <Text color="white" fontSize="lg" fontWeight="bold" mb={1}>
               {stat.url.split('/').filter(Boolean).pop()}
             </Text>
-            
+
             <VStack spacing={3} align="start">
               <HStack justify="space-between" w="full">
-                <Text color="gray.400" fontSize="sm">Problems Solved</Text>
+                <Text color="gray.400" fontSize="sm">
+                  Problems Solved
+                </Text>
                 <Text color="white" fontSize="sm">
                   {stat.problemsSolved}
                 </Text>
               </HStack>
               <HStack justify="space-between" w="full">
-                <Text color="gray.400" fontSize="sm">Profile URL</Text>
+                <Text color="gray.400" fontSize="sm">
+                  Profile URL
+                </Text>
                 <Button
                   as="a"
                   href={stat.url}

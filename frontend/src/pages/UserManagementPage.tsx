@@ -32,7 +32,9 @@ interface User {
 const createUserSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  role: z.string().refine(val => val === 'STUDENT' || val === 'ADMIN', { message: 'Role is required' }),
+  role: z.string().refine((val) => val === 'STUDENT' || val === 'ADMIN', {
+    message: 'Role is required',
+  }),
 });
 
 type CreateUserForm = z.infer<typeof createUserSchema>;
@@ -40,8 +42,16 @@ type CreateUserForm = z.infer<typeof createUserSchema>;
 const UserManagementPage: React.FC = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
-  const { isOpen: isCreateModalOpen, onOpen: onCreateModalOpen, onClose: onCreateModalClose } = useDisclosure();
-  const { isOpen: isBulkUploadModalOpen, onOpen: onBulkUploadModalOpen, onClose: onBulkUploadModalClose } = useDisclosure();
+  const {
+    isOpen: isCreateModalOpen,
+    onOpen: onCreateModalOpen,
+    onClose: onCreateModalClose,
+  } = useDisclosure();
+  const {
+    isOpen: isBulkUploadModalOpen,
+    onOpen: onBulkUploadModalOpen,
+    onClose: onBulkUploadModalClose,
+  } = useDisclosure();
   const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   // Get all users
@@ -54,7 +64,12 @@ const UserManagementPage: React.FC = () => {
 
   // Create user mutation
   const createUserMutation = useMutation({
-    mutationFn: (data: CreateUserForm) => authAPI.signup(data.email, data.password, data.role as 'STUDENT' | 'ADMIN'),
+    mutationFn: (data: CreateUserForm) =>
+      authAPI.signup(
+        data.email,
+        data.password,
+        data.role as 'STUDENT' | 'ADMIN',
+      ),
     onSuccess: () => {
       toast({
         title: 'User Created',
@@ -99,11 +114,14 @@ const UserManagementPage: React.FC = () => {
 
   // Bulk upload users mutation
   const bulkUploadUsersMutation = useMutation({
-    mutationFn: (file: File) => adminAPI.bulkUploadUsers(file, (progressEvent: AxiosProgressEvent) => {
-      if (progressEvent.total) {
-        setUploadProgress(Math.round((progressEvent.loaded * 100) / progressEvent.total));
-      }
-    }),
+    mutationFn: (file: File) =>
+      adminAPI.bulkUploadUsers(file, (progressEvent: AxiosProgressEvent) => {
+        if (progressEvent.total) {
+          setUploadProgress(
+            Math.round((progressEvent.loaded * 100) / progressEvent.total),
+          );
+        }
+      }),
     onSuccess: () => {
       // Success toast and result display handled in BulkUserUploadModal
       queryClient.invalidateQueries({ queryKey: ['users'] }); // Invalidate to refresh user list
@@ -118,7 +136,11 @@ const UserManagementPage: React.FC = () => {
   };
 
   const handleDeleteUser = (userId: string, email: string) => {
-    if (window.confirm(`Are you sure you want to delete user ${email}? This action cannot be undone.`)) {
+    if (
+      window.confirm(
+        `Are you sure you want to delete user ${email}? This action cannot be undone.`,
+      )
+    ) {
       deleteUserMutation.mutate(userId);
     }
   };
@@ -130,11 +152,9 @@ const UserManagementPage: React.FC = () => {
           <Heading size="lg" color="white" mb={2}>
             User Management
           </Heading>
-          <Text color="gray.400">
-            Manage all users in the system
-          </Text>
+          <Text color="gray.400">Manage all users in the system</Text>
         </Box>
-        
+
         <Skeleton height="120px" />
         <Skeleton height="150px" />
         <Skeleton height="300px" />

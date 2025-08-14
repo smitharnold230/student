@@ -24,7 +24,7 @@ const ProfilePage: React.FC = () => {
   const { user } = useAuthStore();
   const toast = useToast();
   const queryClient = useQueryClient();
-  
+
   // State for modals
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
@@ -32,10 +32,12 @@ const ProfilePage: React.FC = () => {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   // Fetch profile data
-  const { data: profileResponse, isLoading } = useQuery<AxiosResponse<Profile>>({
-    queryKey: ['profile'],
-    queryFn: () => profileAPI.getProfile(),
-  });
+  const { data: profileResponse, isLoading } = useQuery<AxiosResponse<Profile>>(
+    {
+      queryKey: ['profile'],
+      queryFn: () => profileAPI.getProfile(),
+    },
+  );
   const profile: Profile | undefined = profileResponse?.data; // Changed to Profile | undefined
 
   // Mutations
@@ -44,7 +46,8 @@ const ProfilePage: React.FC = () => {
     onSuccess: () => {
       toast({
         title: 'Edit request submitted',
-        description: 'Your profile edit request has been submitted for admin approval.',
+        description:
+          'Your profile edit request has been submitted for admin approval.',
         status: 'success',
         duration: 5000,
       });
@@ -54,7 +57,8 @@ const ProfilePage: React.FC = () => {
     onError: (error: any) => {
       toast({
         title: 'Request failed',
-        description: error.response?.data?.error || 'Failed to submit edit request',
+        description:
+          error.response?.data?.error || 'Failed to submit edit request',
         status: 'error',
         duration: 5000,
       });
@@ -84,11 +88,14 @@ const ProfilePage: React.FC = () => {
   });
 
   const uploadPhotoMutation = useMutation({
-    mutationFn: (file: File) => profileAPI.uploadPhoto(file, (progressEvent: AxiosProgressEvent) => {
-      if (progressEvent.total) {
-        setUploadProgress(Math.round((progressEvent.loaded * 100) / progressEvent.total));
-      }
-    }),
+    mutationFn: (file: File) =>
+      profileAPI.uploadPhoto(file, (progressEvent: AxiosProgressEvent) => {
+        if (progressEvent.total) {
+          setUploadProgress(
+            Math.round((progressEvent.loaded * 100) / progressEvent.total),
+          );
+        }
+      }),
     onSuccess: () => {
       setUploadProgress(0);
       toast({
@@ -105,7 +112,8 @@ const ProfilePage: React.FC = () => {
       setUploadProgress(0);
       toast({
         title: 'Upload failed',
-        description: error.response?.data?.error || 'Failed to upload profile photo',
+        description:
+          error.response?.data?.error || 'Failed to upload profile photo',
         status: 'error',
         duration: 5000,
       });
@@ -123,7 +131,7 @@ const ProfilePage: React.FC = () => {
             Manage your student profile and information
           </Text>
         </Box>
-        
+
         <Card bg="gray.800" border="1px solid" borderColor="gray.700">
           <CardBody>
             <Skeleton height="200px" />

@@ -1,26 +1,49 @@
+/**
+ * Authentication & authorization middleware
+ */
 const jwt = require('jsonwebtoken');
-const JWT_SECRET = process.env.JWT_SECRET;
 
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'No token provided' });
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ error: 'Invalid token' });
-    req.user = user;
+/**
+ * Require valid JWT token
+ */
+const requireAuth = (req, res, next) => {
+  const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+
+  if (!token) {
+    return next({
+      status: 401,
+      code: 'NO_TOKEN',
+      message: 'Missing authorization token',
+    });
+  }
+
+  try {
+    const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    req.user = payload;
     next();
-  });
-}
+  } catch {
+    next({
+      status: 401,
+      code: 'BAD_TOKEN',
+      message: 'Invalid or expired token',
+    });
+  }
+};
 
-// Modified to accept a single role string or an array of role strings
-function requireRole(roles) {
-  return (req, res, next) => {
-    const allowedRoles = Array.isArray(roles) ? roles : [roles];
-    if (!req.user || !allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({ error: 'Forbidden: insufficient role' });
+/**
+ * Require specific role(s)
+ */
+const requireRole =
+  (...roles) =>
+  (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return next({
+        status: 403,
+        code: 'FORBIDDEN',
+        message: 'Insufficient permissions',
+      });
     }
     next();
   };
-}
 
-module.exports = { authenticateToken, requireRole };
+module.exports = { requireAuth, requireRole };

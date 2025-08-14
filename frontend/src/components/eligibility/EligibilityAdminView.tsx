@@ -35,8 +35,18 @@ interface EligibilityAdminViewProps {
   students: Student[];
   studentsLoading: boolean;
   refetchStudents: () => void;
-  assignAllEligibleBatchesMutation: UseMutationResult<any, Error, void, unknown>;
-  assignBatchMutation: UseMutationResult<any, Error, { userId: string; batch: string; auto: boolean }, unknown>;
+  assignAllEligibleBatchesMutation: UseMutationResult<
+    any,
+    Error,
+    void,
+    unknown
+  >;
+  assignBatchMutation: UseMutationResult<
+    any,
+    Error,
+    { userId: string; batch: string; auto: boolean },
+    unknown
+  >;
   cardBg: string;
   borderColor: string;
   getEligibilityColor: (eligible: boolean) => string;
@@ -59,15 +69,20 @@ const EligibilityAdminView: React.FC<EligibilityAdminViewProps> = ({
   BATCHES,
 }) => {
   const toast = useToast();
-  const { isOpen: isAssignModalOpen, onOpen: onAssignModalOpen, onClose: onAssignModalClose } = useDisclosure();
+  const {
+    isOpen: isAssignModalOpen,
+    onOpen: onAssignModalOpen,
+    onClose: onAssignModalClose,
+  } = useDisclosure();
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [selectedBatch, setSelectedBatch] = useState<string>('SERVICE_C3');
   const [isAutoAssign, setIsAutoAssign] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>('');
 
-  const filteredStudents = students.filter(student =>
-    student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredStudents = students.filter(
+    (student) =>
+      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.email.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleAssignBatchClick = (student: Student) => {
@@ -100,12 +115,13 @@ const EligibilityAdminView: React.FC<EligibilityAdminViewProps> = ({
         onError: (error: any) => {
           toast({
             title: 'Assignment Failed',
-            description: error.response?.data?.error || 'Failed to assign batch',
+            description:
+              error.response?.data?.error || 'Failed to assign batch',
             status: 'error',
             duration: 5000,
           });
         },
-      }
+      },
     );
   };
 
@@ -114,7 +130,8 @@ const EligibilityAdminView: React.FC<EligibilityAdminViewProps> = ({
       onSuccess: () => {
         toast({
           title: 'Batch Assignment Triggered',
-          description: 'Batch assignment process for all eligible students has been initiated.',
+          description:
+            'Batch assignment process for all eligible students has been initiated.',
           status: 'success',
           duration: 5000,
         });
@@ -123,7 +140,8 @@ const EligibilityAdminView: React.FC<EligibilityAdminViewProps> = ({
       onError: (error: any) => {
         toast({
           title: 'Batch Assignment Failed',
-          description: error.response?.data?.error || 'Failed to trigger batch assignment',
+          description:
+            error.response?.data?.error || 'Failed to trigger batch assignment',
           status: 'error',
           duration: 5000,
         });

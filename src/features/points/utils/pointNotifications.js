@@ -13,7 +13,7 @@ async function sendPointUpdateNotification(userId, pointsChange, reason) {
       title: 'Points Updated',
       message: `Your points have been ${pointsChange >= 0 ? 'increased' : 'decreased'} by ${Math.abs(pointsChange)}. Reason: ${reason}`,
       type: 'POINTS_UPDATE',
-      read: false
+      read: false,
     });
   } catch (error) {
     console.error('Error sending point update notification:', error);
@@ -33,7 +33,7 @@ async function sendPointResetNotification(userId, reason) {
       title: 'Points Reset',
       message: `Your points have been reset to 0. Reason: ${reason}`,
       type: 'POINTS_RESET',
-      read: false
+      read: false,
     });
   } catch (error) {
     console.error('Error sending point reset notification:', error);

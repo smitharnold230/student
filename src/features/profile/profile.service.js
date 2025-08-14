@@ -4,7 +4,7 @@ const User = require('../../db/User');
 
 async function getProfileByUserId(userId) {
   let profile = await Profile.findOne({ where: { userId } });
-  
+
   if (!profile) {
     profile = await Profile.create({
       userId,
@@ -17,7 +17,7 @@ async function getProfileByUserId(userId) {
       batch: null, // Allow batch to be null initially
     });
   }
-  
+
   return profile;
 }
 
@@ -26,7 +26,10 @@ async function createEditTicket(userId, requestedData) {
 }
 
 async function updateTicketStatus(ticketId, status, adminNote) {
-  return Ticket.update({ status, adminNote }, { where: { id: ticketId }, returning: true });
+  return Ticket.update(
+    { status, adminNote },
+    { where: { id: ticketId }, returning: true },
+  );
 }
 
 async function updateProfileByUserId(userId, data) {
@@ -37,13 +40,15 @@ async function getPendingProfileRequests() {
   const tickets = await Ticket.findAll({
     where: { status: 'PENDING' },
     order: [['createdAt', 'DESC']],
-    include: [{
-      model: User,
-      attributes: ['email']
-    }]
+    include: [
+      {
+        model: User,
+        attributes: ['email'],
+      },
+    ],
   });
-  
-  return tickets.map(ticket => ({
+
+  return tickets.map((ticket) => ({
     id: ticket.id,
     userId: ticket.userId,
     userEmail: ticket.User?.email || 'Unknown',
@@ -58,17 +63,19 @@ async function getPendingProfileRequests() {
 
 async function getAllStudents() {
   const students = await Profile.findAll({
-    include: [{
-      model: User,
-      attributes: ['id', 'email', 'role']
-    }],
+    include: [
+      {
+        model: User,
+        attributes: ['id', 'email', 'role'],
+      },
+    ],
     where: {
-      '$User.role$': 'STUDENT'
+      '$User.role$': 'STUDENT',
     },
-    order: [['name', 'ASC']]
+    order: [['name', 'ASC']],
   });
-  
-  return students.map(student => ({
+
+  return students.map((student) => ({
     id: student.User.id,
     name: student.name,
     email: student.User.email,
@@ -85,7 +92,7 @@ async function getAllStudents() {
 async function updateProfilePhotoUrl(userId, photoUrl) {
   const [updatedRows] = await Profile.update(
     { profilePhotoUrl: photoUrl },
-    { where: { userId }, returning: true }
+    { where: { userId }, returning: true },
   );
   if (updatedRows > 0) {
     return Profile.findOne({ where: { userId } });
@@ -93,12 +100,12 @@ async function updateProfilePhotoUrl(userId, photoUrl) {
   throw new Error('Profile not found or photo not updated');
 }
 
-module.exports = { 
-  getProfileByUserId, 
-  createEditTicket, 
-  updateTicketStatus, 
+module.exports = {
+  getProfileByUserId,
+  createEditTicket,
+  updateTicketStatus,
   updateProfileByUserId,
   getPendingProfileRequests,
   getAllStudents,
-  updateProfilePhotoUrl
+  updateProfilePhotoUrl,
 };

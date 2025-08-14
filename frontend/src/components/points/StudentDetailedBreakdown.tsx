@@ -16,7 +16,14 @@ import {
   AccordionIcon,
   Icon,
 } from '@chakra-ui/react';
-import { FiCalendar, FiCode, FiCheckCircle, FiStar, FiTrendingUp, FiEdit } from 'react-icons/fi';
+import {
+  FiCalendar,
+  FiCode,
+  FiCheckCircle,
+  FiStar,
+  FiTrendingUp,
+  FiEdit,
+} from 'react-icons/fi';
 import { PointBreakdown, PointRule } from '../../types/points'; // Assuming types are defined
 
 interface StudentDetailedBreakdownProps {
@@ -24,7 +31,10 @@ interface StudentDetailedBreakdownProps {
   rules: PointRule[];
 }
 
-const StudentDetailedBreakdown: React.FC<StudentDetailedBreakdownProps> = ({ breakdown, rules }) => {
+const StudentDetailedBreakdown: React.FC<StudentDetailedBreakdownProps> = ({
+  breakdown,
+  rules,
+}) => {
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
 
@@ -35,7 +45,7 @@ const StudentDetailedBreakdown: React.FC<StudentDetailedBreakdownProps> = ({ bre
           <Heading size="md" color="white">
             Detailed Breakdown
           </Heading>
-          
+
           <Accordion allowToggle>
             {/* Workshops */}
             {breakdown?.breakdown?.workshops && (
@@ -58,12 +68,28 @@ const StudentDetailedBreakdown: React.FC<StudentDetailedBreakdownProps> = ({ bre
                 </AccordionButton>
                 <AccordionPanel>
                   <VStack align="stretch" spacing={2}>
-                    {breakdown.breakdown.workshops.events.map((event, index) => (
-                      <HStack key={index} justify="space-between" p={2} bg="gray.700" borderRadius="md">
-                        <Text color="white" fontSize="sm">{event}</Text>
-                        <Badge colorScheme="blue" variant="subtle">+{rules.find(r => r.key === 'WORKSHOP_PARTICIPATION')?.value || 50} pts</Badge>
-                      </HStack>
-                    ))}
+                    {breakdown.breakdown.workshops.events.map(
+                      (event, index) => (
+                        <HStack
+                          key={index}
+                          justify="space-between"
+                          p={2}
+                          bg="gray.700"
+                          borderRadius="md"
+                        >
+                          <Text color="white" fontSize="sm">
+                            {event}
+                          </Text>
+                          <Badge colorScheme="blue" variant="subtle">
+                            +
+                            {rules.find(
+                              (r) => r.key === 'WORKSHOP_PARTICIPATION',
+                            )?.value || 50}{' '}
+                            pts
+                          </Badge>
+                        </HStack>
+                      ),
+                    )}
                   </VStack>
                 </AccordionPanel>
               </AccordionItem>
@@ -90,12 +116,28 @@ const StudentDetailedBreakdown: React.FC<StudentDetailedBreakdownProps> = ({ bre
                 </AccordionButton>
                 <AccordionPanel>
                   <VStack align="stretch" spacing={2}>
-                    {breakdown.breakdown.hackathons.events.map((event, index) => (
-                      <HStack key={index} justify="space-between" p={2} bg="gray.700" borderRadius="md">
-                        <Text color="white" fontSize="sm">{event}</Text>
-                        <Badge colorScheme="purple" variant="subtle">+{rules.find(r => r.key === 'HACKATHON_PARTICIPATION')?.value || 100} pts</Badge>
-                      </HStack>
-                    ))}
+                    {breakdown.breakdown.hackathons.events.map(
+                      (event, index) => (
+                        <HStack
+                          key={index}
+                          justify="space-between"
+                          p={2}
+                          bg="gray.700"
+                          borderRadius="md"
+                        >
+                          <Text color="white" fontSize="sm">
+                            {event}
+                          </Text>
+                          <Badge colorScheme="purple" variant="subtle">
+                            +
+                            {rules.find(
+                              (r) => r.key === 'HACKATHON_PARTICIPATION',
+                            )?.value || 100}{' '}
+                            pts
+                          </Badge>
+                        </HStack>
+                      ),
+                    )}
                   </VStack>
                 </AccordionPanel>
               </AccordionItem>
@@ -109,7 +151,8 @@ const StudentDetailedBreakdown: React.FC<StudentDetailedBreakdownProps> = ({ bre
                     <HStack>
                       <Icon as={FiCheckCircle} color="green.500" />
                       <Text color="white" fontWeight="medium">
-                        Certifications ({breakdown.breakdown.certifications.count})
+                        Certifications (
+                        {breakdown.breakdown.certifications.count})
                       </Text>
                     </HStack>
                     <HStack>
@@ -122,12 +165,28 @@ const StudentDetailedBreakdown: React.FC<StudentDetailedBreakdownProps> = ({ bre
                 </AccordionButton>
                 <AccordionPanel>
                   <VStack align="stretch" spacing={2}>
-                    {breakdown.breakdown.certifications.certifications.map((cert, index) => (
-                      <HStack key={index} justify="space-between" p={2} bg="gray.700" borderRadius="md">
-                        <Text color="white" fontSize="sm">{cert}</Text>
-                        <Badge colorScheme="green" variant="subtle">+{rules.find(r => r.key === 'CERTIFICATION_APPROVED')?.value || 75} pts</Badge>
-                      </HStack>
-                    ))}
+                    {breakdown.breakdown.certifications.certifications.map(
+                      (cert, index) => (
+                        <HStack
+                          key={index}
+                          justify="space-between"
+                          p={2}
+                          bg="gray.700"
+                          borderRadius="md"
+                        >
+                          <Text color="white" fontSize="sm">
+                            {cert}
+                          </Text>
+                          <Badge colorScheme="green" variant="subtle">
+                            +
+                            {rules.find(
+                              (r) => r.key === 'CERTIFICATION_APPROVED',
+                            )?.value || 75}{' '}
+                            pts
+                          </Badge>
+                        </HStack>
+                      ),
+                    )}
                   </VStack>
                 </AccordionPanel>
               </AccordionItem>
@@ -157,59 +216,107 @@ const StudentDetailedBreakdown: React.FC<StudentDetailedBreakdownProps> = ({ bre
                     {breakdown.breakdown.coding.breakdown.leetcode && (
                       <Box p={3} bg="gray.700" borderRadius="md">
                         <HStack justify="space-between" mb={2}>
-                          <Text color="white" fontWeight="medium">LeetCode</Text>
+                          <Text color="white" fontWeight="medium">
+                            LeetCode
+                          </Text>
                           <Badge colorScheme="orange" variant="subtle">
-                            +{breakdown.breakdown.coding.breakdown.leetcode.totalPoints} pts
+                            +
+                            {
+                              breakdown.breakdown.coding.breakdown.leetcode
+                                .totalPoints
+                            }{' '}
+                            pts
                           </Badge>
                         </HStack>
                         <VStack align="stretch" spacing={1}>
                           <HStack justify="space-between">
-                            <Text color="gray.400" fontSize="sm">Problems Solved</Text>
+                            <Text color="gray.400" fontSize="sm">
+                              Problems Solved
+                            </Text>
                             <Text color="white" fontSize="sm">
-                              {breakdown.breakdown.coding.breakdown.leetcode.problemsSolved}
+                              {
+                                breakdown.breakdown.coding.breakdown.leetcode
+                                  .problemsSolved
+                              }
                             </Text>
                           </HStack>
                           <HStack justify="space-between">
-                            <Text color="gray.400" fontSize="sm">Base Points</Text>
+                            <Text color="gray.400" fontSize="sm">
+                              Base Points
+                            </Text>
                             <Text color="white" fontSize="sm">
-                              +{breakdown.breakdown.coding.breakdown.leetcode.basePoints}
+                              +
+                              {
+                                breakdown.breakdown.coding.breakdown.leetcode
+                                  .basePoints
+                              }
                             </Text>
                           </HStack>
                           <HStack justify="space-between">
-                            <Text color="gray.400" fontSize="sm">Bonus Points</Text>
+                            <Text color="gray.400" fontSize="sm">
+                              Bonus Points
+                            </Text>
                             <Text color="white" fontSize="sm">
-                              +{breakdown.breakdown.coding.breakdown.leetcode.bonusPoints}
+                              +
+                              {
+                                breakdown.breakdown.coding.breakdown.leetcode
+                                  .bonusPoints
+                              }
                             </Text>
                           </HStack>
                         </VStack>
                       </Box>
                     )}
-                    
+
                     {breakdown.breakdown.coding.breakdown.hackerrank && (
                       <Box p={3} bg="gray.700" borderRadius="md">
                         <HStack justify="space-between" mb={2}>
-                          <Text color="white" fontWeight="medium">HackerRank</Text>
+                          <Text color="white" fontWeight="medium">
+                            HackerRank
+                          </Text>
                           <Badge colorScheme="orange" variant="subtle">
-                            +{breakdown.breakdown.coding.breakdown.hackerrank.totalPoints} pts
+                            +
+                            {
+                              breakdown.breakdown.coding.breakdown.hackerrank
+                                .totalPoints
+                            }{' '}
+                            pts
                           </Badge>
                         </HStack>
                         <VStack align="stretch" spacing={1}>
                           <HStack justify="space-between">
-                            <Text color="gray.400" fontSize="sm">Problems Solved</Text>
+                            <Text color="gray.400" fontSize="sm">
+                              Problems Solved
+                            </Text>
                             <Text color="white" fontSize="sm">
-                              {breakdown.breakdown.coding.breakdown.hackerrank.problemsSolved}
+                              {
+                                breakdown.breakdown.coding.breakdown.hackerrank
+                                  .problemsSolved
+                              }
                             </Text>
                           </HStack>
                           <HStack justify="space-between">
-                            <Text color="gray.400" fontSize="sm">Base Points</Text>
+                            <Text color="gray.400" fontSize="sm">
+                              Base Points
+                            </Text>
                             <Text color="white" fontSize="sm">
-                              +{breakdown.breakdown.coding.breakdown.hackerrank.basePoints}
+                              +
+                              {
+                                breakdown.breakdown.coding.breakdown.hackerrank
+                                  .basePoints
+                              }
                             </Text>
                           </HStack>
                           <HStack justify="space-between">
-                            <Text color="gray.400" fontSize="sm">Bonus Points</Text>
+                            <Text color="gray.400" fontSize="sm">
+                              Bonus Points
+                            </Text>
                             <Text color="white" fontSize="sm">
-                              +{breakdown.breakdown.coding.breakdown.hackerrank.bonusPoints}
+                              +
+                              {
+                                breakdown.breakdown.coding.breakdown.hackerrank
+                                  .bonusPoints
+                              }
                             </Text>
                           </HStack>
                         </VStack>
@@ -221,54 +328,92 @@ const StudentDetailedBreakdown: React.FC<StudentDetailedBreakdownProps> = ({ bre
             )}
 
             {/* Bonuses */}
-            {breakdown?.breakdown?.bonuses && breakdown.breakdown.bonuses.totalPoints > 0 && (
-              <AccordionItem borderColor={borderColor}>
-                <AccordionButton>
-                  <HStack flex="1" justify="space-between">
-                    <HStack>
-                      <Icon as={FiStar} color="yellow.500" />
-                      <Text color="white" fontWeight="medium">
-                        Bonus Points
-                      </Text>
+            {breakdown?.breakdown?.bonuses &&
+              breakdown.breakdown.bonuses.totalPoints > 0 && (
+                <AccordionItem borderColor={borderColor}>
+                  <AccordionButton>
+                    <HStack flex="1" justify="space-between">
+                      <HStack>
+                        <Icon as={FiStar} color="yellow.500" />
+                        <Text color="white" fontWeight="medium">
+                          Bonus Points
+                        </Text>
+                      </HStack>
+                      <HStack>
+                        <Text color="green.400" fontWeight="bold">
+                          +{breakdown.breakdown.bonuses.totalPoints} pts
+                        </Text>
+                        <AccordionIcon color="gray.400" />
+                      </HStack>
                     </HStack>
-                    <HStack>
-                      <Text color="green.400" fontWeight="bold">
-                        +{breakdown.breakdown.bonuses.totalPoints} pts
-                      </Text>
-                      <AccordionIcon color="gray.400" />
-                    </HStack>
-                  </HStack>
-                </AccordionButton>
-                <AccordionPanel>
-                  <VStack align="stretch" spacing={2}>
-                    {breakdown.breakdown.bonuses.breakdown.firstWorkshop && (
-                      <HStack justify="space-between" p={2} bg="gray.700" borderRadius="md">
-                        <Text color="white" fontSize="sm">First Workshop Bonus</Text>
-                        <Badge colorScheme="yellow" variant="subtle">
-                          +{breakdown.breakdown.bonuses.breakdown.firstWorkshop} pts
-                        </Badge>
-                      </HStack>
-                    )}
-                    {breakdown.breakdown.bonuses.breakdown.firstHackathon && (
-                      <HStack justify="space-between" p={2} bg="gray.700" borderRadius="md">
-                        <Text color="white" fontSize="sm">First Hackathon Bonus</Text>
-                        <Badge colorScheme="yellow" variant="subtle">
-                          +{breakdown.breakdown.bonuses.breakdown.firstHackathon} pts
-                        </Badge>
-                      </HStack>
-                    )}
-                    {breakdown.breakdown.bonuses.breakdown.certificationStreak && (
-                      <HStack justify="space-between" p={2} bg="gray.700" borderRadius="md">
-                        <Text color="white" fontSize="sm">Certification Streak Bonus</Text>
-                        <Badge colorScheme="yellow" variant="subtle">
-                          +{breakdown.breakdown.bonuses.breakdown.certificationStreak} pts
-                        </Badge>
-                      </HStack>
-                    )}
-                  </VStack>
-                </AccordionPanel>
-              </AccordionItem>
-            )}
+                  </AccordionButton>
+                  <AccordionPanel>
+                    <VStack align="stretch" spacing={2}>
+                      {breakdown.breakdown.bonuses.breakdown.firstWorkshop && (
+                        <HStack
+                          justify="space-between"
+                          p={2}
+                          bg="gray.700"
+                          borderRadius="md"
+                        >
+                          <Text color="white" fontSize="sm">
+                            First Workshop Bonus
+                          </Text>
+                          <Badge colorScheme="yellow" variant="subtle">
+                            +
+                            {
+                              breakdown.breakdown.bonuses.breakdown
+                                .firstWorkshop
+                            }{' '}
+                            pts
+                          </Badge>
+                        </HStack>
+                      )}
+                      {breakdown.breakdown.bonuses.breakdown.firstHackathon && (
+                        <HStack
+                          justify="space-between"
+                          p={2}
+                          bg="gray.700"
+                          borderRadius="md"
+                        >
+                          <Text color="white" fontSize="sm">
+                            First Hackathon Bonus
+                          </Text>
+                          <Badge colorScheme="yellow" variant="subtle">
+                            +
+                            {
+                              breakdown.breakdown.bonuses.breakdown
+                                .firstHackathon
+                            }{' '}
+                            pts
+                          </Badge>
+                        </HStack>
+                      )}
+                      {breakdown.breakdown.bonuses.breakdown
+                        .certificationStreak && (
+                        <HStack
+                          justify="space-between"
+                          p={2}
+                          bg="gray.700"
+                          borderRadius="md"
+                        >
+                          <Text color="white" fontSize="sm">
+                            Certification Streak Bonus
+                          </Text>
+                          <Badge colorScheme="yellow" variant="subtle">
+                            +
+                            {
+                              breakdown.breakdown.bonuses.breakdown
+                                .certificationStreak
+                            }{' '}
+                            pts
+                          </Badge>
+                        </HStack>
+                      )}
+                    </VStack>
+                  </AccordionPanel>
+                </AccordionItem>
+              )}
             {breakdown?.manualAdjustment !== undefined && (
               <AccordionItem borderColor={borderColor}>
                 <AccordionButton>
@@ -280,8 +425,16 @@ const StudentDetailedBreakdown: React.FC<StudentDetailedBreakdownProps> = ({ bre
                       </Text>
                     </HStack>
                     <HStack>
-                      <Text color={breakdown.manualAdjustment >= 0 ? 'green.400' : 'red.400'} fontWeight="bold">
-                        {breakdown.manualAdjustment >= 0 ? '+' : ''}{breakdown.manualAdjustment} pts
+                      <Text
+                        color={
+                          breakdown.manualAdjustment >= 0
+                            ? 'green.400'
+                            : 'red.400'
+                        }
+                        fontWeight="bold"
+                      >
+                        {breakdown.manualAdjustment >= 0 ? '+' : ''}
+                        {breakdown.manualAdjustment} pts
                       </Text>
                       <AccordionIcon color="gray.400" />
                     </HStack>

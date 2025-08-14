@@ -15,7 +15,13 @@ app.use(express.json());
 app.use(morgan('dev'));
 app.use('/uploads', express.static('uploads'));
 
-const { generalLimiter, authLimiter, uploadLimiter, adminLimiter, pointsLimiter } = require('./middleware/rateLimiter');
+const {
+  generalLimiter,
+  authLimiter,
+  uploadLimiter,
+  adminLimiter,
+  pointsLimiter,
+} = require('./middleware/rateLimiter');
 const apiLogger = require('./middleware/apiLogger');
 
 // Apply general rate limiting to all routes
@@ -41,10 +47,10 @@ if (!fs.existsSync(certificationsDir)) {
 if (!fs.existsSync(profilePhotosDir)) {
   fs.mkdirSync(profilePhotosDir);
 }
-if (!fs.existsSync(bulkUsersDir)) { // Create new directory if it doesn't exist
+if (!fs.existsSync(bulkUsersDir)) {
+  // Create new directory if it doesn't exist
   fs.mkdirSync(bulkUsersDir);
 }
-
 
 // Import routes
 const userRoutes = require('./features/user/user.routes');
@@ -97,27 +103,30 @@ const ioInstance = socketService.initSocket(server); // Pass the HTTP server to 
 app.set('io', ioInstance); // Set the actual io instance on the app
 
 // Connect to DB, run migrations, then sync models and start server
-sequelize.authenticate().then(async () => {
-  console.log('Database connection established.');
-  
-  // Run database migrations first
-  try {
-    const Migration = require('./migrations/migration');
-    const migration = new Migration();
-    await migration.runMigrations(); // This will apply schema changes and data cleanup
-  } catch (error) {
-    console.error('Migration error:', error);
-    process.exit(1); // Exit if migrations fail
-  }
+sequelize
+  .authenticate()
+  .then(async () => {
+    console.log('Database connection established.');
 
-  // Then, sync models (alter: true) to ensure any new models/columns not covered by migrations are added
-  await sequelize.sync({ alter: true });
-  console.log('Database synced successfully with alterations');
-  
-  server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    // Run database migrations first
+    try {
+      const Migration = require('./migrations/migration');
+      const migration = new Migration();
+      await migration.runMigrations(); // This will apply schema changes and data cleanup
+    } catch (error) {
+      console.error('Migration error:', error);
+      process.exit(1); // Exit if migrations fail
+    }
+
+    // Then, sync models (alter: true) to ensure any new models/columns not covered by migrations are added
+    await sequelize.sync({ alter: true });
+    console.log('Database synced successfully with alterations');
+
+    server.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('Failed to connect or sync database:', err);
+    process.exit(1);
   });
-}).catch((err) => {
-  console.error('Failed to connect or sync database:', err);
-  process.exit(1);
-});

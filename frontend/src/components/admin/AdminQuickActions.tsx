@@ -10,11 +10,11 @@ import {
   Grid,
   Icon,
 } from '@chakra-ui/react';
-import { 
-  FiUsers, 
-  FiCalendar, 
-  FiAward, 
-  FiSettings, 
+import {
+  FiUsers,
+  FiCalendar,
+  FiAward,
+  FiSettings,
   FiDownload,
 } from 'react-icons/fi';
 
@@ -32,7 +32,11 @@ interface AdminQuickActionsProps {
   borderColor: string;
 }
 
-const AdminQuickActions: React.FC<AdminQuickActionsProps> = ({ quickActions, cardBg, borderColor }) => {
+const AdminQuickActions: React.FC<AdminQuickActionsProps> = ({
+  quickActions,
+  cardBg,
+  borderColor,
+}) => {
   return (
     <Card bg={cardBg} border="1px solid" borderColor={borderColor}>
       <CardBody>
@@ -40,8 +44,15 @@ const AdminQuickActions: React.FC<AdminQuickActionsProps> = ({ quickActions, car
           <Heading size="md" color="white">
             Quick Actions
           </Heading>
-          
-          <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }} gap={4}>
+
+          <Grid
+            templateColumns={{
+              base: '1fr',
+              md: 'repeat(2, 1fr)',
+              lg: 'repeat(4, 1fr)',
+            }}
+            gap={4}
+          >
             {quickActions.map((action, index) => (
               <Button
                 key={index}

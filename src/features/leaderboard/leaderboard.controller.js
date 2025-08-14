@@ -18,4 +18,4 @@ async function getMyRank(req, res, next) {
   }
 }
 
-module.exports = { getLeaderboard, getMyRank }; 
+module.exports = { getLeaderboard, getMyRank };

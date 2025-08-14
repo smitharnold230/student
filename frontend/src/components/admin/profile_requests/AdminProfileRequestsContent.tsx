@@ -71,10 +71,17 @@ interface AdminProfileRequestsContentProps {
   isModalOpen: boolean;
   onCloseModal: () => void;
   onViewRequest: (request: ProfileEditRequest) => void;
-  approveRequestMutation: UseMutationResult<any, Error, { ticketId: string; status: 'APPROVED' | 'REJECTED'; adminNote?: string }, unknown>;
+  approveRequestMutation: UseMutationResult<
+    any,
+    Error,
+    { ticketId: string; status: 'APPROVED' | 'REJECTED'; adminNote?: string },
+    unknown
+  >;
 }
 
-const AdminProfileRequestsContent: React.FC<AdminProfileRequestsContentProps> = ({
+const AdminProfileRequestsContent: React.FC<
+  AdminProfileRequestsContentProps
+> = ({
   requests,
   selectedRequest,
   isModalOpen,
@@ -84,7 +91,9 @@ const AdminProfileRequestsContent: React.FC<AdminProfileRequestsContentProps> = 
 }) => {
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
-  const [actionStatus, setActionStatus] = React.useState<'APPROVED' | 'REJECTED' | null>(null);
+  const [actionStatus, setActionStatus] = React.useState<
+    'APPROVED' | 'REJECTED' | null
+  >(null);
 
   const {
     register,
@@ -133,16 +142,24 @@ const AdminProfileRequestsContent: React.FC<AdminProfileRequestsContentProps> = 
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'APPROVED': return 'green';
-      case 'REJECTED': return 'red';
-      case 'PENDING': return 'yellow';
-      default: return 'gray';
+      case 'APPROVED':
+        return 'green';
+      case 'REJECTED':
+        return 'red';
+      case 'PENDING':
+        return 'yellow';
+      default:
+        return 'gray';
     }
   };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   };
 
@@ -174,9 +191,11 @@ const AdminProfileRequestsContent: React.FC<AdminProfileRequestsContentProps> = 
             <VStack spacing={3}>
               <Icon as={FiClock} color="yellow.500" boxSize={8} />
               <Stat>
-                <StatLabel color="gray.400" fontSize="sm">Pending Requests</StatLabel>
+                <StatLabel color="gray.400" fontSize="sm">
+                  Pending Requests
+                </StatLabel>
                 <StatNumber color="white" fontSize="2xl" fontWeight="bold">
-                  {requests.filter(r => r.status === 'PENDING').length}
+                  {requests.filter((r) => r.status === 'PENDING').length}
                 </StatNumber>
                 <StatHelpText color="gray.500" fontSize="xs">
                   Awaiting review
@@ -210,15 +229,41 @@ const AdminProfileRequestsContent: React.FC<AdminProfileRequestsContentProps> = 
                     <Tr key={request.id}>
                       <Td>
                         <VStack align="start" spacing={1}>
-                          <Text color="white" fontWeight="medium">{request.userName || request.userEmail}</Text>
-                          <Text color="gray.400" fontSize="xs">{request.userEmail}</Text>
+                          <Text color="white" fontWeight="medium">
+                            {request.userName || request.userEmail}
+                          </Text>
+                          <Text color="gray.400" fontSize="xs">
+                            {request.userEmail}
+                          </Text>
                         </VStack>
                       </Td>
-                      <Td><Text color="white" fontSize="sm">{getChangedFields(request.requestedData)}</Text></Td>
-                      <Td><Badge colorScheme={getStatusColor(request.status)} variant="subtle" fontSize="xs">{request.status}</Badge></Td>
-                      <Td><Text color="gray.400" fontSize="xs">{formatDate(request.createdAt)}</Text></Td>
                       <Td>
-                        <Button size="xs" leftIcon={<FiEye />} colorScheme="blue" variant="outline" onClick={() => onViewRequest(request)}>
+                        <Text color="white" fontSize="sm">
+                          {getChangedFields(request.requestedData)}
+                        </Text>
+                      </Td>
+                      <Td>
+                        <Badge
+                          colorScheme={getStatusColor(request.status)}
+                          variant="subtle"
+                          fontSize="xs"
+                        >
+                          {request.status}
+                        </Badge>
+                      </Td>
+                      <Td>
+                        <Text color="gray.400" fontSize="xs">
+                          {formatDate(request.createdAt)}
+                        </Text>
+                      </Td>
+                      <Td>
+                        <Button
+                          size="xs"
+                          leftIcon={<FiEye />}
+                          colorScheme="blue"
+                          variant="outline"
+                          onClick={() => onViewRequest(request)}
+                        >
                           Review
                         </Button>
                       </Td>
@@ -229,7 +274,9 @@ const AdminProfileRequestsContent: React.FC<AdminProfileRequestsContentProps> = 
             ) : (
               <VStack spacing={4}>
                 <Icon as={FiUsers} color="gray.500" boxSize={12} />
-                <Text color="gray.400" textAlign="center">No profile edit requests found.</Text>
+                <Text color="gray.400" textAlign="center">
+                  No profile edit requests found.
+                </Text>
               </VStack>
             )}
           </VStack>
@@ -245,24 +292,42 @@ const AdminProfileRequestsContent: React.FC<AdminProfileRequestsContentProps> = 
             {selectedRequest && (
               <VStack spacing={6} align="stretch">
                 <Box>
-                  <Text color="gray.400" fontSize="sm" mb={2}>Student Information</Text>
+                  <Text color="gray.400" fontSize="sm" mb={2}>
+                    Student Information
+                  </Text>
                   <HStack spacing={4}>
                     <Icon as={FiUser} color="blue.500" boxSize={5} />
                     <VStack align="start" spacing={1}>
-                      <Text color="white" fontWeight="medium">{selectedRequest.userName || 'Not provided'}</Text>
-                      <Text color="gray.400" fontSize="sm">{selectedRequest.userEmail}</Text>
+                      <Text color="white" fontWeight="medium">
+                        {selectedRequest.userName || 'Not provided'}
+                      </Text>
+                      <Text color="gray.400" fontSize="sm">
+                        {selectedRequest.userEmail}
+                      </Text>
                     </VStack>
                   </HStack>
                 </Box>
                 <Box>
-                  <Text color="gray.400" fontSize="sm" mb={3}>Requested Changes</Text>
+                  <Text color="gray.400" fontSize="sm" mb={3}>
+                    Requested Changes
+                  </Text>
                   <VStack spacing={3} align="stretch">
-                    {Object.entries(selectedRequest.requestedData).map(([key, value]) => (
-                      <HStack key={key} justify="space-between">
-                        <Text color="gray.400" fontSize="sm" textTransform="capitalize">{key.replace(/([A-Z])/g, ' $1')}</Text>
-                        <Text color="white" fontSize="sm">{String(value)}</Text>
-                      </HStack>
-                    ))}
+                    {Object.entries(selectedRequest.requestedData).map(
+                      ([key, value]) => (
+                        <HStack key={key} justify="space-between">
+                          <Text
+                            color="gray.400"
+                            fontSize="sm"
+                            textTransform="capitalize"
+                          >
+                            {key.replace(/([A-Z])/g, ' $1')}
+                          </Text>
+                          <Text color="white" fontSize="sm">
+                            {String(value)}
+                          </Text>
+                        </HStack>
+                      ),
+                    )}
                   </VStack>
                 </Box>
                 <FormControl isInvalid={!!errors.adminNote}>
@@ -275,17 +340,36 @@ const AdminProfileRequestsContent: React.FC<AdminProfileRequestsContentProps> = 
                     color="white"
                     rows={3}
                   />
-                  <FormErrorMessage>{errors.adminNote?.message}</FormErrorMessage>
+                  <FormErrorMessage>
+                    {errors.adminNote?.message}
+                  </FormErrorMessage>
                 </FormControl>
               </VStack>
             )}
           </ModalBody>
           <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={handleCloseModal}>Cancel</Button>
+            <Button variant="ghost" mr={3} onClick={handleCloseModal}>
+              Cancel
+            </Button>
             {selectedRequest?.status === 'PENDING' && (
               <>
-                <Button colorScheme="red" mr={3} onClick={handleSubmit(handleReject)} isLoading={approveRequestMutation.isPending} leftIcon={<FiX />}>Reject</Button>
-                <Button colorScheme="green" onClick={handleSubmit(handleApprove)} isLoading={approveRequestMutation.isPending} leftIcon={<FiCheck />}>Approve</Button>
+                <Button
+                  colorScheme="red"
+                  mr={3}
+                  onClick={handleSubmit(handleReject)}
+                  isLoading={approveRequestMutation.isPending}
+                  leftIcon={<FiX />}
+                >
+                  Reject
+                </Button>
+                <Button
+                  colorScheme="green"
+                  onClick={handleSubmit(handleApprove)}
+                  isLoading={approveRequestMutation.isPending}
+                  leftIcon={<FiCheck />}
+                >
+                  Approve
+                </Button>
               </>
             )}
           </ModalFooter>

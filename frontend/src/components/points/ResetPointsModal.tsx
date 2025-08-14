@@ -30,7 +30,11 @@ interface ResetPointsModalProps {
 }
 
 const resetPointsSchema = z.object({
-  reason: z.string().trim().min(1, 'Reason is required').max(200, 'Reason too long'),
+  reason: z
+    .string()
+    .trim()
+    .min(1, 'Reason is required')
+    .max(200, 'Reason too long'),
 });
 
 type ResetPointsForm = z.infer<typeof resetPointsSchema>;
@@ -82,9 +86,15 @@ const ResetPointsModal: React.FC<ResetPointsModalProps> = ({
         <ModalHeader color="white">Reset Points</ModalHeader>
         <ModalCloseButton color="gray.400" />
         <ModalBody>
-          <VStack spacing={4} as="form" id="reset-points-form" onSubmit={handleSubmit(onSubmit)}>
+          <VStack
+            spacing={4}
+            as="form"
+            id="reset-points-form"
+            onSubmit={handleSubmit(onSubmit)}
+          >
             <Text color="gray.300" textAlign="center">
-              This will reset points to 0 for {selectedUsersCount} selected user(s).
+              This will reset points to 0 for {selectedUsersCount} selected
+              user(s).
             </Text>
             <FormControl isInvalid={!!errors.reason} isRequired>
               <FormLabel color="gray.300">Reason</FormLabel>

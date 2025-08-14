@@ -34,10 +34,12 @@ async function getSystemStats() {
   try {
     const totalStudents = await Profile.count();
     const totalEvents = await Event.count(); // Using top-level imported Event
-    const pendingCertifications = await Submission.count({ where: { status: 'PENDING' } }); // Using top-level imported Submission
-    
+    const pendingCertifications = await Submission.count({
+      where: { status: 'PENDING' },
+    }); // Using top-level imported Submission
+
     const pointStats = await pointsService.getPointStatistics();
-    
+
     return {
       totalStudents,
       totalEvents,
@@ -63,11 +65,11 @@ async function exportStudentsCsv() {
   const students = await Profile.findAll({
     include: [
       { model: Point, attributes: ['value'] },
-      { model: User, attributes: ['email'] }
+      { model: User, attributes: ['email'] },
     ],
   });
-  
-  const records = students.map(s => ({
+
+  const records = students.map((s) => ({
     id: s.id,
     name: s.name,
     email: s.User ? s.User.email : 'N/A',
@@ -79,7 +81,7 @@ async function exportStudentsCsv() {
     batch: s.batch,
     points: s.Point ? s.Point.value : 0,
   }));
-  
+
   const filePath = path.join(__dirname, '../../students_export.csv');
   const csvWriter = createCsvWriter({
     path: filePath,
@@ -103,13 +105,15 @@ async function exportStudentsCsv() {
 async function exportApiLogsCsv() {
   const logs = await ApiLog.findAll({
     order: [['timestamp', 'DESC']],
-    include: [{
-      model: User,
-      attributes: ['email']
-    }]
+    include: [
+      {
+        model: User,
+        attributes: ['email'],
+      },
+    ],
   });
 
-  const records = logs.map(log => ({
+  const records = logs.map((log) => ({
     id: log.id,
     method: log.method,
     endpoint: log.endpoint,
@@ -190,7 +194,9 @@ async function bulkUploadUsers(filePath) {
       results.failed++;
       let errorMessage = 'Unknown error';
       if (error.errors && Array.isArray(error.errors)) {
-        errorMessage = error.errors.map(err => `${err.path.join('.')}: ${err.message}`).join('; ');
+        errorMessage = error.errors
+          .map((err) => `${err.path.join('.')}: ${err.message}`)
+          .join('; ');
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -205,4 +211,12 @@ async function bulkUploadUsers(filePath) {
   return results;
 }
 
-module.exports = { getApiLogs, exportStudentsCsv, getPointRules, updatePointRule, getSystemStats, bulkUploadUsers, exportApiLogsCsv };
+module.exports = {
+  getApiLogs,
+  exportStudentsCsv,
+  getPointRules,
+  updatePointRule,
+  getSystemStats,
+  bulkUploadUsers,
+  exportApiLogsCsv,
+};

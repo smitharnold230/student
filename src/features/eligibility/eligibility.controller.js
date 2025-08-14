@@ -21,7 +21,8 @@ async function assignBatch(req, res, next) {
 
 async function assignAllEligibleBatches(req, res, next) {
   try {
-    const results = await eligibilityService.assignBatchesForAllEligibleStudents();
+    const results =
+      await eligibilityService.assignBatchesForAllEligibleStudents();
     res.json({ message: 'Batch assignment process completed', results });
   } catch (err) {
     next(err);

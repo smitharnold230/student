@@ -1,15 +1,44 @@
-const express = require('express');
-const { authenticateToken, requireRole } = require('../../middleware/auth');
+/**
+ * Eligibility routes with validation and auth
+ */
+const router = require('express').Router();
+const { z } = require('zod');
 const { validate } = require('../../middleware/validate');
-const { checkEligibility, assignBatch, assignAllEligibleBatches } = require('./eligibility.controller');
+const { requireAuth, requireRole } = require('../../middleware/validate');
+const eligibilityService = require('./eligibility.service');
 
-const router = express.Router();
+const createSchema = {
+  body: z.object({
+    title: z.string().min(1),
+    description: z.string().min(1),
+    criteria: z.string().min(1),
+    startDate: z.string(),
+    endDate: z.string(),
+  }),
+};
 
-// Student: Check eligibility
-router.get('/check', authenticateToken, requireRole('STUDENT'), checkEligibility);
-// Admin: Assign batch (auto/manual)
-router.post('/assign', authenticateToken, requireRole('ADMIN'), validate('eligibility.assignBatch'), assignBatch);
-// Admin: Trigger batch assignment for all eligible students
-router.post('/assign-all-eligible', authenticateToken, requireRole('ADMIN'), assignAllEligibleBatches);
+router.post(
+  '/',
+  requireAuth,
+  requireRole('admin'),
+  validate(createSchema),
+  async (req, res, next) => {
+    try {
+      const data = await eligibilityService.createEligibility(req.body);
+      res.json({ ok: true, data });
+    } catch (e) {
+      next(e);
+    }
+  },
+);
+
+router.get('/', requireAuth, async (req, res, next) => {
+  try {
+    const data = await eligibilityService.listEligibility();
+    res.json({ ok: true, data });
+  } catch (e) {
+    next(e);
+  }
+});
 
 module.exports = router;

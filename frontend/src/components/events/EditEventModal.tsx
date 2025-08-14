@@ -27,21 +27,36 @@ interface EditEventModalProps {
   onClose: () => void;
   eventToEdit: Event | null;
   onUpdateEvent: (eventId: string, data: Partial<UpdateEventData>) => void;
-  updateEventMutation: UseMutationResult<any, Error, { eventId: string; data: Partial<UpdateEventData> }, unknown>;
+  updateEventMutation: UseMutationResult<
+    any,
+    Error,
+    { eventId: string; data: Partial<UpdateEventData> },
+    unknown
+  >;
 }
 
-const editEventSchema = z.object({
-  name: z.string().min(1, 'Event name is required').optional(),
-  type: z.enum(['WORKSHOP', 'HACKATHON'], { message: 'Event type is required' }).optional(),
-  date: z.string().min(1, 'Date is required').optional(),
-  organizer: z.string().min(1, 'Organizer is required').optional(),
-  url: z.string().url('Invalid URL format').or(z.literal('')).optional(),
-  link: z.string().url('Invalid URL format').or(z.literal('')).optional(),
-  certificationDeadline: z.string().or(z.literal('')).optional(),
-}).refine(data => Object.values(data).some(value => value !== undefined && value !== null && value !== ''), {
-  message: 'At least one field must be provided for update',
-  path: ['root'],
-});
+const editEventSchema = z
+  .object({
+    name: z.string().min(1, 'Event name is required').optional(),
+    type: z
+      .enum(['WORKSHOP', 'HACKATHON'], { message: 'Event type is required' })
+      .optional(),
+    date: z.string().min(1, 'Date is required').optional(),
+    organizer: z.string().min(1, 'Organizer is required').optional(),
+    url: z.string().url('Invalid URL format').or(z.literal('')).optional(),
+    link: z.string().url('Invalid URL format').or(z.literal('')).optional(),
+    certificationDeadline: z.string().or(z.literal('')).optional(),
+  })
+  .refine(
+    (data) =>
+      Object.values(data).some(
+        (value) => value !== undefined && value !== null && value !== '',
+      ),
+    {
+      message: 'At least one field must be provided for update',
+      path: ['root'],
+    },
+  );
 
 type EditEventForm = z.infer<typeof editEventSchema>;
 
@@ -77,11 +92,17 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
       reset({
         name: eventToEdit.name,
         type: eventToEdit.type,
-        date: eventToEdit.date ? new Date(eventToEdit.date).toISOString().split('T')[0] : '', // Format for date input
+        date: eventToEdit.date
+          ? new Date(eventToEdit.date).toISOString().split('T')[0]
+          : '', // Format for date input
         organizer: eventToEdit.organizer,
         url: eventToEdit.url || '',
         link: eventToEdit.link || '',
-        certificationDeadline: eventToEdit.certificationDeadline ? new Date(eventToEdit.certificationDeadline).toISOString().split('T')[0] : '', // Format for date input
+        certificationDeadline: eventToEdit.certificationDeadline
+          ? new Date(eventToEdit.certificationDeadline)
+              .toISOString()
+              .split('T')[0]
+          : '', // Format for date input
       });
     }
   }, [eventToEdit, reset]);
@@ -104,13 +125,17 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
 
     // Date
     const newDateISO = data.date ? new Date(data.date).toISOString() : null;
-    const originalDateISO = eventToEdit.date ? new Date(eventToEdit.date).toISOString() : null;
+    const originalDateISO = eventToEdit.date
+      ? new Date(eventToEdit.date).toISOString()
+      : null;
     if (newDateISO !== originalDateISO) {
       changes.date = newDateISO;
     }
 
     // Organizer
-    if (normalizeValue(data.organizer) !== normalizeValue(eventToEdit.organizer)) {
+    if (
+      normalizeValue(data.organizer) !== normalizeValue(eventToEdit.organizer)
+    ) {
       changes.organizer = normalizeValue(data.organizer);
     }
 
@@ -125,8 +150,12 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
     }
 
     // Certification Deadline
-    const newCertDeadlineISO = data.certificationDeadline ? new Date(data.certificationDeadline).toISOString() : null;
-    const originalCertDeadlineISO = eventToEdit.certificationDeadline ? new Date(eventToEdit.certificationDeadline).toISOString() : null;
+    const newCertDeadlineISO = data.certificationDeadline
+      ? new Date(data.certificationDeadline).toISOString()
+      : null;
+    const originalCertDeadlineISO = eventToEdit.certificationDeadline
+      ? new Date(eventToEdit.certificationDeadline).toISOString()
+      : null;
     if (newCertDeadlineISO !== originalCertDeadlineISO) {
       changes.certificationDeadline = newCertDeadlineISO;
     }
@@ -152,7 +181,12 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
         <ModalCloseButton color="white" />
         <ModalBody>
           {eventToEdit && (
-            <VStack spacing={4} as="form" id="edit-event-form" onSubmit={handleSubmit(onSubmit)}>
+            <VStack
+              spacing={4}
+              as="form"
+              id="edit-event-form"
+              onSubmit={handleSubmit(onSubmit)}
+            >
               <FormControl isInvalid={!!errors.name}>
                 <FormLabel color="gray.300">Event Name</FormLabel>
                 <Input
@@ -234,7 +268,9 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
                   color="white"
                   {...register('certificationDeadline')}
                 />
-                <FormErrorMessage>{errors.certificationDeadline?.message}</FormErrorMessage>
+                <FormErrorMessage>
+                  {errors.certificationDeadline?.message}
+                </FormErrorMessage>
               </FormControl>
             </VStack>
           )}

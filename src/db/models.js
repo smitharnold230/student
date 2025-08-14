@@ -46,7 +46,10 @@ User.hasMany(ApiLog, { foreignKey: 'userId' });
 ApiLog.belongsTo(User, { foreignKey: 'userId' });
 
 // Admin associations for verification
-User.hasMany(Submission, { foreignKey: 'verifiedById', as: 'VerifiedSubmissions' });
+User.hasMany(Submission, {
+  foreignKey: 'verifiedById',
+  as: 'VerifiedSubmissions',
+});
 Submission.belongsTo(User, { foreignKey: 'verifiedById', as: 'VerifiedBy' });
 
 module.exports = {
@@ -60,5 +63,5 @@ module.exports = {
   PointRule,
   Ticket,
   Notification,
-  ApiLog
-}; 
+  ApiLog,
+};

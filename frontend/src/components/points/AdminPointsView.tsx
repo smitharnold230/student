@@ -43,12 +43,24 @@ const AdminPointsView: React.FC<AdminPointsViewProps> = ({
   const queryClient = useQueryClient();
 
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const { isOpen: isUpdateModalOpen, onOpen: onUpdateModalOpen, onClose: onUpdateModalClose } = useDisclosure();
-  const { isOpen: isResetModalOpen, onOpen: onResetModalOpen, onClose: onResetModalClose } = useDisclosure();
+  const {
+    isOpen: isUpdateModalOpen,
+    onOpen: onUpdateModalOpen,
+    onClose: onUpdateModalClose,
+  } = useDisclosure();
+  const {
+    isOpen: isResetModalOpen,
+    onOpen: onResetModalOpen,
+    onClose: onResetModalClose,
+  } = useDisclosure();
   const [searchTerm, setSearchTerm] = useState<string>('');
 
   const updateUsersMutation = useMutation({
-    mutationFn: (data: { userIds: string[]; pointsToAdd: number; reason: string }) =>
+    mutationFn: (data: {
+      userIds: string[];
+      pointsToAdd: number;
+      reason: string;
+    }) =>
       pointsAPI.updateUserPoints(data.userIds, data.pointsToAdd, data.reason),
     onSuccess: (response) => {
       toast({
@@ -100,10 +112,10 @@ const AdminPointsView: React.FC<AdminPointsViewProps> = ({
   });
 
   const handleUserSelection = (userId: string) => {
-    setSelectedUsers(prev =>
+    setSelectedUsers((prev) =>
       prev.includes(userId)
-        ? prev.filter(id => id !== userId)
-        : [...prev, userId]
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId],
     );
   };
 
@@ -115,7 +127,10 @@ const AdminPointsView: React.FC<AdminPointsViewProps> = ({
     setSelectedUsers([]);
   };
 
-  const handleUpdatePoints = (data: { pointsToAdd: number; reason: string }) => {
+  const handleUpdatePoints = (data: {
+    pointsToAdd: number;
+    reason: string;
+  }) => {
     if (selectedUsers.length === 0) {
       toast({
         title: 'No Users Selected',
@@ -150,9 +165,10 @@ const AdminPointsView: React.FC<AdminPointsViewProps> = ({
     });
   };
 
-  const filteredUsers = users.filter(user =>
-    user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = users.filter(
+    (user) =>
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -162,9 +178,7 @@ const AdminPointsView: React.FC<AdminPointsViewProps> = ({
           <Heading size="lg" color="white" mb={2}>
             Points Management
           </Heading>
-          <Text color="gray.400">
-            Manage all users' points
-          </Text>
+          <Text color="gray.400">Manage all users' points</Text>
         </Box>
 
         <Button

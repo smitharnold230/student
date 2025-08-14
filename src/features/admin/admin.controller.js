@@ -4,7 +4,12 @@ const fs = require('fs');
 async function getApiLogs(req, res, next) {
   try {
     const { userId, endpoint, method, limit } = req.query;
-    const logs = await adminService.getApiLogs({ userId, endpoint, method, limit: limit ? parseInt(limit) : 100 });
+    const logs = await adminService.getApiLogs({
+      userId,
+      endpoint,
+      method,
+      limit: limit ? parseInt(limit) : 100,
+    });
     res.json(logs);
   } catch (err) {
     next(err);
@@ -16,7 +21,7 @@ async function getPointRules(req, res, next) {
     const rules = await adminService.getPointRules();
     res.json({
       success: true,
-      data: rules
+      data: rules,
     });
   } catch (err) {
     next(err);
@@ -36,7 +41,7 @@ async function updatePointRule(req, res, next) {
 async function exportStudentsCsv(req, res, next) {
   try {
     const filePath = await adminService.exportStudentsCsv();
-    res.download(filePath, 'students_export.csv', err => {
+    res.download(filePath, 'students_export.csv', (err) => {
       if (err) res.status(500).json({ error: 'Failed to download CSV' });
       fs.unlinkSync(filePath);
     });
@@ -48,8 +53,9 @@ async function exportStudentsCsv(req, res, next) {
 async function exportApiLogsCsv(req, res, next) {
   try {
     const filePath = await adminService.exportApiLogsCsv();
-    res.download(filePath, 'api_logs_export.csv', err => {
-      if (err) res.status(500).json({ error: 'Failed to download API logs CSV' });
+    res.download(filePath, 'api_logs_export.csv', (err) => {
+      if (err)
+        res.status(500).json({ error: 'Failed to download API logs CSV' });
       fs.unlinkSync(filePath); // Clean up the generated file
     });
   } catch (err) {
@@ -86,4 +92,12 @@ async function bulkUploadUsers(req, res, next) {
   }
 }
 
-module.exports = { getApiLogs, exportStudentsCsv, getPointRules, updatePointRule, getSystemStats, bulkUploadUsers, exportApiLogsCsv };
+module.exports = {
+  getApiLogs,
+  exportStudentsCsv,
+  getPointRules,
+  updatePointRule,
+  getSystemStats,
+  bulkUploadUsers,
+  exportApiLogsCsv,
+};

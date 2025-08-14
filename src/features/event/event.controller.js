@@ -24,7 +24,10 @@ async function getEvents(req, res, next) {
 async function participateInEvent(req, res, next) {
   try {
     const { eventId } = req.body;
-    const result = await eventService.participateInEvent(req.user.userId, eventId);
+    const result = await eventService.participateInEvent(
+      req.user.userId,
+      eventId,
+    );
     res.json(result);
   } catch (err) {
     next(err);
@@ -54,7 +57,10 @@ async function getEventDetails(req, res, next) {
 async function setCertificationDeadline(req, res, next) {
   try {
     const { eventId, deadline } = req.body;
-    const event = await eventService.setCertificationDeadline(eventId, deadline);
+    const event = await eventService.setCertificationDeadline(
+      eventId,
+      deadline,
+    );
     res.json({ message: 'Certification deadline set', event });
   } catch (err) {
     next(err);
@@ -91,14 +97,14 @@ async function deleteEvent(req, res, next) {
   }
 }
 
-module.exports = { 
-  createEvent, 
-  getEvents, 
-  participateInEvent, 
-  acceptEvent, 
-  getEventDetails, 
-  setCertificationDeadline, 
+module.exports = {
+  createEvent,
+  getEvents,
+  participateInEvent,
+  acceptEvent,
+  getEventDetails,
+  setCertificationDeadline,
   getCertificationDeadline,
   updateEvent, // Export new function
-  deleteEvent // Export new function
+  deleteEvent, // Export new function
 };

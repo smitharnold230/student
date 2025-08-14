@@ -3,19 +3,19 @@ const { z } = require('zod');
 const signupSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
-  role: z.enum(['STUDENT', 'ADMIN'])
+  role: z.enum(['STUDENT', 'ADMIN']),
 });
 
 const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(6)
+  password: z.string().min(6),
 });
 
 // New schema for bulk user uploads, restricting role to 'STUDENT'
 const bulkSignupSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
-  role: z.literal('STUDENT').default('STUDENT') // Enforce 'STUDENT' role, default if not provided
+  role: z.literal('STUDENT').default('STUDENT'), // Enforce 'STUDENT' role, default if not provided
 });
 
 module.exports = { signupSchema, loginSchema, bulkSignupSchema };

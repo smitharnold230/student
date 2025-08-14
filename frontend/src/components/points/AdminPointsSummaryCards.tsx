@@ -22,7 +22,9 @@ interface AdminPointsSummaryCardsProps {
   statistics: PointStatistics | undefined;
 }
 
-const AdminPointsSummaryCards: React.FC<AdminPointsSummaryCardsProps> = ({ statistics }) => {
+const AdminPointsSummaryCards: React.FC<AdminPointsSummaryCardsProps> = ({
+  statistics,
+}) => {
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
 
@@ -34,7 +36,9 @@ const AdminPointsSummaryCards: React.FC<AdminPointsSummaryCardsProps> = ({ stati
             <VStack spacing={3}>
               <Icon as={FiTrendingUp} color="blue.500" boxSize={8} />
               <Stat>
-                <StatLabel color="gray.400" fontSize="sm">Total Users</StatLabel>
+                <StatLabel color="gray.400" fontSize="sm">
+                  Total Users
+                </StatLabel>
                 <StatNumber color="white" fontSize="2xl" fontWeight="bold">
                   {statistics?.totalUsers || 0}
                 </StatNumber>
@@ -53,7 +57,9 @@ const AdminPointsSummaryCards: React.FC<AdminPointsSummaryCardsProps> = ({ stati
             <VStack spacing={3}>
               <Icon as={FiAward} color="green.500" boxSize={8} />
               <Stat>
-                <StatLabel color="gray.400" fontSize="sm">Total Points</StatLabel>
+                <StatLabel color="gray.400" fontSize="sm">
+                  Total Points
+                </StatLabel>
                 <StatNumber color="white" fontSize="2xl" fontWeight="bold">
                   {statistics?.totalPoints?.toLocaleString() || 0}
                 </StatNumber>
@@ -72,7 +78,9 @@ const AdminPointsSummaryCards: React.FC<AdminPointsSummaryCardsProps> = ({ stati
             <VStack spacing={3}>
               <Icon as={FiCode} color="purple.500" boxSize={8} />
               <Stat>
-                <StatLabel color="gray.400" fontSize="sm">Average Points</StatLabel>
+                <StatLabel color="gray.400" fontSize="sm">
+                  Average Points
+                </StatLabel>
                 <StatNumber color="white" fontSize="2xl" fontWeight="bold">
                   {statistics?.averagePoints || 0}
                 </StatNumber>
@@ -91,7 +99,9 @@ const AdminPointsSummaryCards: React.FC<AdminPointsSummaryCardsProps> = ({ stati
             <VStack spacing={3}>
               <Icon as={FiStar} color="yellow.500" boxSize={8} />
               <Stat>
-                <StatLabel color="gray.400" fontSize="sm">Top Score</StatLabel>
+                <StatLabel color="gray.400" fontSize="sm">
+                  Top Score
+                </StatLabel>
                 <StatNumber color="white" fontSize="2xl" fontWeight="bold">
                   {statistics?.topPerformers?.[0]?.points || 0}
                 </StatNumber>

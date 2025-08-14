@@ -40,15 +40,19 @@ export function getStudentLevel(points: number) {
   }
 
   const currentLevelMin = currentLevel.minPoints;
-  const currentLevelMax = currentLevel.maxPoints === Infinity ? points : currentLevel.maxPoints; // If max level, progress is always 100%
+  const currentLevelMax =
+    currentLevel.maxPoints === Infinity ? points : currentLevel.maxPoints; // If max level, progress is always 100%
   const pointsInCurrentLevel = points - currentLevelMin;
-  const pointsNeededForNextLevel = nextLevel ? (nextLevel.minPoints - currentLevelMin) : (currentLevelMax - currentLevelMin);
+  const pointsNeededForNextLevel = nextLevel
+    ? nextLevel.minPoints - currentLevelMin
+    : currentLevelMax - currentLevelMin;
 
   let progressPercentage = 0;
   if (currentLevel.level === 'Master') {
     progressPercentage = 100; // Always 100% for Master
   } else if (pointsNeededForNextLevel > 0) {
-    progressPercentage = (pointsInCurrentLevel / pointsNeededForNextLevel) * 100;
+    progressPercentage =
+      (pointsInCurrentLevel / pointsNeededForNextLevel) * 100;
   }
 
   return {

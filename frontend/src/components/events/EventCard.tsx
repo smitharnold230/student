@@ -12,7 +12,13 @@ import {
   useColorModeValue,
   Icon,
 } from '@chakra-ui/react';
-import { FiCalendar, FiExternalLink, FiUsers, FiEdit, FiTrash2 } from 'react-icons/fi';
+import {
+  FiCalendar,
+  FiExternalLink,
+  FiUsers,
+  FiEdit,
+  FiTrash2,
+} from 'react-icons/fi';
 import { Event } from '../../types/event';
 import { UseMutationResult } from '@tanstack/react-query';
 
@@ -74,7 +80,7 @@ const EventCard: React.FC<EventCardProps> = ({
             <Text color="gray.400" fontSize="sm" mb={3}>
               {event.organizer}
             </Text>
-            
+
             <VStack spacing={2} align="start">
               <HStack spacing={2}>
                 <Icon as={FiCalendar} color="gray.500" boxSize={4} />
@@ -82,7 +88,7 @@ const EventCard: React.FC<EventCardProps> = ({
                   {formatDate(event.date)}
                 </Text>
               </HStack>
-              
+
               {event.url && (
                 <HStack spacing={2}>
                   <Icon as={FiExternalLink} color="gray.500" boxSize={4} />
@@ -100,7 +106,7 @@ const EventCard: React.FC<EventCardProps> = ({
                 Certifications due: {formatDate(event.certificationDeadline)}
               </Text>
             )}
-            
+
             <HStack spacing={2} w="full">
               <Button
                 colorScheme="blue"
@@ -112,12 +118,7 @@ const EventCard: React.FC<EventCardProps> = ({
               </Button>
               {userRole === 'STUDENT' ? (
                 event.isParticipated ? (
-                  <Button
-                    colorScheme="green"
-                    size="sm"
-                    flex={1}
-                    isDisabled
-                  >
+                  <Button colorScheme="green" size="sm" flex={1} isDisabled>
                     Accepted
                   </Button>
                 ) : (
@@ -131,28 +132,30 @@ const EventCard: React.FC<EventCardProps> = ({
                     Accept
                   </Button>
                 )
-              ) : userRole === 'ADMIN' && (
-                <>
-                  <Button
-                    colorScheme="blue"
-                    size="sm"
-                    flex={1}
-                    leftIcon={<FiEdit />}
-                    onClick={() => onEdit(event)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    colorScheme="red"
-                    size="sm"
-                    flex={1}
-                    leftIcon={<FiTrash2 />}
-                    onClick={() => onDelete(event.id)}
-                    isLoading={deleteMutation.isPending}
-                  >
-                    Delete
-                  </Button>
-                </>
+              ) : (
+                userRole === 'ADMIN' && (
+                  <>
+                    <Button
+                      colorScheme="blue"
+                      size="sm"
+                      flex={1}
+                      leftIcon={<FiEdit />}
+                      onClick={() => onEdit(event)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      colorScheme="red"
+                      size="sm"
+                      flex={1}
+                      leftIcon={<FiTrash2 />}
+                      onClick={() => onDelete(event.id)}
+                      isLoading={deleteMutation.isPending}
+                    >
+                      Delete
+                    </Button>
+                  </>
+                )
               )}
             </HStack>
           </VStack>

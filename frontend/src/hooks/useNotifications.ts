@@ -13,35 +13,38 @@ export function useNotifications() {
   const socket = useRef<Socket | null>(null);
   const { user, token } = useAuthStore(); // Get token from auth store
 
-  const handleNewNotification = useCallback((notification: Notification) => {
-    try {
-      if (!notification?.title || !notification?.message) {
-        console.error('Invalid notification data received:', notification);
-        return;
+  const handleNewNotification = useCallback(
+    (notification: Notification) => {
+      try {
+        if (!notification?.title || !notification?.message) {
+          console.error('Invalid notification data received:', notification);
+          return;
+        }
+
+        queryClient.invalidateQueries({ queryKey: ['notifications'] });
+
+        toast({
+          title: notification.title,
+          description: notification.message,
+          status: getNotificationStatus(notification.type),
+          duration: 5000,
+          isClosable: true,
+          position: 'top-right',
+          variant: 'left-accent',
+        });
+      } catch (error) {
+        console.error('Error handling notification:', error);
+        toast({
+          title: 'Notification Error',
+          description: 'Failed to process notification',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
       }
-
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-
-      toast({
-        title: notification.title,
-        description: notification.message,
-        status: getNotificationStatus(notification.type),
-        duration: 5000,
-        isClosable: true,
-        position: 'top-right',
-        variant: 'left-accent'
-      });
-    } catch (error) {
-      console.error('Error handling notification:', error);
-      toast({
-        title: 'Notification Error',
-        description: 'Failed to process notification',
-        status: 'error',
-        duration: 3000,
-        isClosable: true
-      });
-    }
-  }, [queryClient, toast]);
+    },
+    [queryClient, toast],
+  );
 
   useEffect(() => {
     if (!user || !token) {
@@ -61,7 +64,7 @@ export function useNotifications() {
           reconnection: true,
           reconnectionAttempts: 5,
           reconnectionDelay: 1000,
-          timeout: 10000
+          timeout: 10000,
         });
 
         socket.current.on('connect', () => {
@@ -74,7 +77,8 @@ export function useNotifications() {
           console.error('Socket connection error:', error);
           toast({
             title: 'Connection Error',
-            description: 'Failed to connect to notification service. Retrying...',
+            description:
+              'Failed to connect to notification service. Retrying...',
             status: 'error',
             duration: 3000,
             isClosable: true,
@@ -122,7 +126,9 @@ export function useNotifications() {
   }, [user, token, handleNewNotification, toast]);
 }
 
-function getNotificationStatus(type: Notification['type']): 'info' | 'warning' | 'error' | 'success' {
+function getNotificationStatus(
+  type: Notification['type'],
+): 'info' | 'warning' | 'error' | 'success' {
   try {
     switch (type?.toUpperCase()) {
       case 'WARNING':

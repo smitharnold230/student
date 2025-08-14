@@ -68,7 +68,12 @@ interface AdminDashboardContentProps {
   systemStats: SystemStats;
   events: Event[];
   profileRequests: ProfileRequest[];
-  pointStats: { totalUsers: number; totalPoints: number; averagePoints: number; topPerformers: UserWithPoints[] };
+  pointStats: {
+    totalUsers: number;
+    totalPoints: number;
+    averagePoints: number;
+    topPerformers: UserWithPoints[];
+  };
 }
 
 const AdminDashboardContent: React.FC<AdminDashboardContentProps> = ({

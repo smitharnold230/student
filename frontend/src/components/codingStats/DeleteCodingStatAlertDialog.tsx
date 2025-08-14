@@ -29,7 +29,9 @@ interface DeleteCodingStatAlertDialogProps {
   cancelRef: React.RefObject<HTMLButtonElement>;
 }
 
-const DeleteCodingStatAlertDialog: React.FC<DeleteCodingStatAlertDialogProps> = ({
+const DeleteCodingStatAlertDialog: React.FC<
+  DeleteCodingStatAlertDialogProps
+> = ({
   isOpen,
   onClose,
   statToDelete,
@@ -47,20 +49,31 @@ const DeleteCodingStatAlertDialog: React.FC<DeleteCodingStatAlertDialogProps> = 
       onClose={onClose}
     >
       <AlertDialogOverlay>
-        <AlertDialogContent bg={cardBg} border="1px solid" borderColor={borderColor}>
+        <AlertDialogContent
+          bg={cardBg}
+          border="1px solid"
+          borderColor={borderColor}
+        >
           <AlertDialogHeader fontSize="lg" fontWeight="bold" color="white">
             Remove {statToDelete?.platform} Profile
           </AlertDialogHeader>
 
           <AlertDialogBody color="gray.300">
-            Are you sure you want to remove your {statToDelete?.platform} profile? This action cannot be undone and will affect your total points.
+            Are you sure you want to remove your {statToDelete?.platform}{' '}
+            profile? This action cannot be undone and will affect your total
+            points.
           </AlertDialogBody>
 
           <AlertDialogFooter>
             <Button ref={cancelRef} onClick={onClose}>
               Cancel
             </Button>
-            <Button colorScheme="red" onClick={onConfirmDelete} ml={3} isLoading={deleteMutationIsPending}>
+            <Button
+              colorScheme="red"
+              onClick={onConfirmDelete}
+              ml={3}
+              isLoading={deleteMutationIsPending}
+            >
               Remove
             </Button>
           </AlertDialogFooter>

@@ -13,7 +13,7 @@ class Migration {
               FROM information_schema.columns 
               WHERE table_name = 'events' AND column_name = 'certificationDeadline'
             `);
-            
+
             if (results.length === 0) {
               console.log('Adding certificationDeadline column...');
               await sequelize.query(`
@@ -28,7 +28,7 @@ class Migration {
             console.error('Error adding certificationDeadline column:', error);
             throw error;
           }
-        }
+        },
       },
       {
         name: '002_add_verified_by_id',
@@ -39,7 +39,7 @@ class Migration {
               FROM information_schema.columns 
               WHERE table_name = 'submissions' AND column_name = 'verifiedById'
             `);
-            
+
             if (results.length === 0) {
               console.log('Adding verifiedById column...');
               await sequelize.query(`
@@ -54,7 +54,7 @@ class Migration {
             console.error('Error adding verifiedById column:', error);
             throw error;
           }
-        }
+        },
       },
       {
         name: '003_add_manual_adjustment_to_points',
@@ -65,7 +65,7 @@ class Migration {
               FROM information_schema.columns 
               WHERE table_name = 'points' AND column_name = 'manualAdjustment'
             `);
-            
+
             if (results.length === 0) {
               console.log('Adding manualAdjustment column...');
               await sequelize.query(`
@@ -80,7 +80,7 @@ class Migration {
             console.error('Error adding manualAdjustment column:', error);
             throw error;
           }
-        }
+        },
       },
       {
         name: '004_add_status_to_event_participation',
@@ -91,7 +91,7 @@ class Migration {
               FROM information_schema.columns 
               WHERE table_name = 'eventparticipations' AND column_name = 'status'
             `);
-            
+
             if (results.length === 0) {
               console.log('Adding status column to event participations...');
               await sequelize.query(`
@@ -106,7 +106,7 @@ class Migration {
             console.error('Error adding status column:', error);
             throw error;
           }
-        }
+        },
       },
       {
         name: '005_fix_certification_deadline',
@@ -118,7 +118,7 @@ class Migration {
               FROM information_schema.columns 
               WHERE table_name = 'events' AND lower(column_name) = lower('certificationDeadline')
             `);
-            
+
             if (results.length === 0) {
               // Column doesn't exist at all, create it
               console.log('Adding certificationDeadline column (missing)...');
@@ -136,94 +136,143 @@ class Migration {
               `);
               console.log('certificationDeadline column renamed successfully');
             } else {
-              console.log('certificationDeadline column already exists with correct case');
+              console.log(
+                'certificationDeadline column already exists with correct case',
+              );
             }
           } catch (error) {
             console.error('Error fixing certificationDeadline column:', error);
             throw error;
           }
-        }
+        },
       },
       {
         name: '006_fix_submission_event_fkey_data_integrity',
         up: async () => {
           try {
-            console.log('Checking and fixing submission eventId data integrity...');
+            console.log(
+              'Checking and fixing submission eventId data integrity...',
+            );
             // Fetch all submissions with non-null eventId
-            const [submissions] = await sequelize.query(`SELECT id, "eventId" FROM submissions WHERE "eventId" IS NOT NULL`);
+            const [submissions] = await sequelize.query(
+              `SELECT id, "eventId" FROM submissions WHERE "eventId" IS NOT NULL`,
+            );
             // Fetch all existing event IDs
             const [events] = await sequelize.query(`SELECT id FROM events`);
-            const existingEventIds = new Set(events.map(e => e.id));
+            const existingEventIds = new Set(events.map((e) => e.id));
 
             let fixedCount = 0;
             for (const submission of submissions) {
               // If eventId is present but not in the existing event IDs
-              if (submission.eventId && !existingEventIds.has(submission.eventId)) {
-                console.log(`Fixing submission ${submission.id}: eventId ${submission.eventId} does not exist in events table. Setting to NULL.`);
-                await sequelize.query(`UPDATE submissions SET "eventId" = NULL WHERE id = $1`, { bind: [submission.id] });
+              if (
+                submission.eventId &&
+                !existingEventIds.has(submission.eventId)
+              ) {
+                console.log(
+                  `Fixing submission ${submission.id}: eventId ${submission.eventId} does not exist in events table. Setting to NULL.`,
+                );
+                await sequelize.query(
+                  `UPDATE submissions SET "eventId" = NULL WHERE id = $1`,
+                  { bind: [submission.id] },
+                );
                 fixedCount++;
               }
             }
-            console.log(`Fixed ${fixedCount} submission eventId foreign key violations.`);
+            console.log(
+              `Fixed ${fixedCount} submission eventId foreign key violations.`,
+            );
           } catch (error) {
-            console.error('Error fixing submission eventId data integrity:', error);
+            console.error(
+              'Error fixing submission eventId data integrity:',
+              error,
+            );
             throw error;
           }
-        }
+        },
       },
       {
         name: '007_fix_event_participation_event_fkey_data_integrity',
         up: async () => {
           try {
-            console.log('Checking and fixing event participation eventId data integrity...');
-            const [participations] = await sequelize.query(`SELECT id, "eventId" FROM event_participations WHERE "eventId" IS NOT NULL`);
+            console.log(
+              'Checking and fixing event participation eventId data integrity...',
+            );
+            const [participations] = await sequelize.query(
+              `SELECT id, "eventId" FROM event_participations WHERE "eventId" IS NOT NULL`,
+            );
             const [events] = await sequelize.query(`SELECT id FROM events`);
-            const existingEventIds = new Set(events.map(e => e.id));
+            const existingEventIds = new Set(events.map((e) => e.id));
 
             let fixedCount = 0;
             for (const participation of participations) {
-              if (participation.eventId && !existingEventIds.has(participation.eventId)) {
-                console.log(`Fixing event participation ${participation.id}: eventId ${participation.eventId} does not exist in events table. Setting to NULL.`);
-                await sequelize.query(`UPDATE event_participations SET "eventId" = NULL WHERE id = $1`, { bind: [participation.id] });
+              if (
+                participation.eventId &&
+                !existingEventIds.has(participation.eventId)
+              ) {
+                console.log(
+                  `Fixing event participation ${participation.id}: eventId ${participation.eventId} does not exist in events table. Setting to NULL.`,
+                );
+                await sequelize.query(
+                  `UPDATE event_participations SET "eventId" = NULL WHERE id = $1`,
+                  { bind: [participation.id] },
+                );
                 fixedCount++;
               }
             }
-            console.log(`Fixed ${fixedCount} event participation eventId foreign key violations.`);
+            console.log(
+              `Fixed ${fixedCount} event participation eventId foreign key violations.`,
+            );
           } catch (error) {
-            console.error('Error fixing event participation eventId data integrity:', error);
+            console.error(
+              'Error fixing event participation eventId data integrity:',
+              error,
+            );
             throw error;
           }
-        }
+        },
       },
       {
         name: '008_add_api_log_details',
         up: async () => {
           try {
-            console.log('Adding responseTime, ipAddress, userAgent columns to api_logs...');
-            const columns = await sequelize.query(`
+            console.log(
+              'Adding responseTime, ipAddress, userAgent columns to api_logs...',
+            );
+            const columns = await sequelize.query(
+              `
               SELECT column_name 
               FROM information_schema.columns 
               WHERE table_name = 'api_logs' AND column_name IN ('responseTime', 'ipAddress', 'userAgent')
-            `, { raw: true, type: sequelize.QueryTypes.SELECT });
+            `,
+              { raw: true, type: sequelize.QueryTypes.SELECT },
+            );
 
-            const existingColumnNames = new Set(columns.map(c => c.column_name));
+            const existingColumnNames = new Set(
+              columns.map((c) => c.column_name),
+            );
 
             if (!existingColumnNames.has('responseTime')) {
-              await sequelize.query(`ALTER TABLE api_logs ADD COLUMN "responseTime" INTEGER`);
+              await sequelize.query(
+                `ALTER TABLE api_logs ADD COLUMN "responseTime" INTEGER`,
+              );
               console.log('responseTime column added.');
             } else {
               console.log('responseTime column already exists.');
             }
 
             if (!existingColumnNames.has('ipAddress')) {
-              await sequelize.query(`ALTER TABLE api_logs ADD COLUMN "ipAddress" VARCHAR(255)`);
+              await sequelize.query(
+                `ALTER TABLE api_logs ADD COLUMN "ipAddress" VARCHAR(255)`,
+              );
               console.log('ipAddress column added.');
             } else {
               console.log('ipAddress column already exists.');
             }
 
             if (!existingColumnNames.has('userAgent')) {
-              await sequelize.query(`ALTER TABLE api_logs ADD COLUMN "userAgent" TEXT`);
+              await sequelize.query(
+                `ALTER TABLE api_logs ADD COLUMN "userAgent" TEXT`,
+              );
               console.log('userAgent column added.');
             } else {
               console.log('userAgent column already exists.');
@@ -233,14 +282,14 @@ class Migration {
             console.error('Error adding api_logs detail columns:', error);
             throw error;
           }
-        }
-      }
+        },
+      },
     ];
   }
 
   async runMigrations() {
     console.log('Starting database migrations...');
-    
+
     try {
       // Create migrations table if it doesn't exist
       await sequelize.query(`
@@ -253,28 +302,27 @@ class Migration {
 
       // Get executed migrations
       const [executedMigrations] = await sequelize.query(
-        'SELECT name FROM migrations'
+        'SELECT name FROM migrations',
       );
-      const executedMigrationNames = executedMigrations.map(m => m.name);
+      const executedMigrationNames = executedMigrations.map((m) => m.name);
 
       // Run pending migrations
       for (const migration of this.migrations) {
         if (!executedMigrationNames.includes(migration.name)) {
           console.log(`Running migration: ${migration.name}`);
           await migration.up();
-          
+
           // Mark migration as executed
-          await sequelize.query(
-            'INSERT INTO migrations (name) VALUES ($1)',
-            { bind: [migration.name] }
-          );
-          
+          await sequelize.query('INSERT INTO migrations (name) VALUES ($1)', {
+            bind: [migration.name],
+          });
+
           console.log(`Migration ${migration.name} completed successfully`);
         } else {
           console.log(`Migration ${migration.name} already executed`);
         }
       }
-      
+
       console.log('All migrations completed successfully');
     } catch (error) {
       console.error('Migration failed:', error);

@@ -46,7 +46,7 @@ const LoginPage: React.FC = () => {
   const toast = useToast();
   const { login } = useAuthStore();
   const [isSignup, setIsSignup] = useState(false);
-  
+
   const cardBg = useColorModeValue('gray.800', 'gray.900');
   const borderColor = useColorModeValue('gray.700', 'gray.600');
 
@@ -114,13 +114,7 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <Flex
-      minH="100vh"
-      align="center"
-      justify="center"
-      bg="gray.900"
-      px={4}
-    >
+    <Flex minH="100vh" align="center" justify="center" bg="gray.900" px={4}>
       <Card
         maxW="400px"
         w="full"
@@ -161,9 +155,7 @@ const LoginPage: React.FC = () => {
                     }}
                     {...register('email')}
                   />
-                  <FormErrorMessage>
-                    {errors.email?.message}
-                  </FormErrorMessage>
+                  <FormErrorMessage>{errors.email?.message}</FormErrorMessage>
                 </FormControl>
 
                 <FormControl isInvalid={!!errors.password}>
@@ -190,8 +182,12 @@ const LoginPage: React.FC = () => {
                   type="submit"
                   w="full"
                   size="lg"
-                  isLoading={loginMutation.isPending || signupMutation.isPending}
-                  loadingText={isSignup ? 'Creating account...' : 'Signing in...'}
+                  isLoading={
+                    loginMutation.isPending || signupMutation.isPending
+                  }
+                  loadingText={
+                    isSignup ? 'Creating account...' : 'Signing in...'
+                  }
                 >
                   {isSignup ? 'Create Account' : 'Sign In'}
                 </Button>
@@ -203,7 +199,9 @@ const LoginPage: React.FC = () => {
             {/* Toggle */}
             <HStack spacing={1}>
               <Text color="gray.400">
-                {isSignup ? 'Already have an account?' : "Don't have an account?"}
+                {isSignup
+                  ? 'Already have an account?'
+                  : "Don't have an account?"}
               </Text>
               <Button
                 variant="link"
@@ -223,4 +221,4 @@ const LoginPage: React.FC = () => {
   );
 };
 
-export default LoginPage; 
+export default LoginPage;

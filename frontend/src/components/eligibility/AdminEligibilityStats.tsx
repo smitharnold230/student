@@ -31,10 +31,19 @@ interface AdminEligibilityStatsProps {
   borderColor: string;
 }
 
-const AdminEligibilityStats: React.FC<AdminEligibilityStatsProps> = ({ students, cardBg, borderColor }) => {
+const AdminEligibilityStats: React.FC<AdminEligibilityStatsProps> = ({
+  students,
+  cardBg,
+  borderColor,
+}) => {
   return (
     <HStack spacing={6} wrap="wrap">
-      <Card bg={cardBg} border="1px solid" borderColor={borderColor} minW="200px">
+      <Card
+        bg={cardBg}
+        border="1px solid"
+        borderColor={borderColor}
+        minW="200px"
+      >
         <CardBody>
           <HStack spacing={3}>
             <Box p={2} borderRadius="lg" bg="blue.500" color="white">
@@ -52,7 +61,12 @@ const AdminEligibilityStats: React.FC<AdminEligibilityStatsProps> = ({ students,
         </CardBody>
       </Card>
 
-      <Card bg={cardBg} border="1px solid" borderColor={borderColor} minW="200px">
+      <Card
+        bg={cardBg}
+        border="1px solid"
+        borderColor={borderColor}
+        minW="200px"
+      >
         <CardBody>
           <HStack spacing={3}>
             <Box p={2} borderRadius="lg" bg="green.500" color="white">
@@ -63,14 +77,19 @@ const AdminEligibilityStats: React.FC<AdminEligibilityStatsProps> = ({ students,
                 Eligible Students
               </Text>
               <Text color="white" fontSize="xl" fontWeight="bold">
-                {students.filter(s => s.eligibility?.eligible).length}
+                {students.filter((s) => s.eligibility?.eligible).length}
               </Text>
             </VStack>
           </HStack>
         </CardBody>
       </Card>
 
-      <Card bg={cardBg} border="1px solid" borderColor={borderColor} minW="200px">
+      <Card
+        bg={cardBg}
+        border="1px solid"
+        borderColor={borderColor}
+        minW="200px"
+      >
         <CardBody>
           <HStack spacing={3}>
             <Box p={2} borderRadius="lg" bg="red.500" color="white">
@@ -81,7 +100,7 @@ const AdminEligibilityStats: React.FC<AdminEligibilityStatsProps> = ({ students,
                 Not Eligible
               </Text>
               <Text color="white" fontSize="xl" fontWeight="bold">
-                {students.filter(s => !s.eligibility?.eligible).length}
+                {students.filter((s) => !s.eligibility?.eligible).length}
               </Text>
             </VStack>
           </HStack>

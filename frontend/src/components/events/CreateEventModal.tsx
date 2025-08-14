@@ -31,7 +31,9 @@ interface CreateEventModalProps {
 
 const createEventSchema = z.object({
   name: z.string().min(1, 'Event name is required'),
-  type: z.string().refine(val => val === 'WORKSHOP' || val === 'HACKATHON', { message: 'Event type is required' }),
+  type: z.string().refine((val) => val === 'WORKSHOP' || val === 'HACKATHON', {
+    message: 'Event type is required',
+  }),
   date: z.string().min(1, 'Date is required'),
   organizer: z.string().min(1, 'Organizer is required'),
   url: z.string().url('Invalid URL format').or(z.literal('')).optional(),
@@ -69,13 +71,16 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({
   });
 
   const onSubmit = (data: CreateEventForm) => {
-    const formattedData: CreateEventData = { // Use CreateEventData
+    const formattedData: CreateEventData = {
+      // Use CreateEventData
       ...data,
       type: data.type as 'WORKSHOP' | 'HACKATHON',
       url: data.url || undefined, // Send undefined if empty string
       link: data.link || undefined, // Send undefined if empty string
       date: new Date(data.date).toISOString(),
-      certificationDeadline: data.certificationDeadline ? new Date(data.certificationDeadline).toISOString() : undefined, // Send undefined if empty string
+      certificationDeadline: data.certificationDeadline
+        ? new Date(data.certificationDeadline).toISOString()
+        : undefined, // Send undefined if empty string
     };
     onCreateEvent(formattedData);
   };
@@ -92,7 +97,12 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({
         <ModalHeader color="white">Create New Event</ModalHeader>
         <ModalCloseButton color="white" />
         <ModalBody>
-          <VStack spacing={4} as="form" id="create-event-form" onSubmit={handleSubmit(onSubmit)}>
+          <VStack
+            spacing={4}
+            as="form"
+            id="create-event-form"
+            onSubmit={handleSubmit(onSubmit)}
+          >
             <FormControl isInvalid={!!errors.name} isRequired>
               <FormLabel color="gray.300">Event Name</FormLabel>
               <Input
@@ -174,7 +184,9 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({
                 color="white"
                 {...register('certificationDeadline')}
               />
-              <FormErrorMessage>{errors.certificationDeadline?.message}</FormErrorMessage>
+              <FormErrorMessage>
+                {errors.certificationDeadline?.message}
+              </FormErrorMessage>
             </FormControl>
           </VStack>
         </ModalBody>

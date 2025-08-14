@@ -54,17 +54,23 @@ const UserTable: React.FC<UserTableProps> = ({
 }) => {
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'ADMIN': return 'red';
-      case 'STUDENT': return 'blue';
-      default: return 'gray';
+      case 'ADMIN':
+        return 'red';
+      case 'STUDENT':
+        return 'blue';
+      default:
+        return 'gray';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ACTIVE': return 'green';
-      case 'INACTIVE': return 'red';
-      default: return 'gray';
+      case 'ACTIVE':
+        return 'green';
+      case 'INACTIVE':
+        return 'red';
+      default:
+        return 'gray';
     }
   };
 
@@ -79,7 +85,7 @@ const UserTable: React.FC<UserTableProps> = ({
           <Heading size="md" color="white">
             Users
           </Heading>
-          
+
           {isLoading ? (
             <VStack spacing={4}>
               {[...Array(5)].map((_, i) => (
@@ -91,12 +97,24 @@ const UserTable: React.FC<UserTableProps> = ({
               <Table variant="simple">
                 <Thead>
                   <Tr>
-                    <Th color="gray.300" borderColor={borderColor}>User</Th>
-                    <Th color="gray.300" borderColor={borderColor}>Role</Th>
-                    <Th color="gray.300" borderColor={borderColor}>Profile</Th>
-                    <Th color="gray.300" borderColor={borderColor}>Status</Th>
-                    <Th color="gray.300" borderColor={borderColor}>Created</Th>
-                    <Th color="gray.300" borderColor={borderColor}>Actions</Th>
+                    <Th color="gray.300" borderColor={borderColor}>
+                      User
+                    </Th>
+                    <Th color="gray.300" borderColor={borderColor}>
+                      Role
+                    </Th>
+                    <Th color="gray.300" borderColor={borderColor}>
+                      Profile
+                    </Th>
+                    <Th color="gray.300" borderColor={borderColor}>
+                      Status
+                    </Th>
+                    <Th color="gray.300" borderColor={borderColor}>
+                      Created
+                    </Th>
+                    <Th color="gray.300" borderColor={borderColor}>
+                      Actions
+                    </Th>
                   </Tr>
                 </Thead>
                 <Tbody>
@@ -104,11 +122,7 @@ const UserTable: React.FC<UserTableProps> = ({
                     <Tr key={user.id} _hover={{ bg: 'gray.700' }}>
                       <Td borderColor={borderColor}>
                         <HStack spacing={3}>
-                          <Avatar
-                            size="sm"
-                            name={user.email}
-                            bg="brand.500"
-                          />
+                          <Avatar size="sm" name={user.email} bg="brand.500" />
                           <VStack align="start" spacing={0}>
                             <Text color="white" fontWeight="medium">
                               {user.email}
@@ -142,7 +156,9 @@ const UserTable: React.FC<UserTableProps> = ({
                       </Td>
                       <Td borderColor={borderColor}>
                         <Badge
-                          colorScheme={getStatusColor(user.Profile?.status || '')}
+                          colorScheme={getStatusColor(
+                            user.Profile?.status || '',
+                          )}
                           variant="subtle"
                         >
                           {user.Profile?.status || 'Not set'}
@@ -160,7 +176,9 @@ const UserTable: React.FC<UserTableProps> = ({
                             colorScheme="red"
                             variant="outline"
                             leftIcon={<Icon as={FiTrash2} />}
-                            onClick={() => handleDeleteUser(user.id, user.email)}
+                            onClick={() =>
+                              handleDeleteUser(user.id, user.email)
+                            }
                             isLoading={deleteUserMutation.isPending}
                           >
                             Delete
