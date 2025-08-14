@@ -31,11 +31,9 @@ interface CreateEventModalProps {
 
 const createEventSchema = z.object({
   name: z.string().min(1, 'Event name is required'),
-  type: z
-    .string()
-    .refine((val) => val === 'WORKSHOP' || val === 'HACKATHON', {
-      message: 'Event type is required',
-    }),
+  type: z.string().refine((val) => val === 'WORKSHOP' || val === 'HACKATHON', {
+    message: 'Event type is required',
+  }),
   date: z.string().min(1, 'Date is required'),
   organizer: z.string().min(1, 'Organizer is required'),
   url: z.string().url('Invalid URL format').or(z.literal('')).optional(),

@@ -43,11 +43,9 @@ interface User {
 const createUserSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  role: z
-    .string()
-    .refine((val) => val === 'STUDENT' || val === 'ADMIN', {
-      message: 'Role is required',
-    }),
+  role: z.string().refine((val) => val === 'STUDENT' || val === 'ADMIN', {
+    message: 'Role is required',
+  }),
 });
 
 type CreateUserForm = z.infer<typeof createUserSchema>;

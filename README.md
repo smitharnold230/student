@@ -81,14 +81,14 @@ npm run dev
 
 ## 🧪 Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start backend in dev mode |
-| `npm run migrate` | Run Sequelize migrations |
-| `npm run seed` | Seed database with sample data |
-| `npm run test` | Run backend tests |
-| `npm run build` | Build frontend for production |
-| `npm run preview` | Preview built frontend |
+| Command           | Description                    |
+| ----------------- | ------------------------------ |
+| `npm run dev`     | Start backend in dev mode      |
+| `npm run migrate` | Run Sequelize migrations       |
+| `npm run seed`    | Seed database with sample data |
+| `npm run test`    | Run backend tests              |
+| `npm run build`   | Build frontend for production  |
+| `npm run preview` | Preview built frontend         |
 
 ---
 
@@ -109,12 +109,12 @@ See `.env.example` for all required variables.
 
 ## 🛠 Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| `ECONNREFUSED` | Ensure PostgreSQL is running |
-| `JWT_SECRET` errors | Regenerate secrets in `.env` |
-| CORS issues | Check `CORS_ORIGIN` matches frontend URL |
-| Upload failures | Verify `UPLOAD_DIR` exists and is writable |
+| Issue               | Solution                                   |
+| ------------------- | ------------------------------------------ |
+| `ECONNREFUSED`      | Ensure PostgreSQL is running               |
+| `JWT_SECRET` errors | Regenerate secrets in `.env`               |
+| CORS issues         | Check `CORS_ORIGIN` matches frontend URL   |
+| Upload failures     | Verify `UPLOAD_DIR` exists and is writable |
 
 ---
 
